@@ -1,0 +1,637 @@
+/* Transcript — terminal output blocks laid on the art wall. Each speaker gets
+ * one of the lycorperos message backgrounds so the text is always readable
+ * while the wall keeps burning through the gutters between blocks.
+ * tr-* namespace; token vars only. */
+
+.tr-root {
+	height: 100%;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 1ch 1.5ch 3ch;
+	font-family: var(--font-mono);
+	font-size: var(--cell-fs);
+	line-height: var(--cell-lh);
+	color: var(--silk);
+}
+
+/* ---- empty state ---- */
+
+.tr-empty {
+	display: flex;
+	align-items: center;
+	gap: 1.5ch;
+	padding: 3ch 0;
+	font-size: 0.86em;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--dim-ash);
+	text-shadow: 0 0 8px var(--void);
+}
+
+.tr-empty::before,
+.tr-empty::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--dark-ash);
+}
+
+/* ---- rows ---- */
+
+.tr-row {
+	position: relative;
+	display: grid;
+	grid-template-columns: 10ch minmax(0, 1fr);
+	gap: 0 1ch;
+	margin-bottom: 2px;
+}
+
+.tr-gutter {
+	padding-top: 2px;
+	text-align: right;
+	font-size: 0.86em;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--dim-ash);
+	user-select: none;
+	text-shadow: 0 0 6px var(--void);
+}
+
+.tr-body {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.6ch;
+	padding: 2px 1.5ch;
+	border-left: 2px solid var(--dark-ash);
+	background: color-mix(in oklab, var(--void) 62%, transparent);
+	text-shadow: 0 0 6px var(--void), 0 0 2px var(--void);
+}
+
+.tr-row--user .tr-gutter {
+	color: var(--blood);
+}
+
+.tr-row--user .tr-body {
+	border-left-color: var(--blood);
+	background: color-mix(in oklab, var(--user-msg-bg) 82%, transparent);
+}
+
+.tr-row--assistant .tr-gutter {
+	color: var(--ash);
+}
+
+.tr-row--custom .tr-gutter {
+	color: var(--bruise);
+}
+
+.tr-row--custom .tr-body {
+	border-left-color: var(--bruise);
+	background: color-mix(in oklab, var(--custom-msg-bg) 92%, transparent);
+	color: var(--ash);
+}
+
+/* markers sit bare on the wall */
+.tr-row--marker .tr-body {
+	padding-left: 0;
+	background: none;
+	border-left-color: transparent;
+}
+
+/* Still writing: the block cursor is in the output, the rail runs hot. */
+.tr-row--live .tr-gutter {
+	color: var(--hot-blood);
+}
+
+.tr-row--live .tr-body {
+	border-left-color: var(--hot-blood);
+	box-shadow: -2px 0 14px -2px color-mix(in oklab, var(--hot-blood) 55%, transparent);
+}
+
+.tm-blk {
+	display: inline-block;
+	width: 1ch;
+	height: 0.95em;
+	vertical-align: -0.1em;
+	background: var(--hot-blood);
+	animation: blink 1.05s steps(1, end) infinite;
+}
+
+.tr-body > .tr-md {
+	align-self: stretch;
+}
+
+.tr-custom {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.4ch;
+}
+
+.tr-msg-img {
+	max-height: 240px;
+	max-width: 100%;
+	border: 1px solid var(--dark-ash);
+}
+
+/* ---- chips & badges ---- */
+
+.tr-badge {
+	display: inline-block;
+	font-size: 0.86em;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--bruise);
+}
+
+.tr-badge::before {
+	content: "@";
+	color: var(--dark-ash);
+}
+
+.tr-chip {
+	display: inline-flex;
+	font-size: 0.86em;
+	letter-spacing: 0.06em;
+	color: var(--ash);
+	white-space: nowrap;
+}
+
+.tr-chip::before {
+	content: "[";
+	color: var(--dark-ash);
+}
+
+.tr-chip::after {
+	content: "]";
+	color: var(--dark-ash);
+}
+
+.tr-chip--err {
+	color: var(--err);
+}
+
+.tr-chip--warn {
+	color: var(--welt);
+}
+
+.tr-stop {
+	display: flex;
+	align-items: baseline;
+	gap: 1ch;
+}
+
+.tr-stop-msg {
+	color: var(--err);
+	font-size: 0.92em;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+/* ---- thinking ---- */
+
+.tr-think-head {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6ch;
+	padding: 0;
+	border: none;
+	background: none;
+	cursor: pointer;
+	color: var(--ash);
+	font-size: 0.92em;
+	letter-spacing: 0.06em;
+	transition: color 0.12s linear;
+}
+
+.tr-think-head:hover {
+	color: var(--blush);
+}
+
+.tr-think-body {
+	align-self: stretch;
+	max-width: var(--measure);
+	padding: 0 0 0 1.5ch;
+	border-left: 1px solid var(--dark-ash);
+	color: var(--ash);
+	font-size: 0.92em;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.tr-chev {
+	flex: none;
+	color: var(--dark-ash);
+	transition: transform 0.12s linear;
+}
+
+.tr-chev--open {
+	transform: rotate(90deg);
+}
+
+/* ---- dividers & markers ---- */
+
+.tr-divider {
+	display: flex;
+	align-items: center;
+	gap: 1.5ch;
+	margin: 1ch 0;
+	color: var(--dim-ash);
+	font-size: 0.86em;
+	text-transform: uppercase;
+	letter-spacing: 0.18em;
+	user-select: none;
+	text-shadow: 0 0 6px var(--void);
+}
+
+.tr-divider::before,
+.tr-divider::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--dark-ash);
+}
+
+.tr-marker {
+	color: var(--dim-ash);
+	font-size: 0.86em;
+	text-shadow: 0 0 6px var(--void);
+}
+
+.tr-shimmer {
+	display: inline-flex;
+	align-items: center;
+	gap: 1ch;
+	font-size: 0.92em;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--hot-blood);
+}
+
+.tr-shimmer::after {
+	content: "";
+	width: 1ch;
+	height: 0.95em;
+	background: var(--hot-blood);
+	animation: blink 1.05s steps(1, end) infinite;
+}
+
+/* ---- tool cards: bordered cells with a status glyph ----
+ * The cards come from src/tool-render (tv-*), which is shared verbatim with the
+ * coding-agent HTML export. Everything below is scoped to `.tr-root` so the
+ * export keeps its own chrome. */
+
+.tr-body > .tv-card {
+	align-self: stretch;
+}
+
+.tr-root .tv-card {
+	border: 1px solid var(--dark-ash);
+	border-radius: 0;
+	background: var(--tool-success-bg);
+	font-family: var(--font-mono);
+	font-size: 0.92em;
+	line-height: var(--cell-lh);
+}
+
+/* running: the spinner's presence is the state */
+.tr-root .tv-card:has(.tv-spin) {
+	background: var(--tool-pending-bg);
+	border-color: var(--blood);
+}
+
+.tr-root .tv-card--error {
+	background: var(--tool-error-bg);
+	border-color: var(--err);
+}
+
+.tr-root .tv-head {
+	padding: 0 1ch;
+	gap: 1ch;
+}
+
+.tr-root .tv-head:hover {
+	background: var(--selected-bg);
+}
+
+.tr-root .tv-head:focus-visible {
+	outline: 1px solid var(--ring);
+	outline-offset: -1px;
+}
+
+.tr-root .tv-status {
+	width: auto;
+	height: auto;
+	border-radius: 0;
+	background: none;
+	line-height: 1;
+}
+
+.tr-root .tv-status--ok::before {
+	content: "✓";
+	color: var(--pulse);
+}
+
+.tr-root .tv-status--err::before {
+	content: "✗";
+	color: var(--err);
+}
+
+.tr-root .tv-status--pending::before {
+	content: "·";
+	color: var(--dim-ash);
+}
+
+.tr-root .tv-spin {
+	width: auto;
+	height: auto;
+	border: 0;
+	border-radius: 0;
+	animation: none;
+	line-height: 1;
+}
+
+.tr-root .tv-spin::before {
+	content: "◍";
+	color: var(--hot-blood);
+	animation: pulse 0.8s steps(2, end) infinite;
+}
+
+.tr-root .tv-name {
+	font-size: 1em;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	color: var(--silk);
+}
+
+.tr-root .tv-sum {
+	font-size: 1em;
+	color: var(--ash);
+}
+
+.tr-root .tv-chev {
+	width: auto;
+	height: auto;
+	margin-left: 0;
+	border: 0;
+	transform: none;
+	color: var(--dark-ash);
+	font-size: 0.9em;
+	line-height: 1;
+}
+
+.tr-root .tv-chev::before {
+	content: "▸";
+}
+
+.tr-root .tv-head[aria-expanded="true"] .tv-chev {
+	transform: none;
+}
+
+.tr-root .tv-head[aria-expanded="true"] .tv-chev::before {
+	content: "▾";
+}
+
+.tr-root .tv-body {
+	gap: 0.6ch;
+	padding: 0.6ch 1ch 1ch;
+	border-top: 1px solid var(--dark-ash);
+}
+
+.tr-root .tv-intent {
+	font-style: normal;
+	font-size: 0.92em;
+	color: var(--dim-ash);
+}
+
+.tr-root .tv-intent::before {
+	content: "» ";
+	color: var(--dark-ash);
+}
+
+.tr-root .tv-partial {
+	border-top: 1px solid var(--dark-ash);
+	font-size: 0.92em;
+	color: var(--ash);
+}
+
+.tr-root .tv-badge {
+	border-radius: 0;
+	background: var(--void);
+	color: var(--ash);
+}
+
+/* ---- markdown, rendered like the TUI renders it ---- */
+
+/* Match the TUI's word-boundary wrapping: keep Korean/CJK words intact when
+ * possible, but still emergency-break long URLs or identifiers before they
+ * overflow the transcript. */
+.tr-md {
+	overflow-wrap: break-word;
+	word-break: keep-all;
+}
+
+/* Reading measure applies to text flow only — code, tables and images keep the
+ * full column so they never wrap tighter than their content needs. */
+.tr-md > p,
+.tr-md > ul,
+.tr-md > ol,
+.tr-md > blockquote,
+.tr-md > h1,
+.tr-md > h2,
+.tr-md > h3,
+.tr-md > h4,
+.tr-md > h5,
+.tr-md > h6 {
+	max-width: var(--measure);
+}
+
+.tr-md > :first-child {
+	margin-top: 0;
+}
+
+.tr-md > :last-child {
+	margin-bottom: 0;
+}
+
+.tr-md p {
+	margin: 0 0 var(--cell-lh);
+}
+
+.tr-md p:last-child {
+	margin-bottom: 0;
+}
+
+.tr-md p,
+.tr-md li {
+	white-space: pre-wrap;
+}
+
+.tr-md h1,
+.tr-md h2,
+.tr-md h3,
+.tr-md h4,
+.tr-md h5,
+.tr-md h6 {
+	margin: var(--cell-lh) 0 0;
+	font-size: 1em;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	color: var(--md-heading);
+}
+
+.tr-md h1::before {
+	content: "# ";
+	color: var(--dark-ash);
+}
+
+.tr-md h2::before {
+	content: "## ";
+	color: var(--dark-ash);
+}
+
+.tr-md h3::before {
+	content: "### ";
+	color: var(--dark-ash);
+}
+
+.tr-md h4::before,
+.tr-md h5::before,
+.tr-md h6::before {
+	content: "#### ";
+	color: var(--dark-ash);
+}
+
+.tr-md h1 {
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+}
+
+.tr-md ul,
+.tr-md ol {
+	margin: 0 0 var(--cell-lh);
+	padding-left: 3ch;
+}
+
+.tr-md li::marker {
+	color: var(--hot-blood);
+}
+
+.tr-md li > ul,
+.tr-md li > ol {
+	white-space: normal;
+	margin-bottom: 0;
+}
+
+.tr-md li > p {
+	margin: 0;
+}
+
+.tr-md code {
+	padding: 0 0.4ch;
+	background: var(--status-bg);
+	color: var(--md-code);
+	font-family: var(--font-mono);
+	font-size: 1em;
+}
+
+.tr-md pre {
+	margin: 0 0 var(--cell-lh);
+	padding: 0.4ch 1ch;
+	overflow-x: auto;
+	border: 1px solid var(--dark-ash);
+	background: var(--void);
+}
+
+.tr-md pre code {
+	padding: 0;
+	background: none;
+	color: var(--md-code-block);
+	font-size: 1em;
+	line-height: var(--cell-lh);
+}
+
+.tr-md blockquote {
+	margin: 0 0 var(--cell-lh);
+	padding: 0 1.5ch;
+	border-left: 1px solid var(--dark-ash);
+	color: var(--ash);
+}
+
+.tr-md table {
+	margin: 0 0 var(--cell-lh);
+	border-collapse: collapse;
+	font-size: 1em;
+}
+
+/* Table cells need `anywhere` so long URLs/identifiers contribute a shrinkable
+ * intrinsic width instead of expanding under the transcript's clipped overflow. */
+.tr-md th,
+.tr-md td {
+	padding: 0 1ch;
+	border: 1px solid var(--dark-ash);
+	overflow-wrap: anywhere;
+	text-align: left;
+	word-break: keep-all;
+}
+
+.tr-md th {
+	background: var(--status-bg);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--rose);
+}
+
+.tr-md a {
+	color: var(--rose);
+}
+
+.tr-md hr {
+	margin: var(--cell-lh) 0;
+	border: none;
+	border-top: 1px solid var(--dark-ash);
+}
+
+.tr-md img {
+	max-width: 100%;
+	max-height: 320px;
+}
+
+/* ---- compact variant (agent drawer) ---- */
+
+.tr-root--compact {
+	padding: 0.6ch 1ch 1.5ch;
+	font-size: 0.92em;
+}
+
+.tr-root--compact .tr-row {
+	grid-template-columns: 8ch minmax(0, 1fr);
+}
+
+.tr-root--compact .tr-body {
+	padding: 1px 1ch;
+}
+
+.tr-root--compact .tv-pre {
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 640px) {
+	.tr-row {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+	.tr-gutter {
+		text-align: left;
+		padding-top: 0;
+		padding-left: 1.5ch;
+	}
+	.tr-gutter:empty {
+		display: none;
+	}
+}

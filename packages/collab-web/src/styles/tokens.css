@@ -1,0 +1,103 @@
+/* Design tokens — the LYCORPEROS terminal palette, lifted verbatim from
+ * packages/coding-agent/src/modes/theme/defaults/lycorperos.json so the gateway
+ * and the TUI are the same room seen through different glass.
+ *
+ * Two layers, on purpose:
+ *   1. the theme vars (`--blood`, `--rose`, `--silk`, `--ash`, the `*Bg` block
+ *      backgrounds …) hold the theme's exact values;
+ *   2. the semantic tokens components already consume (`--bg`, `--fg`,
+ *      `--accent`, `--border`, …) are *derived* from layer 1 via `var()`.
+ * Custom-property substitution is lazy, so re-grading the room only means
+ * redefining layer 1.
+ *
+ * One lighting state: dark. A terminal has no light mode.
+ * The ONLY file allowed to contain raw color values. */
+:root {
+	color-scheme: dark;
+
+	/* ---- layer 1: lycorperos theme vars ---- */
+	--blood-deep: #7a0a1a;
+	--blood: #c8102e;
+	--hot-blood: #ff2d55;
+	--rose: #ff6b81;
+	--blush: #ffb6c1;
+	--silk: #f3dde3;
+	--ash: #8a7f88;
+	--dim-ash: #6b5f68;
+	--dark-ash: #453a41;
+	--welt: #ffb347;
+	--bruise: #d16dff;
+	--pulse: #89d281;
+
+	/* block backgrounds — terminal message cells */
+	--selected-bg: #3a1f2b;
+	--user-msg-bg: #2a1218;
+	--tool-pending-bg: #241419;
+	--tool-success-bg: #181216;
+	--tool-error-bg: #331419;
+	--custom-msg-bg: #2d1a24;
+	--status-bg: #120a0e;
+	/* the void behind every cell — one step under statusLineBg */
+	--void: #0a0508;
+
+	/* theme colors that are literals in lycorperos.json */
+	--err-red: #ff3b4e;
+	--md-heading: #ff4d6d;
+	--md-code: #e5c1ff;
+	--md-code-block: #ffa6c9;
+
+	/* ---- layer 2: surfaces ---- */
+	--bg: var(--void);
+	--bg-raised: var(--tool-success-bg);
+	--bg-inset: var(--status-bg);
+	--bg-overlay: var(--status-bg);
+
+	/* ---- type ramp ---- */
+	--fg: var(--silk);
+	--fg-muted: var(--ash);
+	--fg-faint: var(--dim-ash);
+
+	/* ---- emphasis ---- */
+	--accent: var(--hot-blood);
+	--accent-fg: var(--void);
+	--accent-muted: color-mix(in oklab, var(--hot-blood) 20%, transparent);
+
+	/* ---- status ---- */
+	--ok: var(--pulse);
+	--warn: var(--welt);
+	--err: var(--err-red);
+
+	/* ---- hairlines: the TUI borders in blood ---- */
+	--border: color-mix(in oklab, var(--blood) 62%, transparent);
+	--border-strong: var(--blood);
+	--border-accent: var(--rose);
+	--border-muted: var(--dark-ash);
+	--ring: var(--hot-blood);
+
+	/* ---- type: monospace, everywhere, no exceptions ---- */
+	--font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+	--font-ui: var(--font-mono);
+
+	/* ---- the character cell ---- */
+	--cell-fs: 13px;
+	--cell-lh: 18px;
+	/* 1ch of the UI font at --cell-fs; the wall measures the real advance width
+	 * and snaps its art grid to the same value. */
+	--cell-w: 1ch;
+
+	/* ---- radii: terminals do not have rounded corners ---- */
+	--radius-sm: 0;
+	--radius: 0;
+	--radius-lg: 0;
+	--radius-pill: 0;
+
+	/* ---- motion & metrics ---- */
+	--ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--hdr: 32px;
+	--measure: 84ch;
+
+	/* ---- depth ---- */
+	--shadow-overlay: 0 0 0 1px var(--blood), 0 14px 40px color-mix(in oklab, #000 78%, transparent);
+	--rail-mobile-shadow: -8px 0 28px color-mix(in oklab, #000 70%, transparent);
+	--backdrop: color-mix(in oklab, var(--void) 84%, transparent);
+}

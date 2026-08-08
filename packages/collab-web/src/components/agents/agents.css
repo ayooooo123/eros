@@ -1,0 +1,471 @@
+/* The den — who else is in here and what they are doing. Terminal list rows,
+ * tree prefixes, glyph status. `ag-*` prefix; token vars only. */
+
+/* ── Panel ────────────────────────────────────────────────────────── */
+
+.ag-panel {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	padding: 1ch 0 2ch;
+	overflow-y: auto;
+	font-size: var(--cell-fs);
+}
+
+.ag-head {
+	display: flex;
+	align-items: center;
+	gap: 1ch;
+	margin: 0 1.5ch 1ch;
+	font-size: 0.86em;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--hot-blood);
+}
+
+.ag-head::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--dark-ash);
+}
+
+.ag-row {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	padding: 1px 1.5ch 2px;
+	border: 0;
+	border-left: 2px solid transparent;
+	background: none;
+	color: var(--silk);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition: background 0.12s linear;
+}
+
+.ag-row:hover {
+	background: color-mix(in oklab, var(--selected-bg) 60%, transparent);
+	border-left-color: var(--dark-ash);
+}
+
+.ag-row--selected {
+	background: var(--selected-bg);
+	border-left-color: var(--hot-blood);
+}
+
+.ag-row:focus-visible {
+	outline: 1px solid var(--ring);
+	outline-offset: -1px;
+}
+
+.ag-row-head {
+	display: flex;
+	align-items: center;
+	gap: 1ch;
+	min-width: 0;
+}
+
+.ag-row-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	color: var(--silk);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ag-row-activity {
+	overflow: hidden;
+	padding-left: 2ch;
+	color: var(--ash);
+	font-size: 0.86em;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ag-row-activity::before {
+	content: "├ ";
+	color: var(--dark-ash);
+}
+
+.ag-row-meta {
+	display: flex;
+	gap: 2ch;
+	padding-left: 2ch;
+	color: var(--dim-ash);
+	font-size: 0.86em;
+}
+
+.ag-row-meta::before {
+	content: "└ ";
+	color: var(--dark-ash);
+}
+
+.ag-row-meta-when {
+	margin-left: auto;
+}
+
+.ag-empty {
+	margin: 1ch 1.5ch;
+	font-size: 0.86em;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--dim-ash);
+}
+
+.ag-empty::before {
+	content: "— ";
+	color: var(--dark-ash);
+}
+
+/* Terminal transcript-read failure reported by the host (drawer stops polling). */
+.ag-fetch-error {
+	padding: 2px 1.5ch;
+	color: var(--err);
+	font-size: 0.92em;
+	background: var(--tool-error-bg);
+	border-top: 1px solid var(--err);
+	overflow-wrap: anywhere;
+}
+
+/* ── Status glyph ─────────────────────────────────────────────────── */
+
+.ag-dot {
+	flex: none;
+	width: auto;
+	height: auto;
+	font-size: 0.9em;
+	line-height: 1;
+	border-radius: 0;
+	background: none;
+	color: var(--dim-ash);
+}
+
+.ag-dot::before {
+	content: "◌";
+}
+
+.ag-dot--running {
+	color: var(--hot-blood);
+	animation: pulse 0.9s steps(2, end) infinite;
+}
+
+.ag-dot--running::before {
+	content: "◍";
+}
+
+.ag-dot--parked {
+	color: var(--welt);
+}
+
+.ag-dot--parked::before {
+	content: "◐";
+}
+
+.ag-dot--aborted {
+	color: var(--err);
+}
+
+.ag-dot--aborted::before {
+	content: "✖";
+}
+
+.ag-dot--done {
+	color: var(--pulse);
+}
+
+.ag-dot--done::before {
+	content: "✓";
+}
+
+/* ── Chips ────────────────────────────────────────────────────────── */
+
+.ag-chip {
+	flex: none;
+	font-size: 0.86em;
+	letter-spacing: 0.06em;
+	color: var(--ash);
+	white-space: nowrap;
+}
+
+.ag-chip::before {
+	content: "[";
+	color: var(--dark-ash);
+}
+
+.ag-chip::after {
+	content: "]";
+	color: var(--dark-ash);
+}
+
+.ag-chip--running {
+	color: var(--hot-blood);
+}
+
+.ag-chip--parked {
+	color: var(--welt);
+}
+
+.ag-chip--aborted {
+	color: var(--err);
+}
+
+.ag-chip--model {
+	overflow: hidden;
+	max-width: 22ch;
+	color: var(--dim-ash);
+	text-overflow: ellipsis;
+}
+
+/* ── Drawer ───────────────────────────────────────────────────────── */
+
+.ag-drawer-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 35;
+	background: var(--backdrop);
+}
+
+.ag-drawer {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 40;
+	display: flex;
+	flex-direction: column;
+	width: min(72ch, 94vw);
+	border-left: 1px solid var(--blood);
+	background: var(--status-bg);
+	box-shadow: var(--rail-mobile-shadow);
+	animation: ag-drawer-in 0.16s steps(8, end);
+}
+
+@keyframes ag-drawer-in {
+	from {
+		transform: translateX(100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+.ag-drawer-head {
+	display: flex;
+	align-items: center;
+	gap: 1ch;
+	padding: 0.6ch 1.5ch;
+	border-bottom: 1px solid var(--border);
+}
+
+.ag-drawer-title {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 1ch;
+	min-width: 0;
+}
+
+.ag-drawer-name {
+	overflow: hidden;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	color: var(--silk);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ag-drawer-actions {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 1.2ch;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────── */
+
+.ag-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6ch;
+	padding: 0 0.4ch;
+	border: 0;
+	background: transparent;
+	color: var(--ash);
+	font: inherit;
+	font-size: 0.86em;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition:
+		color 0.12s linear,
+		background 0.12s linear;
+}
+
+.ag-btn::before {
+	content: "[";
+	color: var(--dark-ash);
+}
+
+.ag-btn::after {
+	content: "]";
+	color: var(--dark-ash);
+}
+
+.ag-btn:hover {
+	color: var(--silk);
+	background: var(--selected-bg);
+}
+
+.ag-btn:hover::before,
+.ag-btn:hover::after {
+	color: var(--hot-blood);
+}
+
+.ag-btn:focus-visible {
+	outline: 1px solid var(--ring);
+	outline-offset: 0;
+}
+
+.ag-btn--danger {
+	color: var(--err);
+}
+
+.ag-iconbtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: none;
+	color: var(--dim-ash);
+	cursor: pointer;
+	transition: color 0.12s linear;
+}
+
+.ag-iconbtn:hover {
+	color: var(--hot-blood);
+}
+
+.ag-iconbtn:focus-visible {
+	outline: 1px solid var(--ring);
+	outline-offset: 0;
+}
+
+/* ── Stats strip ──────────────────────────────────────────────────── */
+
+.ag-stats {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2ch;
+	padding: 1px 1.5ch 2px;
+	border-bottom: 1px solid var(--border-muted);
+	color: var(--ash);
+	font-size: 0.86em;
+}
+
+.ag-stat {
+	display: flex;
+	align-items: baseline;
+	gap: 1ch;
+}
+
+.ag-stat-label {
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--dim-ash);
+}
+
+.ag-stat-value {
+	color: var(--silk);
+}
+
+.ag-gauge {
+	display: inline-block;
+	overflow: hidden;
+	align-self: center;
+	width: 8ch;
+	height: 0.7em;
+	background:
+		repeating-linear-gradient(
+			to right,
+			var(--dark-ash) 0,
+			var(--dark-ash) calc(1ch - 2px),
+			transparent calc(1ch - 2px),
+			transparent 1ch
+		);
+}
+
+.ag-gauge-fill {
+	display: block;
+	height: 100%;
+	background:
+		repeating-linear-gradient(
+			to right,
+			var(--hot-blood) 0,
+			var(--hot-blood) calc(1ch - 2px),
+			transparent calc(1ch - 2px),
+			transparent 1ch
+		);
+}
+
+.ag-gauge-fill--warn {
+	background:
+		repeating-linear-gradient(
+			to right,
+			var(--welt) 0,
+			var(--welt) calc(1ch - 2px),
+			transparent calc(1ch - 2px),
+			transparent 1ch
+		);
+}
+
+/* ── Drawer body & chat ───────────────────────────────────────────── */
+
+.ag-drawer-body {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-height: 0;
+	padding: 0.6ch 1ch;
+	overflow-y: auto;
+}
+
+.ag-chat {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 1ch;
+	padding: 0.6ch 1.5ch;
+	border-top: 1px solid var(--border);
+}
+
+.ag-chat-input {
+	flex: 1;
+	min-width: 0;
+	padding: 2px 1ch;
+	border: 1px solid var(--border-muted);
+	background: var(--void);
+	color: var(--silk);
+	font: inherit;
+	transition: border-color 0.12s linear;
+}
+
+.ag-chat-input:focus-visible {
+	outline: none;
+}
+
+.ag-chat-input:focus {
+	border-color: var(--blood);
+}
+
+@media (max-width: 640px) {
+	.ag-chat-input {
+		font-size: 16px;
+	}
+}

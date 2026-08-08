@@ -1,0 +1,23 @@
+title = "EROS OMP Harness"
+
+[allowlist]
+description = "Reviewed public OAuth client identifiers, local debug TLS material, and test fixtures."
+paths = [
+  '''^packages/ai/src/registry/oauth/gitlab-duo-workflow\.ts$''',
+  '''^packages/ai/src/registry/oauth/xai-oauth\.ts$''',
+  '''^packages/ai/test/alibaba-token-plan\.test\.ts$''',
+  '''^packages/ai/test/openai-codex-responses-lite\.test\.ts$''',
+  '''^packages/ai/test/transform-messages-redact-sensitive\.test\.ts$''',
+  '''^packages/ai/test/xai-oauth-effort-strip\.test\.ts$''',
+  '''^packages/ai/test/xiaomi-tp-login-integration\.test\.ts$''',
+  '''^packages/ai/test/gitlab-duo-workflow-provider\.test\.ts$''',
+  '''^packages/catalog/test/issue-1846-repro\.test\.ts$''',
+  '''^packages/coding-agent/src/cli/claude-trace-cli\.ts$''',
+  '''^packages/coding-agent/src/web/search/providers/perplexity\.ts$''',
+  '''^packages/coding-agent/test/agent-session-retry-recovery\.test\.ts$''',
+  '''^packages/coding-agent/test/agent-session-retry-cap\.test\.ts$''',
+  '''^packages/coding-agent/test/issue-1528-discovery-default-max-tokens\.test\.ts$''',
+  '''^packages/coding-agent/test/secrets-obfuscator\.test\.ts$''',
+  '''^packages/coding-agent/test/tools/browser-cmux-socket\.test\.ts$''',
+  '''^packages/collab-web/test/codec\.test\.ts$''',
+]

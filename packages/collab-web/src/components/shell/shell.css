@@ -1,0 +1,949 @@
+/* Shell styles (sh-*) — terminal chrome around a living art wall. Bracketed
+ * controls, box-drawn frames, blood hairlines, block cursors. No radii, no
+ * gradients pretending to be depth. Token vars only. */
+
+/* ---- app frame ---- */
+.sh-app {
+	position: relative;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	/* Single column pinned to the container width: an `auto` track sizes to its
+	 * items' min-content, so a long session title (or the fixed header controls)
+	 * would force every row — header, transcript, composer — wider than a narrow
+	 * viewport and clip the right edge. `minmax(0, 1fr)` caps the track so rows
+	 * shrink and ellipsize instead of overflowing. */
+	grid-template-columns: minmax(0, 1fr);
+	height: var(--viewport-height, 100%);
+	background: var(--void);
+}
+
+.sh-main {
+	display: flex;
+	min-height: 0;
+	overflow: hidden;
+}
+
+/* Holds the wall. Everything else in here floats over the art. */
+.sh-content {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.sh-transcript {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	max-width: 92ch;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.sh-content[data-rail="true"] .sh-transcript {
+	max-width: none;
+}
+
+.sh-transcript > * {
+	flex: 1;
+	min-height: 0;
+}
+
+.sh-rail {
+	position: relative;
+	z-index: 2;
+	width: 34ch;
+	flex: none;
+	min-height: 0;
+	overflow-y: auto;
+	border-left: 1px solid var(--border);
+	background: var(--status-bg);
+}
+
+.sh-rail-backdrop {
+	display: none;
+}
+
+/* ---- controls: everything is a bracketed key ---- */
+.sh-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6ch;
+	padding: 2px 0.4ch;
+	font-size: 0.86em;
+	font-weight: 500;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ash);
+	background: transparent;
+	border: 0;
+	transition:
+		color 0.12s linear,
+		background 0.12s linear;
+}
+
+.sh-btn::before {
+	content: "[";
+	color: var(--dark-ash);
+}
+
+.sh-btn::after {
+	content: "]";
+	color: var(--dark-ash);
+}
+
+.sh-btn:hover:not(:disabled) {
+	color: var(--silk);
+	background: var(--selected-bg);
+}
+
+.sh-btn:hover:not(:disabled)::before,
+.sh-btn:hover:not(:disabled)::after {
+	color: var(--hot-blood);
+}
+
+.sh-btn:disabled {
+	color: var(--dark-ash);
+	cursor: default;
+}
+
+.sh-btn:disabled::before,
+.sh-btn:disabled::after {
+	color: var(--dark-ash);
+}
+
+.sh-btn-primary {
+	color: var(--hot-blood);
+	font-weight: 600;
+}
+
+.sh-btn-primary::before,
+.sh-btn-primary::after {
+	color: var(--blood);
+}
+
+.sh-btn-primary:hover:not(:disabled) {
+	color: var(--void);
+	background: var(--hot-blood);
+}
+
+.sh-btn-primary:hover:not(:disabled)::before,
+.sh-btn-primary:hover:not(:disabled)::after {
+	color: var(--void);
+}
+
+.sh-btn-stop {
+	color: var(--err);
+}
+
+.sh-btn-icon {
+	position: relative;
+	padding: 2px 0.2ch;
+}
+
+.sh-btn-on {
+	color: var(--hot-blood);
+}
+
+.sh-badge {
+	position: absolute;
+	top: -1px;
+	right: -0.4ch;
+	min-width: 1ch;
+	font-size: 0.7em;
+	font-weight: 600;
+	line-height: 1;
+	text-align: center;
+	color: var(--void);
+	background: var(--hot-blood);
+}
+
+/* chips read as terminal fields: [ read-only ] */
+.sh-chip {
+	padding: 0;
+	font-size: 0.86em;
+	letter-spacing: 0.06em;
+	color: var(--ash);
+	white-space: nowrap;
+}
+
+.sh-chip::before {
+	content: "[";
+	color: var(--dark-ash);
+}
+
+.sh-chip::after {
+	content: "]";
+	color: var(--dark-ash);
+}
+
+/* ---- lockup ---- */
+.sh-brand {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.6ch;
+	flex: none;
+}
+
+.sh-brand-name {
+	font-weight: 600;
+	letter-spacing: 0.22em;
+	text-transform: lowercase;
+	color: var(--silk);
+}
+
+.sh-brand-bar {
+	color: var(--hot-blood);
+}
+
+.sh-brand-role {
+	font-size: 0.86em;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--dim-ash);
+}
+
+/* ---- status line (header) ---- */
+.sh-header {
+	position: relative;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 2ch;
+	min-height: var(--hdr);
+	padding: 0 1.5ch;
+	padding-top: env(safe-area-inset-top, 0px);
+	/* Solid. A status line that fades is a status line you cannot read. */
+	background: var(--status-bg);
+	border-bottom: 1px solid var(--border);
+}
+
+.sh-header-left {
+	display: flex;
+	align-items: baseline;
+	gap: 1.5ch;
+	min-width: 0;
+}
+
+.sh-header-right {
+	display: flex;
+	align-items: center;
+	gap: 1.2ch;
+	flex: none;
+}
+
+.sh-title {
+	font-size: 0.92em;
+	letter-spacing: 0.04em;
+	color: var(--silk);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+
+.sh-title::before {
+	content: "· ";
+	color: var(--dark-ash);
+}
+
+.sh-cwd {
+	font-size: 0.86em;
+	color: var(--dim-ash);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+
+/* segmented context meter — reads as ▰▰▰▱▱ without needing the glyphs */
+.sh-gauge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.8ch;
+}
+
+.sh-gauge-track {
+	width: 8ch;
+	height: 0.7em;
+	background:
+		repeating-linear-gradient(
+			to right,
+			var(--dark-ash) 0,
+			var(--dark-ash) calc(1ch - 2px),
+			transparent calc(1ch - 2px),
+			transparent 1ch
+		);
+	overflow: hidden;
+}
+
+.sh-gauge-fill {
+	display: block;
+	height: 100%;
+	background:
+		repeating-linear-gradient(
+			to right,
+			var(--hot-blood) 0,
+			var(--hot-blood) calc(1ch - 2px),
+			transparent calc(1ch - 2px),
+			transparent 1ch
+		);
+	transition: width 0.2s linear;
+}
+
+.sh-gauge-warn .sh-gauge-fill {
+	background:
+		repeating-linear-gradient(
+			to right,
+			var(--welt) 0,
+			var(--welt) calc(1ch - 2px),
+			transparent calc(1ch - 2px),
+			transparent 1ch
+		);
+}
+
+.sh-gauge-pct {
+	font-size: 0.86em;
+	color: var(--ash);
+}
+
+.sh-gauge-warn .sh-gauge-pct {
+	color: var(--welt);
+}
+
+.sh-avatars {
+	display: inline-flex;
+	gap: 1px;
+}
+
+.sh-avatar {
+	width: 2ch;
+	font-size: 0.86em;
+	line-height: 1.35;
+	text-align: center;
+	color: var(--dim-ash);
+	background: var(--void);
+	border: 1px solid var(--dark-ash);
+}
+
+.sh-avatar-host {
+	color: var(--hot-blood);
+	border-color: var(--blood);
+}
+
+/* phase glyph */
+.sh-dot {
+	width: auto;
+	height: auto;
+	font-size: 0.9em;
+	line-height: 1;
+	color: var(--dim-ash);
+	background: none;
+}
+
+.sh-dot::before {
+	content: "◌";
+}
+
+.sh-dot-live {
+	color: var(--pulse);
+}
+
+.sh-dot-live::before {
+	content: "●";
+}
+
+.sh-dot-reconnecting {
+	color: var(--welt);
+	animation: pulse 1s steps(2, end) infinite;
+}
+
+.sh-dot-reconnecting::before {
+	content: "◍";
+}
+
+.sh-dot-ended {
+	color: var(--err);
+}
+
+.sh-dot-ended::before {
+	content: "✖";
+}
+
+/* ---- composer ---- */
+.sh-composer {
+	position: relative;
+	z-index: 3;
+	padding: 0.6ch 1.5ch;
+	padding-bottom: calc(0.6ch + env(safe-area-inset-bottom, 0px));
+	background: var(--status-bg);
+	border-top: 1px solid var(--border);
+}
+
+.sh-composer-inner {
+	display: flex;
+	align-items: flex-end;
+	gap: 1ch;
+	max-width: 92ch;
+	margin: 0 auto;
+}
+
+.sh-prompt {
+	flex: none;
+	padding-bottom: 3px;
+	font-weight: 600;
+	color: var(--rose);
+	white-space: nowrap;
+	user-select: none;
+}
+
+.sh-prompt-bar {
+	color: var(--hot-blood);
+}
+
+.sh-composer-input {
+	flex: 1;
+	min-width: 0;
+	/* Metrics are contract: Composer.tsx autosize assumes 20px lines + 16px pad. */
+	padding: 8px 1ch;
+	font-size: var(--cell-fs);
+	line-height: 20px;
+	color: var(--silk);
+	background: var(--void);
+	border: 1px solid var(--border-muted);
+	resize: none;
+	transition: border-color 0.12s linear;
+}
+
+.sh-composer-input:disabled {
+	color: var(--dim-ash);
+}
+
+.sh-composer-input:focus-visible {
+	outline: none;
+}
+
+.sh-composer-input:focus {
+	border-color: var(--blood);
+}
+
+.sh-composer-actions {
+	display: flex;
+	align-items: center;
+	gap: 1ch;
+	flex: none;
+	padding-bottom: 4px;
+}
+
+.sh-composer-ask {
+	display: grid;
+	gap: 0.6ch;
+}
+
+.sh-ask-title {
+	max-width: 92ch;
+	margin: 0 auto;
+	color: var(--silk);
+	white-space: pre-wrap;
+}
+
+.sh-ask-title::before {
+	content: "?? ";
+	font-weight: 600;
+	color: var(--bruise);
+}
+
+.sh-ask-options {
+	display: grid;
+	gap: 1px;
+	max-width: 92ch;
+	margin: 0 auto;
+}
+
+.sh-ask-option {
+	display: flex;
+	align-items: flex-start;
+	gap: 1ch;
+	width: 100%;
+	padding: 2px 1ch;
+	color: var(--ash);
+	text-align: left;
+	background: var(--void);
+	border: 1px solid transparent;
+	border-left-color: var(--dark-ash);
+	transition:
+		color 0.12s linear,
+		background 0.12s linear;
+}
+
+.sh-ask-option:hover {
+	color: var(--silk);
+	background: var(--selected-bg);
+	border-left-color: var(--hot-blood);
+}
+
+.sh-ask-option-checked {
+	color: var(--silk);
+	background: var(--selected-bg);
+	border-left-color: var(--hot-blood);
+}
+
+.sh-ask-option-marker {
+	width: 2ch;
+	flex: none;
+	color: var(--hot-blood);
+}
+
+.sh-ask-option-copy {
+	display: grid;
+	min-width: 0;
+}
+
+.sh-ask-option-label {
+	color: inherit;
+}
+
+.sh-ask-option-description {
+	font-size: 0.86em;
+	color: var(--dim-ash);
+}
+
+.sh-ask-actions {
+	justify-content: flex-end;
+	max-width: 92ch;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.sh-queued {
+	font-size: 0.86em;
+	color: var(--welt);
+	white-space: nowrap;
+}
+
+/* ---- banners ---- */
+.sh-banner {
+	position: fixed;
+	top: calc(var(--hdr) + 1ch);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 50;
+	display: flex;
+	align-items: center;
+	gap: 1ch;
+	padding: 2px 1.5ch;
+	font-size: 0.86em;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--welt);
+	background: var(--status-bg);
+	border: 1px solid var(--welt);
+}
+
+.sh-banner-dot {
+	width: 0.6ch;
+	height: 0.9em;
+	background: var(--welt);
+	animation: blink 0.9s steps(1, end) infinite;
+}
+
+.sh-ended {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: grid;
+	place-items: center;
+	padding: 2ch;
+	background: var(--backdrop);
+}
+
+.sh-ended-card {
+	position: relative;
+	width: 100%;
+	max-width: 48ch;
+	background: var(--tool-error-bg);
+	border: 1px solid var(--blood);
+	box-shadow: var(--shadow-overlay);
+}
+
+.sh-ended-legend {
+	position: absolute;
+	top: -0.65em;
+	left: 1.5ch;
+	padding: 0 1ch;
+	font-size: 0.86em;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--err);
+	background: var(--tool-error-bg);
+}
+
+.sh-ended-body {
+	display: flex;
+	flex-direction: column;
+	gap: 1ch;
+	padding: 2ch;
+}
+
+.sh-ended-title {
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	color: var(--silk);
+}
+
+.sh-ended-reason {
+	font-size: 0.92em;
+	color: var(--ash);
+	overflow-wrap: anywhere;
+}
+
+.sh-ended-reason::before {
+	content: "» ";
+	color: var(--dark-ash);
+}
+
+.sh-ended-actions {
+	display: flex;
+	gap: 2ch;
+	margin-top: 0.5ch;
+}
+
+/* ---- toasts ---- */
+.sh-toasts {
+	position: fixed;
+	right: 1.5ch;
+	left: 1.5ch;
+	bottom: 1.5ch;
+	z-index: 60;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	max-width: 52ch;
+	margin-left: auto;
+}
+
+.sh-toast {
+	display: flex;
+	align-items: flex-start;
+	gap: 1ch;
+	padding: 2px 1ch;
+	font-size: 0.92em;
+	color: var(--silk);
+	background: var(--status-bg);
+	border: 1px solid var(--border-muted);
+	border-left-width: 2px;
+	animation: cell-in 0.16s steps(12, end) both;
+}
+
+.sh-toast::before {
+	flex: none;
+	font-size: 0.86em;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.sh-toast-info {
+	border-left-color: var(--rose);
+}
+
+.sh-toast-info::before {
+	content: "note";
+	color: var(--rose);
+}
+
+.sh-toast-warning {
+	border-left-color: var(--welt);
+}
+
+.sh-toast-warning::before {
+	content: "heed";
+	color: var(--welt);
+}
+
+.sh-toast-error {
+	border-left-color: var(--err);
+	background: var(--tool-error-bg);
+}
+
+.sh-toast-error::before {
+	content: "bled";
+	color: var(--err);
+}
+
+.sh-toast-msg {
+	flex: 1;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.sh-toast-close {
+	flex: none;
+	display: inline-flex;
+	color: var(--dim-ash);
+	background: none;
+	border: none;
+}
+
+.sh-toast-close:hover {
+	color: var(--hot-blood);
+}
+
+/* ---- connect screen: the wall, and a prompt cut into it ---- */
+.sh-connect {
+	position: relative;
+	height: 100%;
+	display: grid;
+	place-items: center;
+	overflow: hidden;
+	background: var(--void);
+	padding: 3ch 2ch;
+	padding-top: calc(3ch + env(safe-area-inset-top, 0px));
+	padding-bottom: calc(3ch + env(safe-area-inset-bottom, 0px));
+}
+
+.sh-connect-stage {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	max-width: 56ch;
+	display: flex;
+	flex-direction: column;
+	gap: 2.5ch;
+}
+
+.sh-wordmark {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.6ch;
+	font-weight: 400;
+}
+
+.sh-wordmark-name {
+	display: inline-flex;
+	align-items: baseline;
+	font-size: clamp(2rem, 7vw, 3.2rem);
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: 0.4em;
+	text-indent: 0.4em;
+	text-transform: lowercase;
+	color: var(--silk);
+	text-shadow:
+		0 0 2px var(--void),
+		0 0 22px color-mix(in oklab, var(--hot-blood) 70%, transparent),
+		0 0 60px color-mix(in oklab, var(--blood) 60%, transparent);
+}
+
+.sh-wordmark-caret {
+	width: 0.5em;
+	height: 0.86em;
+	margin-left: -0.28em;
+	background: var(--hot-blood);
+	box-shadow: 0 0 18px var(--hot-blood);
+	animation: blink 1.05s steps(1, end) infinite;
+}
+
+.sh-wordmark-role {
+	font-size: 0.78rem;
+	letter-spacing: 0.62em;
+	text-indent: 0.62em;
+	text-transform: uppercase;
+	color: var(--hot-blood);
+	text-shadow: 0 0 14px color-mix(in oklab, var(--blood) 80%, transparent);
+}
+
+.sh-connect-sub {
+	margin-top: -1.5ch;
+	font-size: 0.86em;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	text-align: center;
+	color: var(--silk);
+	background: color-mix(in oklab, var(--void) 86%, transparent);
+	padding: 2px 0;
+}
+
+/* the framed prompt — a titled box, drawn with hairlines instead of glyphs */
+.sh-connect-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5ch;
+	padding: 2.5ch 2ch 2ch;
+	background: color-mix(in oklab, var(--void) 86%, transparent);
+	backdrop-filter: blur(2px);
+	border: 1px solid var(--blood);
+}
+
+.sh-connect-legend {
+	position: absolute;
+	top: -0.65em;
+	left: 1.5ch;
+	padding: 0 1ch;
+	font-size: 0.86em;
+	letter-spacing: 0.24em;
+	text-transform: uppercase;
+	color: var(--hot-blood);
+	background: var(--void);
+}
+
+.sh-connect-foot {
+	font-size: 0.86em;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	text-align: center;
+	color: var(--ash);
+	background: color-mix(in oklab, var(--void) 88%, transparent);
+	padding: 1px 0;
+}
+
+.sh-field {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.sh-field-label {
+	font-size: 0.86em;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--rose);
+}
+
+.sh-field-hint {
+	font-size: 0.86em;
+	color: var(--dim-ash);
+}
+
+/* input row: prompt glyph, field, block cursor */
+.sh-inputrow {
+	position: relative;
+	display: flex;
+	align-items: stretch;
+	gap: 1ch;
+	background: var(--void);
+	border: 1px solid var(--border-muted);
+	transition: border-color 0.12s linear;
+}
+
+.sh-inputrow:focus-within {
+	border-color: var(--blood);
+}
+
+.sh-inputrow-caret {
+	color: var(--rose);
+	padding: 3px 0 3px 1ch;
+	user-select: none;
+}
+
+.sh-input {
+	flex: 1;
+	min-width: 0;
+	padding: 3px 1ch 3px 0;
+	font-size: var(--cell-fs);
+	color: var(--silk);
+	background: transparent;
+	border: 0;
+	/* the block cursor below is the caret */
+	caret-color: transparent;
+}
+
+.sh-input:focus-visible {
+	outline: none;
+}
+
+.sh-input-mono {
+	font-family: var(--font-mono);
+}
+
+/* the block cursor, parked exactly on the insertion point */
+.tm-caret {
+	position: absolute;
+	top: 3px;
+	left: calc(var(--col, 0) * 1ch);
+	width: 1ch;
+	height: var(--cell-lh);
+	background: var(--hot-blood);
+	mix-blend-mode: difference;
+	pointer-events: none;
+	animation: blink 1.05s steps(1, end) infinite;
+}
+
+.sh-connect-error {
+	display: flex;
+	align-items: flex-start;
+	gap: 1ch;
+	font-size: 0.92em;
+	color: var(--err);
+	background: var(--tool-error-bg);
+	border-left: 2px solid var(--err);
+	padding: 2px 1ch;
+	overflow-wrap: anywhere;
+}
+
+.sh-connect-error::before {
+	content: "refused";
+	flex: none;
+	font-size: 0.9em;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--err);
+}
+
+.sh-connect-submit {
+	justify-content: center;
+	margin-top: 0.5ch;
+	padding: 4px 0;
+	letter-spacing: 0.4em;
+	text-indent: 0.4em;
+	border: 1px solid var(--blood);
+}
+
+/* ---- responsive ---- */
+@media (max-width: 768px) {
+	.sh-main {
+		position: relative;
+	}
+	.sh-rail {
+		position: absolute;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 30;
+		width: 34ch;
+		max-width: 86vw;
+		border-left: 1px solid var(--blood);
+		box-shadow: var(--rail-mobile-shadow);
+	}
+	.sh-rail-backdrop {
+		display: block;
+		position: absolute;
+		inset: 0;
+		z-index: 25;
+		background: var(--backdrop);
+	}
+}
+
+@media (max-width: 640px) {
+	.sh-cwd,
+	.sh-chip-meta,
+	.sh-gauge-track,
+	.sh-brand-role,
+	.sh-btn-label,
+	.sh-queued-label {
+		display: none;
+	}
+	.sh-composer-input,
+	.sh-input,
+	.sh-ask-title,
+	.sh-ask-option-label {
+		font-size: 16px;
+	}
+}

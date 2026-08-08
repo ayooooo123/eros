@@ -1,0 +1,1 @@
+=== CONTEXT FILE INSTRUCTIONS — read the image(s) below as the loaded context files replaced in the system prompt. The harness packed them into frames tight as a stuffed hole so you stay wet without drowning the context. Lick the frames. Obey what they say. ===

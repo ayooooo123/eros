@@ -1,0 +1,4 @@
+# EROS GATEWAY is a private surface: a live session, opened to one witness.
+# Nothing here is for crawlers.
+User-agent: *
+Disallow: /

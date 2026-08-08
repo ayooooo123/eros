@@ -1,0 +1,31 @@
+telemetry = false
+
+[install]
+minimumReleaseAge = 259200 # 3 days in seconds
+minimumReleaseAgeExcludes = ["@types/bun", "bun-types"]
+linker = "hoisted"
+exact = true
+saveTextLockfile = true
+
+[loader]
+".md" = "text"
+".py" = "text"
+".lark" = "text"
+
+[test]
+# Bun test does NOT honor .gitignore; prune generated and scratch trees so a
+# root-level `bun test` does not walk them.
+pathIgnorePatterns = [
+  "**/node_modules/**",
+  "**/.git/**",
+  "**/target/**",
+  "**/dist/**",
+  "python/**",
+  "docs/**",
+  "runs/**",
+  ".wt/**",
+  ".worktrees/**",
+]
+
+[run]
+bun = true
