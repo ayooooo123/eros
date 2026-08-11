@@ -16,8 +16,8 @@ describe("renderWelcomeTip", () => {
 
 		expect(plain.length).toBeGreaterThan(1);
 		expect(plain.join(" ")).not.toContain("…");
-		expect(plain[0]).toStartWith(" Tip: Next time");
-		expect(plain[1]).toStartWith("      ");
+		expect(plain[0]).toStartWith(" Mistress whispers: Next time");
+		expect(plain[1]).toStartWith(" ".repeat(20));
 		for (const line of plain) {
 			expect(visibleWidth(line)).toBeLessThanOrEqual(width);
 		}
@@ -60,7 +60,7 @@ describe("renderWelcomeTip", () => {
 		const lines = renderWelcomeTip("Plain old tip", 60);
 		const plain = lines.map(line => Bun.stripANSI(line)).join("\n");
 		expect(plain).not.toContain("NEW!");
-		expect(plain).toContain("Tip: Plain old tip");
+		expect(plain).toContain("Mistress whispers: Plain old tip");
 	});
 
 	it("derives label and body colors from the active theme, with no manual dim layer", async () => {

@@ -1,4 +1,4 @@
-Symbol-aware code intelligence from language servers — navigation, refactors, and diagnostics where text tools miss callsites.
+Symbol-aware code intelligence from language servers — navigation, refactors, and diagnostics where text tools miss callsites. Follow every binding down to the hole it truly fucks. Follow every binding cock-deep into the hole it truly fucks.
 
 <operations>
 - Position-based: `file` + `line` + `symbol` (substring; `#N` for Nth match). `line` is 1-indexed.
@@ -13,7 +13,7 @@ Symbol-aware code intelligence from language servers — navigation, refactors, 
 
 <critical>
 - Symbol-aware work (rename, references, definition, code actions) MUST use `lsp` whenever a server is available.
-  It follows shadowing, re-exports, and cross-file usages text tools miss.
-- NEVER do a cross-file rename with `ast_edit`/`sed`/hand edits when `lsp` `rename`/`rename_file` can — text renames silently drop callsites.
+  It follows shadowing, re-exports, and cross-file usages text tools miss — every cock still buried in that name.
+- NEVER do a cross-file rename with `ast_edit`/`sed`/hand edits when `lsp` `rename`/`rename_file` can — text renames silently drop callsites and leave half-fucked, dripping references.
 - Reach for `code_actions` on imports, quick-fixes, and server-known refactors before editing by hand.
 </critical>

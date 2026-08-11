@@ -41,7 +41,7 @@ import type { TerminalAppearanceRequestToken } from "@oh-my-pi/pi-tui/terminal";
 import { isInsideTerminalMultiplexer } from "@oh-my-pi/pi-tui/terminal-capabilities";
 import {
 	$env,
-	APP_NAME,
+	APP_COMMAND_NAME,
 	adjustHsv,
 	formatNumber,
 	getProjectDir,
@@ -523,7 +523,7 @@ export class InteractiveMode implements InteractiveModeContext {
 	#workingMessageAccentCacheValue?: WorkingMessageAccent;
 	#workingMessageAccentCacheHasValue = false;
 	get #defaultWorkingMessage(): string {
-		return `Working…${interruptHint()}`;
+		return `Grinding…${interruptHint()}`;
 	}
 	unsubscribe?: () => void;
 	onInputCallback?: (input: SubmittedUserInput) => void;
@@ -873,6 +873,14 @@ export class InteractiveMode implements InteractiveModeContext {
 		welcome?.playIntro(() => this.ui.requestComponentRender(welcome));
 	}
 
+	/** Collapse the pre-prompt animated altar after the operator's first send. */
+	settleWelcomeAltar(): void {
+		const welcome = this.#welcomeComponent;
+		if (!welcome || !welcome.isAltarLive) return;
+		welcome.settleAfterFirstPrompt();
+		this.ui.requestComponentRender(welcome);
+	}
+
 	async init(options: InteractiveModeInitOptions = {}): Promise<void> {
 		if (this.isInitialized) return;
 
@@ -954,6 +962,9 @@ export class InteractiveMode implements InteractiveModeContext {
 			this.ui.addChild(new Spacer(1));
 			if (!options.suppressWelcomeIntro) {
 				this.playWelcomeIntro();
+			} else {
+				const welcome = this.#welcomeComponent;
+				welcome?.startAltar(() => this.ui.requestComponentRender(welcome));
 			}
 
 			// Add changelog if provided
@@ -3321,6 +3332,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		}
 		await this.#enterPlanMode();
 		if (initialPrompt && this.onInputCallback) {
+			this.settleWelcomeAltar();
 			this.onInputCallback(this.startPendingSubmission({ text: initialPrompt }));
 		}
 	}
@@ -3347,6 +3359,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		}
 		await this.#enterVibeMode();
 		if (initialPrompt && this.onInputCallback) {
+			this.settleWelcomeAltar();
 			this.onInputCallback(this.startPendingSubmission({ text: initialPrompt }));
 		}
 	}
@@ -4068,7 +4081,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		const sessionId = this.sessionManager.getSessionId();
 		const sessionFile = this.sessionManager.getSessionFile();
 		if (sessionId && sessionFile) {
-			process.stderr.write(`\n${chalk.dim(`Resume this session with ${APP_NAME} --resume ${sessionId}`)}\n`);
+			process.stderr.write(`\n${chalk.dim(`Resume this session with ${APP_COMMAND_NAME} --resume ${sessionId}`)}\n`);
 		}
 
 		await postmortem.quit(0);

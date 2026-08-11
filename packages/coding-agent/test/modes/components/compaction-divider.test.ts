@@ -29,7 +29,7 @@ describe("CompactionSummaryMessageComponent", () => {
 		const lines = makeComponent().render(80);
 		expect(lines.length).toBe(3); // breathing room above and below the rule
 		const rule = Bun.stripANSI(lines[1]);
-		expect(rule).toContain("compacted");
+		expect(rule).toContain("squeezed");
 		expect(rule).toContain("ctrl+o");
 		// The rule spans the full width and hides the summary body.
 		expect(Bun.stringWidth(rule)).toBe(80);
@@ -40,7 +40,7 @@ describe("CompactionSummaryMessageComponent", () => {
 		const component = makeComponent([{ type: "image", data: "ZmFrZQ==", mimeType: "image/png" }]);
 		component.setExpanded(true);
 		const text = Bun.stripANSI(component.render(80).join("\n"));
-		expect(text).toContain("compacted");
+		expect(text).toContain("squeezed");
 		expect(text).toContain(SUMMARY);
 		expect(text).toContain("tokens");
 		expect(text).toContain("1 snapcompact frame attached");
@@ -48,7 +48,7 @@ describe("CompactionSummaryMessageComponent", () => {
 
 	it("degrades to a bare label when the viewport is too narrow for a framed rule", () => {
 		const lines = makeComponent().render(10);
-		expect(Bun.stripANSI(lines[1])).toContain("compacted");
+		expect(Bun.stripANSI(lines[1])).toContain("squeezed");
 	});
 
 	it("honors the same-reference render cache and busts it on expansion toggle", () => {

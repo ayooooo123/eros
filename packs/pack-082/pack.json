@@ -1,0 +1,23 @@
+{
+  "id": "pack-082",
+  "name": "Intro 082 \u2014 1woman horned enforcer|1woman ",
+  "file": "scifi-pass011/sci-0008-00-corr.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (glowing cyan eyes:1.3), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), (2people:1.2), full body wide shot, cryo bay, frosted glass walls, (frost:1.1), (single pod light:1.2), 1woman horned enforcer, (red horns:1.3), cyberpunk leather armor, glowing visor, debt collector, standing behind, gripping shoulders, 1woman tentacled void alien, smooth grey skin, head tendrils, curvy, completely nude, kneeling on cold metal floor, wrists bound by laser cuffs, (anal:1.3), (penis in anus:1.2), thick monster tail penetration from behind, spread ass, gaping rectum, exposed pussy, wet labia, swollen clitoris, heavy breasts, erect nipples, tears streaming, mind break, vacant eyes, mouth open drooling, (blood:1.2), (blood splatter:1.1) on thighs and stomach, (cuts:1.1) from claw marks, (wounds:1.1), (bruises:1.1), (welts:1.1), (cum:1.4), (dripping cum:1.3), (cum string:1.2) leaking from anus and labia, excessive fluids on floor, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "spiral-r07-pass001/r07-000-inqu_esc.png",
+    "final-pass001/fin-0016-01-fles.png",
+    "final-pass006/fin-0071-03-fles.png",
+    "scifi-pass011/sci-0008-00-corr.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

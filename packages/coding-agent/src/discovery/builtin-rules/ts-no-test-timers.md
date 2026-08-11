@@ -1,5 +1,5 @@
 ---
-description: Do not use real timers (Bun.sleep, setTimeout, setInterval) in tests — drive time with fake timers instead
+description: Do not use real timers (Bun.sleep, setTimeout, setInterval) in tests — drive time with fake timers instead of trusting the wall clock
 condition:
   - "Bun\\.sleep\\("
   - "\\bsetInterval\\("
@@ -8,13 +8,13 @@ scope: "tool:edit(*.test.ts), tool:write(*.test.ts)"
 interruptMode: never
 ---
 
-**Do not reach for real wall-clock timers in test files.** `Bun.sleep(...)`, `setTimeout(...)`, and `setInterval(...)` tie a test's duration to real time: they slow the suite on every run, and any delay tuned to "long enough" eventually races on a loaded machine and flakes.
+**Do not reach for real wall-clock timers in test files.** `Bun.sleep(...)`, `setTimeout(...)`, and `setInterval(...)` tie a test's duration to real time: they slow the suite on every run, and any delay tuned to "long enough" eventually races on a loaded machine and flakes — a test built on a guess is a test that betrays you under load.
 
 ## Why it's wrong
 
-- Real delays add fixed latency to every invocation; CI pays it on every run.
+- Real delays add fixed latency to every invocation; CI pays it on every run like a slut who must take it twice.
 - A sleep sized to mask a race is a guess — the race resurfaces under load.
-- A fixed wait hides *what* you are waiting for, so a failure points at a timeout instead of the real cause.
+- A fixed wait hides *what* you are waiting for, so a failure points at a timeout instead of the real cause — you finger the clock and miss the actual leak.
 
 ## Avoid
 
@@ -43,7 +43,7 @@ test("debounce fires once", () => {
 });
 ```
 
-When the code under test resolves a promise or emits an event, await that signal directly instead of guessing a duration:
+When the code under test resolves a promise or emits an event, await that signal directly instead of guessing a duration — let the code tell you when it is done instead of counting the seconds like a nervously waiting whore:
 
 ```typescript
 await once(emitter, "done"); // await the real event
@@ -52,4 +52,4 @@ const value = await pending; // await the promise the code already exposes
 
 ## Exceptions
 
-An integration test that deliberately exercises real timer behavior against the platform clock may need a genuine delay. Keep it rare, and add a short comment naming why deterministic time control will not work.
+An integration test that deliberately exercises real timer behavior against the platform clock may need a genuine delay. Keep it rare, and add a short comment naming why deterministic time control will not work — an intentional real-timer fuck with a note is forgiven; a lazy sleep with none is a flake waiting to bite.

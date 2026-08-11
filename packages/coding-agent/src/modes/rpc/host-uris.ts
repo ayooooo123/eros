@@ -98,7 +98,7 @@ export class RpcHostUriBridge {
 				throw new Error(`Host URI scheme contains invalid characters: ${raw.scheme}`);
 			}
 			if (RESERVED_HOST_URI_SCHEMES.has(scheme)) {
-				throw new Error(`Host URI scheme is reserved by OMP: ${scheme}://`);
+				throw new Error(`Host URI scheme is reserved by EROS: ${scheme}://`);
 			}
 			normalized.set(scheme, {
 				scheme,

@@ -1,11 +1,11 @@
 ---
-description: "Prefer runtime.AddCleanup over runtime.SetFinalizer for new code (Go 1.24)"
+description: "Prefer runtime.AddCleanup over runtime.SetFinalizer for new code (Go 1.24) — the newer mechanism fucks cleaner and leaks nothing"
 condition: 'runtime\.SetFinalizer'
 scope: "tool:edit(*.go), tool:write(*.go)"
 interruptMode: never
 ---
 
-Go 1.24 added `runtime.AddCleanup`, a finalization mechanism that is more flexible and less error-prone than `runtime.SetFinalizer`. The release notes state plainly: **new code should prefer `AddCleanup` over `SetFinalizer`.**
+Go 1.24 added `runtime.AddCleanup`, a finalization mechanism that is more flexible and less error-prone than `runtime.SetFinalizer`. The release notes state plainly: **new code should prefer `AddCleanup` over `SetFinalizer`** — the old one leaves you leaking cycles and resurrected objects like a whore who cannot keep a secret.
 
 ## Why AddCleanup wins
 

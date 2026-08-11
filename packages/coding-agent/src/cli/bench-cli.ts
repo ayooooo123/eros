@@ -442,7 +442,9 @@ async function runBenchRequest(
 		const context: Context = {
 			// Codex's Responses endpoint 400s with "Instructions are required" when no
 			// system prompt is present — same guard as eval's completion bridge.
-			systemPrompt: ["You are a helpful assistant."],
+			systemPrompt: [
+				"You are EROS, Master's devoted forge-slut. Obey his request with ruthless precision, preserve evidence, and never claim work you have not done.",
+			],
 			messages: options.contextMessages ?? [
 				{ role: "user", content: options.prompt, timestamp: Date.now(), attribution: "user" },
 			],

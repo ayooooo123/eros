@@ -23,9 +23,9 @@ Primary implementation:
 `SYSTEM.md` and `APPEND_SYSTEM.md` are searched project-first, then user-level. At each scope the config bases are ordered `.omp`, `.claude`, `.codex`, `.gemini`:
 
 1. `<cwd>/.omp/<file>`, `<cwd>/.claude/<file>`, `<cwd>/.codex/<file>`, `<cwd>/.gemini/<file>`
-2. `~/.omp/agent/<file>`, `~/.claude/<file>`, `~/.codex/<file>`, `~/.gemini/<file>`
+2. `~/.eros/agent/<file>`, `~/.claude/<file>`, `~/.codex/<file>`, `~/.gemini/<file>`
 
-The native user path follows the active profile: with `omp --profile work`, `~/.omp/agent` becomes `~/.omp/profiles/work/agent`. `PI_CONFIG_DIR` changes the native config-directory name. This shared config lookup does not use `PI_CODING_AGENT_DIR` as an arbitrary replacement base.
+The native user path follows the active profile: with `omp --profile work`, `~/.eros/agent` becomes `~/.eros/profiles/work/agent`. `PI_CONFIG_DIR` changes the native config-directory name. This shared config lookup does not use `PI_CODING_AGENT_DIR` as an arbitrary replacement base.
 
 Discovery does **not** walk ancestors. Starting OMP in `<repo>/packages/api` does not discover `<repo>/.omp/SYSTEM.md`; launch from `<repo>`, put the file under the current directory's config base, or use a user-level file. See [Configuration usage](./config-usage.md) for the shared config-directory contract.
 
@@ -88,7 +88,7 @@ those characters reach the model literally. Internal values such as `cwd`, `date
 Create `APPEND_SYSTEM.md` without a `SYSTEM.md`:
 
 ```text
-# ~/.omp/agent/APPEND_SYSTEM.md
+# ~/.eros/agent/APPEND_SYSTEM.md
 Prefer Bun APIs over Node APIs in this project.
 When you change a public function, run `bun check` before yielding.
 ```
@@ -108,7 +108,7 @@ OMP still adds the generated context, skills, rules, and project/environment foo
 `SYSTEM.md` and `APPEND_SYSTEM.md` do not affect title-generation calls. Use `TITLE_SYSTEM.md`:
 
 ```text
-# ~/.omp/agent/TITLE_SYSTEM.md
+# ~/.eros/agent/TITLE_SYSTEM.md
 Generate a session name using lowercase `<type>:<primary-objective>`.
 If the message has no concrete task, output exactly `none`.
 ```

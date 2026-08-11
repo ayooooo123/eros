@@ -92,7 +92,7 @@ export class CompactionSummaryMessageComponent implements Component {
 			label: () =>
 				this.message.warning
 					? `${theme.icon.camera} compacted ${theme.fg("warning", theme.icon.warning)}`
-					: `${theme.icon.camera} compacted`,
+					: `${theme.icon.camera} squeezed`,
 			detailMarkdown: () => this.#detailMarkdown(),
 		});
 	}

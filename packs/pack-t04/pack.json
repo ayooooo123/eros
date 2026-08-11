@@ -1,0 +1,24 @@
+{
+  "id": "pack-t04",
+  "name": "Bent to the Post",
+  "file": "v4-pass001/dmg-0057-04.png",
+  "lane": "fantasy",
+  "prompt": "",
+  "sequence_files": [
+    "v4-pass001/dmg-0057-00.png",
+    "v4-pass001/dmg-0057-01.png",
+    "v4-pass001/dmg-0057-02.png",
+    "v4-pass001/dmg-0057-04.png"
+  ],
+  "tier": "top12",
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 2600,
+    "punch_ms": 2400
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

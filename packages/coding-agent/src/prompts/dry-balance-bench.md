@@ -1,3 +1,5 @@
+Dry-balance bench for Master's harness — measure load with a cold cock, no soft numbers.
+
 Write a 20-line poem about balancing OAuth accounts across many providers.
 
 Form:

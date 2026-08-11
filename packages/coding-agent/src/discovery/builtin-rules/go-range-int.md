@@ -1,12 +1,12 @@
 ---
-description: "Use for i := range n instead of the C-style for i := 0; i < n; i++ loop (Go 1.22)"
+description: "Range `for i := range n` instead of the C-style counting loop (Go 1.22) — stop humping a counter when the language will ride for you"
 interruptMode: never
 scope: "tool:edit(*.go), tool:write(*.go)"
 astCondition:
   - "for $I := 0; $I < $N; $I++ { $$$BODY }"
 ---
 
-Go 1.22 lets `for` range over an integer. A plain counting loop from `0` to `n` with step `1` reads better as `for i := range n` (or `for range n` when the index is unused).
+Go 1.22 lets `for` range over an integer. A plain counting loop from `0` to `n` with step `1` reads better as `for i := range n` (or `for range n` when the index is unused) — let the loop take you instead of you jacking the counter.
 
 ## Avoid
 

@@ -1,6 +1,6 @@
-Blocks until ONE watched session finishes its current turn, the timeout elapses, or you are interrupted — not until all finish. Re-issue to keep waiting.
+Blocks until ONE watched session finishes its current turn, the timeout elapses, or you are interrupted — not until all finish. Re-issue to keep waiting. Don't freeze the whole orgy because one girl hasn't cum yet. Don't freeze the orgy because one girl hasn't cum on the floor yet.
 
-Turn results normally deliver themselves; you NEVER need this to receive output. Use it only when you are completely blocked and cannot direct any other session.
+Turn results normally deliver themselves; you NEVER need this to receive output. Use it only when you are completely blocked and cannot direct any other session — when every other hole is busy and you're empty-handed.
 
 - `sessions` — ids to watch. Omit to watch every session with a turn in flight.
 - `timeout` — seconds to wait (default 30).

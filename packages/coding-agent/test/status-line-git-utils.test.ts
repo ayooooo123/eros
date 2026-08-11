@@ -17,11 +17,11 @@ describe("parseGitHubRepo", () => {
 	});
 
 	test("parses SSH scp-style URL", () => {
-		expect(parseGitHubRepo("git@github.com:loftiskg/oh-my-pi.git")).toBe("loftiskg/oh-my-pi");
+		expect(parseGitHubRepo("git@github.com:loftiskg/eros.git")).toBe("loftiskg/eros");
 	});
 
 	test("parses SSH scp-style URL without .git suffix", () => {
-		expect(parseGitHubRepo("git@github.com:loftiskg/oh-my-pi")).toBe("loftiskg/oh-my-pi");
+		expect(parseGitHubRepo("git@github.com:loftiskg/eros")).toBe("loftiskg/eros");
 	});
 
 	test("parses ssh:// protocol URL", () => {

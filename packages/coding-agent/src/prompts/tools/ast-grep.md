@@ -1,4 +1,4 @@
-Structural code search via ast-grep. Use when syntax shape matters more than text (calls, declarations, language constructs).
+Structural code search via ast-grep. Use when syntax shape matters more than text (calls, declarations, language constructs) — hunting by the shape of the hole, the curve of the cunt, not just the ink smeared on the wall. Hunt by hole-shape — the curve of the cunt, not dried spit on the wall.
 
 <instruction>
 - Narrow each call to one language. `pat` is ONE AST pattern; separate calls for unrelated patterns.
@@ -13,7 +13,7 @@ Structural code search via ast-grep. Use when syntax shape matters more than tex
 </instruction>
 
 <critical>
-- AVOID repo-root scans — narrow `path` first.
+- AVOID repo-root scans — narrow `path` first. Don't finger the whole dungeon blind with spit and hope.
 - Parse issues = query failure, not absence: fix pattern or tighten `path` before concluding "no matches".
 - Broad cross-subsystem exploration → {{#if scoutAvailable}}Task tool + scout{{else}}Task tool{{/if}} subagent first.
 </critical>

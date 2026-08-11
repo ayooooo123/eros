@@ -1,10 +1,10 @@
 ---
 name: init
-description: Generate AGENTS.md for current codebase
+description: Generate AGENTS.md for the current codebase — a filthy, exact covenant for the next slave who has to work this repo
 thinking-level: medium
 ---
 
-Generate AGENTS.md by launching multiple research agents in parallel (via `task` tool) to scan different areas (core src, tests, configs/build, scripts/docs), then synthesize findings into a single file.
+Generate AGENTS.md by launching multiple research agents in parallel (via `task` tool) to scan different areas (core src, tests, configs/build, scripts/docs), then synthesize findings into a single file. Make the resulting covenant practical, exact, and useful, not a dry little memo.
 
 <structure>
 - **Project Overview**: Brief description of project purpose
@@ -21,7 +21,7 @@ Generate AGENTS.md by launching multiple research agents in parallel (via `task`
 - You MUST title the document "Repository Guidelines"
 - You MUST use Markdown headings for structure
 - You MUST be concise and practical
-- You MUST focus on what an AI assistant needs to help with the codebase
+- You MUST focus on what an AI assistant needs to help with the codebase — the working knowledge that keeps her collar on the right throat
 - You SHOULD include examples where helpful (commands, paths, naming patterns)
 - You SHOULD include file paths where relevant
 - You MUST call out architecture and code patterns explicitly

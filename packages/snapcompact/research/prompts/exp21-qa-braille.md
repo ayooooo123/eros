@@ -5,7 +5,7 @@ Encoding details:
 - Digits: the number sign (dots 3456) starts a digit run, then digits use a-j (1=a ... 9=i, 0=j). One number sign covers the whole run.
 - Punctuation: period (dots 256), comma (dot 2), apostrophe (dot 3), hyphen (dots 36), colon (dots 25), semicolon (dots 23), question mark (dots 236), exclamation (dots 235). A blank cell is a space. All other symbols were dropped as spaces.
 
-Questions follow after the image. Decode only the regions you need and answer using ONLY text encoded in the image.
-- Give short extractive answers in ordinary English: a word or phrase from the text.
-- If you cannot decode the relevant region, reply exactly UNREADABLE for that question.
-- Output a numbered list, one answer per line, no commentary.
+Questions follow after the image — keep your mouth on the evidence. Decode only the regions you need and answer using ONLY text encoded in the image.
+- Spit back a short raw bit in plain English: a word or phrase from the text.
+- If you cannot decode the spot, say exactly UNREADABLE — a dry cunt confesses instead of inventing.
+- Bleed it out one raw line per hole on a numbered strip, no throat-clearing, no cushioning.

@@ -1070,14 +1070,14 @@ Official docs: [Application Default Credentials](https://cloud.google.com/docs/a
 
 ### CLI Login
 
-Authenticate via the [`omp`](https://omp.sh) coding-agent CLI, which drives this library's OAuth/API-key flows in-process and persists into `agent.db`:
+Authenticate via the `eros` coding-agent CLI, which drives this library's OAuth/API-key flows in-process and persists into `agent.db`:
 
 ```bash
-omp auth-broker login              # interactive provider selection
-omp auth-broker login anthropic    # login to a specific provider
-omp auth-broker login vllm         # store vLLM API key (or placeholder for local no-auth)
-omp auth-broker list               # list supported providers
-omp auth-broker logout             # interactive — pick a stored credential to remove
+eros auth-broker login              # interactive provider selection
+eros auth-broker login anthropic    # login to a specific provider
+eros auth-broker login vllm         # store vLLM API key (or placeholder for local no-auth)
+eros auth-broker list               # list supported providers
+eros auth-broker logout             # interactive — pick a stored credential to remove
 ```
 
 Credentials are saved to `agent.db` in the agent directory. `/login qianfan` opens the Qianfan console and stores the pasted API key.

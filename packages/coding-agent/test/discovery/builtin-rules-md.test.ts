@@ -2,7 +2,7 @@
  * Regression tests for top-level `RULES.md` sticky rules.
  *
  * `RULES.md` (singular, top-level) MUST be loaded as a sticky always-apply rule
- * from both `~/.omp/agent/RULES.md` (user) and the nearest `.omp/RULES.md`
+ * from both `~/.eros/agent/RULES.md` (user) and the nearest `.omp/RULES.md`
  * (project, walked up from cwd to repoRoot).
  */
 import { afterEach, beforeEach, expect, test } from "bun:test";
@@ -65,7 +65,7 @@ afterEach(() => {
 	removeSyncWithRetries(tempDir);
 });
 
-test("user ~/.omp/agent/RULES.md becomes an alwaysApply rule", async () => {
+test("user ~/.eros/agent/RULES.md becomes an alwaysApply rule", async () => {
 	writeFile(
 		path.join(home, ".omp", "agent", "RULES.md"),
 		"**CRITICAL**: You _MUST_ use beads task tracker for any project\n",

@@ -1,5 +1,5 @@
 ---
-description: "Use the standard library slices and maps packages instead of golang.org/x/exp/{slices,maps}"
+description: "Use the standard library `slices` and `maps` instead of the experimental x/exp twins — they were promoted in Go 1.21, so new code fucks with the blessed natives"
 condition:
   - '"golang.org/x/exp/slices"'
   - '"golang.org/x/exp/maps"'

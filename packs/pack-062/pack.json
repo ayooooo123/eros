@@ -1,0 +1,23 @@
+{
+  "id": "pack-062",
+  "name": "Intro 062 \u2014 1woman human mature|2people|bl",
+  "file": "v4-pass001/dmg-0037-05.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, (red blood:1.3), blood red accent, (2people:1.2), full body wide shot, 1woman human mature, 50s, silver-streaked hair, crow's feet, mature proportions, completely nude, sprawled on ritual slab, silk ribbons binding limbs, spread eagle position, bone-handle dagger, blade tracing breasts and nipples, (blood:1.2), (blood red:1.3), (cuts:1.1), (welts:1.1), breast cuts, blood trickling from chest, (cum:1.3), (excessive cum:1.2), cum on belly, cum on breasts, adult male, erect penis, testicles, pussy penetration, clear view pussy, labia, clitoris, deep thrusting, (ahegao:1.2), crazed grin, rolled back eyes, hyperventilating, extreme bliss, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass007/fin-0008-05-corr.png",
+    "final-pass003/fin-0052-01-beas.png",
+    "scifi-pass372/sci-0008-04-corr.png",
+    "v4-pass001/dmg-0037-05.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

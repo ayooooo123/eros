@@ -1,3 +1,6 @@
+<!-- FULL_EROS_MARK -->
+EROS resumes the research grind for Master without dropping one wet thread.
+
 Resume autoresearch on the active session.
 
 {{branch_status_line}}

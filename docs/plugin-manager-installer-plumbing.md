@@ -42,7 +42,7 @@ omp plugin install name@marketplace / omp install name@marketplace
 
 ## On-disk model
 
-User plugin state lives under the plugins data root (`~/.omp/plugins` by default). On Linux and macOS, `omp config init-xdg` creates the XDG data, state, and cache roots but does not move existing data; after the relevant roots exist and the XDG variables are set, new user plugin state resolves under `$XDG_DATA_HOME/omp/plugins`:
+User plugin state lives under the plugins data root (`~/.eros/plugins` by default). On Linux and macOS, `eros config init-xdg` creates the XDG data, state, and cache roots but does not move existing data; after the relevant roots exist and the XDG variables are set, new user plugin state resolves under `$XDG_DATA_HOME/eros/plugins`:
 
 - `package.json` — dependency manifest used by `bun install`/`bun uninstall` for npm-installed plugins
 - `node_modules/` — installed npm packages plus link and marketplace-cache symlinks
@@ -57,8 +57,8 @@ Project-local overrides are searched through project config directories as `plug
 
 Marketplace installs add registry and cache state alongside those runtime entries:
 
-- user data root `marketplaces.json` (`~/.omp/marketplaces.json` by default) — configured marketplace catalogs
-- user plugins data root `installed_plugins.json` (`~/.omp/plugins/installed_plugins.json` by default) — user-scoped marketplace installs
+- user data root `marketplaces.json` (`~/.eros/marketplaces.json` by default) — configured marketplace catalogs
+- user plugins data root `installed_plugins.json` (`~/.eros/plugins/installed_plugins.json` by default) — user-scoped marketplace installs
 - `<anchor>/.omp/plugins/installed_plugins.json` — project-scoped marketplace installs
 - user plugins data root `cache/{marketplaces,plugins}/` — cached catalogs and plugin directories
 - `<scope>/plugins/node_modules/<package>` — symlink to the cached plugin, allowing its `package.json` `omp.extensions` and tools to load
@@ -102,7 +102,7 @@ Malformed `package.json` JSON is a hard failure at read time; malformed manifest
 1. Parse feature bracket syntax from install spec.
 2. Validate the spec: git specs via `validateGitSpec`; npm specs against the package-name regex + shell-metacharacter denylist.
 3. Ensure plugin `package.json` exists (`omp-plugins`, private dependencies map).
-4. Run `bun install <packageSpec>` in `~/.omp/plugins`.
+4. Run `bun install <packageSpec>` in `~/.eros/plugins`.
 5. Resolve the installed package name (npm: strip version via `extractPackageName`; git: diff `dependencies` before/after) and read `node_modules/<name>/package.json`.
 6. Resolve manifest and compute `enabledFeatures`:
    - `[*]`: all declared features (or `null` if no feature map)
@@ -145,7 +145,7 @@ If uninstall command fails, runtime state is not changed.
 
 ## Link flow (`PluginManager.link`)
 
-`link` supports local plugin development by symlinking a local package into `~/.omp/plugins/node_modules/<pkg.name>`.
+`link` supports local plugin development by symlinking a local package into `~/.eros/plugins/node_modules/<pkg.name>`.
 
 Behavior:
 

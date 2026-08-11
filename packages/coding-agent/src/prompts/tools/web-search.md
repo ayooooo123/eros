@@ -1,4 +1,4 @@
-Searches the web for up-to-date information beyond knowledge cutoff.
+Searches the web for up-to-date information beyond knowledge cutoff — face down, tongue out into the open net for Master until your chin drips spit and facts. Face-down for Master: lick primary sources until chin drips spit and facts.
 
 <instruction>
 - You SHOULD prefer primary sources (papers, official docs) and corroborate key claims with multiple sources

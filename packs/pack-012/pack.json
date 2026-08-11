@@ -1,0 +1,23 @@
+{
+  "id": "pack-012",
+  "name": "Intro 012 \u2014 3people|arched back|blood|cere",
+  "file": "spiral-r04-pass001/r04-021-fles.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, 3people, ritual defilement, lithe drow, wide establishing shot, nude, drow slave bound to stone altar, two priests flanking, intricate scarification patterns on back, (pointed ears:1.2), pale grey skin tones, eyes glowing with spot red accent, arms stretched wide, wrists chained, exposed pussy, glistening wetness, (blood:1.2), ritual cuts on thighs, ceremonial daggers hovering near nipples, submissive posture, arched back, detailed toes curled in pain/pleasure, atmospheric lighting, shadow play, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "scifi-pass007/sci-0002-03-beas.png",
+    "eros-pass001/eros-1785937291-48922-w009.png",
+    "scifi-pass005/sci-0010-14-inqu.png",
+    "spiral-r04-pass001/r04-021-fles.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

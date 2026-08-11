@@ -1,0 +1,23 @@
+{
+  "id": "pack-071",
+  "name": "Intro 071 \u2014 2people cybernetic gladiatrix ",
+  "file": "scifi-pass005/sci-0011-09-fles.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, monochrome ink wash style, high contrast, clean lineart, bold ink lines, (blood red spot color:1.3), (red blood accent:1.3), masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), monochrome greyscale ink wash style clean lineart bold lines black ink spot color red blood accent, 2people cybernetic gladiatrix straddling bounty target trembling anticipation expression old scar map reopened crimson oozing fluids excessive cum pooling on floor dark puddle surveillance camera angle full body wide shot exposed anus labia taut abdomen chrome arm gripping high contrast ink sharp focus rating_explicit",
+  "sequence_files": [
+    "final-pass009/fin-0019-02-goon.png",
+    "scifi-pass452/sci-0008-05-corr.png",
+    "final-pass007/fin-0087-00-beas.png",
+    "scifi-pass005/sci-0011-09-fles.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

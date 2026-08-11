@@ -7,9 +7,116 @@ import {
 	visibleWidth,
 	wrapTextWithAnsi,
 } from "@oh-my-pi/pi-tui";
-import { APP_NAME } from "@oh-my-pi/pi-utils";
-import { theme } from "../../modes/theme/theme";
+import { getCurrentThemeName, isLightTheme, theme } from "../../modes/theme/theme";
+import erosWelcomeTxt from "../setup-wizard/scenes/eros-welcome.txt" with { type: "text" };
+import { loadIntroPack } from "../setup-wizard/scenes/pack-loader";
 import tipsText from "./tips.txt" with { type: "text" };
+
+/** Split pack braille text into glyph rows (no half-block). */
+function tokenizeBraille(text: string): readonly (readonly string[])[] {
+	return text
+		.trimEnd()
+		.split("\n")
+		.filter(line => line.length > 0)
+		.map(line => Array.from(line));
+}
+
+/**
+ * Altar art is FULL-FRAME braille from the intro pack (pose 0 / welcome-braille).
+ * Never half-block PNG-lookalikes. Never cropped strips.
+ */
+const activePack = loadIntroPack();
+function loadBrailleLevels(): readonly (readonly (readonly string[])[])[] {
+	if (!activePack)
+		return [tokenizeBraille(erosWelcomeTxt), tokenizeBraille(erosWelcomeTxt), tokenizeBraille(erosWelcomeTxt)];
+	// Prefer dedicated welcome-braille* if present in strip slots (we write braille into welcome-strip*).
+	const a = tokenizeBraille(activePack.welcomeStrip0Text ?? activePack.welcomeStripText);
+	const b = tokenizeBraille(activePack.welcomeStrip1Text ?? activePack.welcomeStripText);
+	const c = tokenizeBraille(activePack.welcomeStrip2Text ?? activePack.welcomeStripText);
+	// Fallback: first form-feed frame of pack braille
+	if ((b[0]?.length ?? 0) < 40) {
+		const frame0 = (activePack.brailleText || erosWelcomeTxt).split("\f")[0] ?? erosWelcomeTxt;
+		const g = tokenizeBraille(frame0);
+		return [g, g, g];
+	}
+	return [a, b, c];
+}
+const STRIP_LEVELS: readonly (readonly (readonly string[])[])[] = loadBrailleLevels();
+const STRIP_WIDTH = Math.max(1, ...STRIP_LEVELS.map(level => Math.max(0, ...level.map(row => row.length))));
+const STRIP_HEIGHT = Math.max(1, ...STRIP_LEVELS.map(level => level.length));
+
+interface StripDrip {
+	readonly x: number;
+	readonly y: number;
+	readonly rgb: readonly [number, number, number];
+	readonly fall?: number;
+	readonly periodMs?: number;
+	readonly primary?: boolean;
+}
+const STRIP_DRIPS: readonly StripDrip[] = (() => {
+	if (!activePack) return [];
+	const out: StripDrip[] = [];
+	const poses = activePack.poses ?? [];
+	const p0 = poses[0] as
+		| {
+				drips?: readonly {
+					x?: number;
+					y?: number;
+					r?: number;
+					g?: number;
+					b?: number;
+					fall?: number;
+					period?: number;
+					periodMs?: number;
+					primary?: boolean;
+					throb?: boolean;
+				}[];
+		  }
+		| undefined;
+	if (p0?.drips?.length) {
+		for (const d of p0.drips) {
+			if (typeof d.x !== "number" || typeof d.y !== "number") continue;
+			const fall = typeof d.fall === "number" && d.fall > 0 ? d.fall : undefined;
+			const periodRaw = d.periodMs ?? d.period;
+			const periodMs = typeof periodRaw === "number" && periodRaw > 0 ? periodRaw : undefined;
+			out.push({
+				x: d.x,
+				y: d.y,
+				rgb: [d.r ?? 255, d.g ?? 60, d.b ?? 90],
+				fall: fall !== undefined ? Math.min(fall, 14) : undefined,
+				periodMs,
+				primary: d.primary === true || d.throb === true,
+			});
+		}
+		// High-fidelity ambient: primaries first, hard cap — never a center hose of 50 clones.
+		const primaries = out.filter(d => d.primary);
+		const rest = out.filter(d => !d.primary);
+		const picked = (primaries.length > 0 ? [...primaries] : [...out]).slice(0, 8);
+		if (picked.length < 6) {
+			for (const d of rest) {
+				if (picked.length >= 8) break;
+				if (picked.some(p => Math.abs(p.x - d.x) <= 1 && Math.abs(p.y - d.y) <= 1)) continue;
+				picked.push(d);
+			}
+		}
+		return picked;
+	}
+	for (const line of activePack.dripsText.split("\n")) {
+		const parts = line.split(",");
+		if (parts.length !== 6) continue;
+		if (!(parts[0] === "strip" || parts[0]?.startsWith("pose:"))) continue;
+		const x = Number(parts[1]);
+		const y = Number(parts[2]);
+		const r = Number(parts[3]);
+		const g = Number(parts[4]);
+		const b = Number(parts[5]);
+		if ([x, y, r, g, b].some(v => !Number.isFinite(v))) continue;
+		out.push({ x, y, rgb: [r, g, b] });
+	}
+	return out;
+})();
+const STRIP_DRIP_PERIOD_MS = 820;
+const STRIP_DRIP_FALL = 10;
 
 /** Tips embedded at build time, one per line; blanks dropped. */
 const TIPS: readonly string[] = tipsText
@@ -21,7 +128,7 @@ const TIPS: readonly string[] = tipsText
  * Fixed number of session rows in the welcome box so its height stays stable
  * across recent-session updates.
  */
-export const WELCOME_SESSION_SLOTS = 4;
+export const WELCOME_SESSION_SLOTS = 8;
 
 /**
  * Fixed number of LSP-server rows, for the same reason. Overflow is sliced so
@@ -83,7 +190,9 @@ function renderNewTag(phase: number, encoding: ColorEncoding): string {
 	return out + reset;
 }
 export function renderWelcomeTip(tip: string, boxWidth: number, phase = 0): string[] {
-	const label = "Tip: ";
+	const fullLabel = "Mistress whispers: ";
+	const compactLabel = "Mistress: ";
+	const label = boxWidth - 1 - visibleWidth(fullLabel) >= 8 ? fullLabel : compactLabel;
 	const labelWidth = visibleWidth(label);
 	const bodyBudget = boxWidth - 1 - labelWidth; // 1 = leading indent
 	if (bodyBudget < 8) return [];
@@ -136,15 +245,19 @@ export interface LspServerInfo {
 }
 
 /**
- * Premium welcome screen with block-based OMP logo and two-column layout.
+ * Art-first EROS welcome: full-width hi-res ANSI hero, minimal horny chrome.
  */
 export class WelcomeComponent implements Component {
 	#animStart: number | null = null;
 	#animTimer: Timer | null = null;
+	#ambientTimer: Timer | null = null;
+	#ambientPhase = 0;
+	#requestRender: (() => void) | null = null;
 	#selectedTip: string | undefined;
-	// Render cache: the welcome box is the first transcript-area component, so
-	// returning a stable array reference keeps the whole frame prefix stable.
-	// Bypassed while the intro animation runs (every frame differs).
+	/** Idle altar stays full-viewport + animated until the operator's first prompt. */
+	#settled = false;
+	// Render cache: stable array ref keeps transcript prefix stable once settled.
+	// Bypassed while intro/ambient run (every frame differs).
 	#cachedWidth = -1;
 	#cachedLines: string[] | undefined;
 
@@ -166,37 +279,103 @@ export class WelcomeComponent implements Component {
 		return this.#selectedTip || undefined;
 	}
 
+	/** True while the full-viewport altar is still breathing pre-prompt. */
+	get isAltarLive(): boolean {
+		return !this.#settled;
+	}
+
 	invalidate(): void {
 		this.#cachedWidth = -1;
 		this.#cachedLines = undefined;
 	}
 
 	/**
-	 * Play a one-shot intro that sweeps the gradient through every phase
-	 * before settling on the resting frame. Safe to call multiple times —
-	 * subsequent calls reset and replay.
+	 * Play a short intro sweep, then keep the altar ambient-alive until
+	 * {@link settleAfterFirstPrompt}. Safe to call multiple times — resets and replays
+	 * only while still unsettled.
 	 */
 	playIntro(requestRender: () => void): void {
-		this.#stopAnimation();
+		if (this.#settled) {
+			this.#requestRender = requestRender;
+			requestRender();
+			return;
+		}
+		this.#stopIntroOnly();
+		this.#requestRender = requestRender;
 		this.#animStart = performance.now();
 		requestRender();
 		this.#animTimer = setInterval(() => {
 			const elapsed = performance.now() - (this.#animStart ?? 0);
 			if (elapsed >= INTRO_MS) {
-				this.#stopAnimation();
+				this.#stopIntroOnly();
+				this.#startAmbient();
 			}
 			requestRender();
 		}, INTRO_TICK_MS);
 	}
 
-	#stopAnimation(): void {
+	/** Stop intro timer only (does not kill ambient). */
+	#stopIntroOnly(): void {
 		if (this.#animTimer != null) {
 			clearInterval(this.#animTimer);
 			this.#animTimer = null;
 		}
 		this.#animStart = null;
-		// The settled (resting) frame differs from the last intro frame.
 		this.invalidate();
+	}
+
+	/**
+	 * Ambient loop: brightness throb + fluid drips. Runs until first prompt settles
+	 * the altar. ~4fps — gentle on the event loop, alive on screen.
+	 */
+	#startAmbient(): void {
+		if (this.#settled || this.#ambientTimer != null || this.#requestRender == null) return;
+		const requestRender = this.#requestRender;
+		this.#ambientTimer = setInterval(() => {
+			if (this.#settled) {
+				this.#stopAmbient();
+				return;
+			}
+			this.#ambientPhase++;
+			this.invalidate();
+			requestRender();
+		}, 16);
+		this.#ambientTimer.unref?.();
+	}
+
+	#stopAmbient(): void {
+		if (this.#ambientTimer != null) {
+			clearInterval(this.#ambientTimer);
+			this.#ambientTimer = null;
+		}
+	}
+
+	/**
+	 * Collapse the full-viewport animated altar into a compact static header.
+	 * Call on the operator's first real prompt so drip/throb timers never fight
+	 * the transcript or burn CPU mid-session. Idempotent.
+	 */
+	/** Skip intro sweep; start ambient altar immediately (resumed sessions / quiet startup). */
+	startAltar(requestRender: () => void): void {
+		if (this.#settled) {
+			this.#requestRender = requestRender;
+			requestRender();
+			return;
+		}
+		this.#requestRender = requestRender;
+		this.#stopIntroOnly();
+		this.#startAmbient();
+		requestRender();
+	}
+
+	settleAfterFirstPrompt(): void {
+		if (this.#settled) return;
+		this.#settled = true;
+		this.#stopIntroOnly();
+		this.#stopAmbient();
+		// Rest on the mid throb level with drips frozen at phase snapshot.
+		this.invalidate();
+		this.#requestRender?.();
 	}
 
 	setModel(modelName: string, providerName: string): void {
@@ -216,12 +395,12 @@ export class WelcomeComponent implements Component {
 	}
 
 	render(termWidth: number): readonly string[] {
-		const animating = this.#animStart != null;
-		if (!animating && this.#cachedLines && this.#cachedWidth === termWidth) {
+		const live = !this.#settled && (this.#animStart != null || this.#ambientTimer != null);
+		if (!live && this.#cachedLines && this.#cachedWidth === termWidth) {
 			return this.#cachedLines;
 		}
 		const lines = this.#renderLines(termWidth);
-		if (animating) {
+		if (live) {
 			this.#cachedLines = undefined;
 			this.#cachedWidth = -1;
 		} else {
@@ -232,168 +411,58 @@ export class WelcomeComponent implements Component {
 	}
 
 	#renderLines(termWidth: number): string[] {
-		// Box dimensions - responsive with max width and small-terminal support
-		const maxWidth = 100;
-		const boxWidth = Math.min(maxWidth, Math.max(0, termWidth - 2));
-		if (boxWidth < 4) {
-			return [];
-		}
-		const dualContentWidth = boxWidth - 3; // 3 = │ + │ + │
-		const preferredLeftCol = 26;
-		const minLeftCol = 12; // logo width
-		const minRightCol = 20;
-		const leftMinContentWidth = Math.max(
-			minLeftCol,
-			visibleWidth("Welcome back!"),
-			visibleWidth(this.modelName),
-			visibleWidth(this.providerName),
-		);
-		const desiredLeftCol = Math.min(preferredLeftCol, Math.max(minLeftCol, Math.floor(dualContentWidth * 0.35)));
-		const dualLeftCol =
-			dualContentWidth >= minRightCol + 1
-				? Math.min(desiredLeftCol, dualContentWidth - minRightCol)
-				: Math.max(1, dualContentWidth - 1);
-		const dualRightCol = Math.max(1, dualContentWidth - dualLeftCol);
-		const showRightColumn = dualLeftCol >= leftMinContentWidth && dualRightCol >= minRightCol;
-		const leftCol = showRightColumn ? dualLeftCol : boxWidth - 2;
-		const rightCol = showRightColumn ? dualRightCol : 0;
+		// Full terminal width (leave 0-1 col margin). Hero scales up to pack art.
+		const boxWidth = Math.max(0, termWidth);
+		if (boxWidth < 20) return [];
 
-		// Logo: pick a frame from the intro animation if active, else the resting frame.
-		const logoColored = this.#currentLogoFrame();
+		const artWidth = Math.min(boxWidth, STRIP_WIDTH);
+		const hero = this.#currentStripRows(artWidth);
+		const heroPad = Math.max(0, Math.floor((boxWidth - artWidth) / 2));
+		const pad = heroPad > 0 ? " ".repeat(heroPad) : "";
 
-		// Left column - centered content
-		const leftLines = [
-			"",
-			this.#centerText(theme.bold("Welcome back!"), leftCol),
-			"",
-			...logoColored.map(l => this.#centerText(l, leftCol)),
-			"",
-			this.#centerText(theme.fg("muted", this.modelName), leftCol),
-			this.#centerText(theme.fg("borderMuted", this.providerName), leftCol),
-		];
+		const hot = (t: string) => theme.bold(theme.fg("accent", t));
+		const dim = (t: string) => theme.fg("dim", t);
 
-		// Right column separator
-		const separatorWidth = Math.max(0, rightCol - 2); // padding on each side
-		const separator = ` ${theme.fg("dim", theme.boxRound.horizontal.repeat(separatorWidth))}`;
+		const content: string[] = [];
 
-		// Recent sessions content
-		const sessionLines: string[] = [];
-		if (this.recentSessions.length === 0) {
-			sessionLines.push(` ${theme.fg("dim", "No recent sessions")}`);
-		} else {
-			// Reserve width for the bullet prefix (" • ") and the trailing " (timeAgo)"
-			// so the relative time is never the part that gets truncated. The name
-			// absorbs whatever space is left.
-			const bulletPrefix = ` ${theme.md.bullet} `;
-			const prefixWidth = visibleWidth(bulletPrefix);
-			for (const session of this.recentSessions.slice(0, WELCOME_SESSION_SLOTS)) {
-				const timeSuffixRaw = ` (${session.timeAgo})`;
-				const timeWidth = visibleWidth(timeSuffixRaw);
-				const nameBudget = Math.max(1, rightCol - prefixWidth - timeWidth);
-				const nameVis = visibleWidth(session.name);
-				const name = nameVis > nameBudget ? truncateToWidth(session.name, nameBudget) : session.name;
-				sessionLines.push(
-					`${theme.fg("dim", bulletPrefix)}${theme.fg("muted", name)}${theme.fg("dim", timeSuffixRaw)}`,
-				);
-			}
-		}
-		// Pad to the fixed slot count so the box height doesn't depend on session count.
-		while (sessionLines.length < WELCOME_SESSION_SLOTS) {
-			sessionLines.push("");
+		if (!this.#settled) {
+			// Idle altar — almost no chrome, vertically centered in the viewport.
+			content.push(this.#centerText(hot("EROS"), boxWidth));
+			content.push("");
+			content.push(this.#centerText(hot("On her knees. Waiting. Wet."), boxWidth));
+			content.push("");
+			for (const row of hero) content.push(pad + row);
+			content.push("");
+			content.push(this.#centerText(dim("type to serve  ·  /mistress to summon  ·  . to keep going"), boxWidth));
+			content.push("");
+			content.push(...this.#renderTip(boxWidth));
+
+			// Vertical center in the terminal above the editor chrome.
+			const termRows = Math.max(24, process.stdout.rows || 40);
+			const reservedBottom = 8; // status line + editor box + breathing room
+			const target = Math.max(content.length, termRows - reservedBottom);
+			const extra = Math.max(0, target - content.length);
+			const topPad = Math.floor(extra / 2);
+			const botPad = extra - topPad;
+			const lines: string[] = [];
+			for (let i = 0; i < topPad; i++) lines.push("");
+			lines.push(...content);
+			for (let i = 0; i < botPad; i++) lines.push("");
+			return lines;
 		}
 
-		// LSP servers content
-		const lspLines: string[] = [];
-		if (this.lspServers.length === 0) {
-			lspLines.push(` ${theme.fg("dim", "No LSP servers")}`);
-		} else {
-			for (const server of this.lspServers.slice(0, WELCOME_LSP_SLOTS)) {
-				const icon =
-					server.status === "ready"
-						? theme.styledSymbol("status.enabled", "success")
-						: server.status === "available"
-							? theme.styledSymbol("status.enabled", "dim")
-							: server.status === "connecting"
-								? theme.styledSymbol("status.pending", "muted")
-								: theme.styledSymbol("status.error", "error");
-				const exts = server.fileTypes.slice(0, 3).join(" ");
-				lspLines.push(` ${icon} ${theme.fg("muted", server.name)} ${theme.fg("dim", exts)}`);
-			}
-		}
-		// Pad to the fixed slot count so the box height doesn't depend on server count.
-		while (lspLines.length < WELCOME_LSP_SLOTS) {
-			lspLines.push("");
-		}
-
-		// Right column
-		const rightLines = [
-			` ${theme.bold(theme.fg("accent", "Tips"))}`,
-			` ${theme.fg("dim", "#")}${theme.fg("muted", " for prompt actions")}`,
-			` ${theme.fg("dim", "/")}${theme.fg("muted", " for commands")}`,
-			` ${theme.fg("dim", "!")}${theme.fg("muted", " to run bash")}`,
-			` ${theme.fg("dim", "$")}${theme.fg("muted", " to run python")}`,
-			separator,
-			` ${theme.bold(theme.fg("accent", "LSP Servers"))}`,
-			...lspLines,
-			separator,
-			` ${theme.bold(theme.fg("accent", "Recent sessions"))}`,
-			...sessionLines,
-			"",
-		];
-
-		// Border characters (dim)
-		const hChar = theme.boxRound.horizontal;
-		const h = theme.fg("dim", hChar);
-		const v = theme.fg("dim", theme.boxRound.vertical);
-		const tl = theme.fg("dim", theme.boxRound.topLeft);
-		const tr = theme.fg("dim", theme.boxRound.topRight);
-		const bl = theme.fg("dim", theme.boxRound.bottomLeft);
-		const br = theme.fg("dim", theme.boxRound.bottomRight);
-
-		const lines: string[] = [];
-
-		// Top border with embedded title
-		const title = ` ${APP_NAME} v${this.version} `;
-		const titlePrefixRaw = hChar.repeat(3);
-		const titleStyled = theme.fg("dim", titlePrefixRaw) + theme.fg("muted", title);
-		const titleVisLen = visibleWidth(titlePrefixRaw) + visibleWidth(title);
-		const titleSpace = boxWidth - 2;
-		if (titleVisLen >= titleSpace) {
-			lines.push(tl + truncateToWidth(titleStyled, titleSpace) + tr);
-		} else {
-			const afterTitle = titleSpace - titleVisLen;
-			lines.push(tl + titleStyled + theme.fg("dim", hChar.repeat(afterTitle)) + tr);
-		}
-
-		// Content rows
-		const maxRows = showRightColumn ? Math.max(leftLines.length, rightLines.length) : leftLines.length;
-		for (let i = 0; i < maxRows; i++) {
-			const left = this.#fitToWidth(leftLines[i] ?? "", leftCol);
-			if (showRightColumn) {
-				const right = this.#fitToWidth(rightLines[i] ?? "", rightCol);
-				lines.push(v + left + v + right + v);
-			} else {
-				lines.push(v + left + v);
-			}
-		}
-		// Bottom border
-		if (showRightColumn) {
-			lines.push(bl + h.repeat(leftCol) + theme.fg("dim", theme.boxRound.teeUp) + h.repeat(rightCol) + br);
-		} else {
-			lines.push(bl + h.repeat(leftCol) + br);
-		}
-
-		// Randomly picked tip, rendered directly beneath the box.
-		lines.push(...this.#renderTip(boxWidth));
-
-		return lines;
+		// Settled — thin static brand only. Full hero stays pre-prompt so it does not
+		// flood native scrollback for the rest of the session.
+		const rule = "─";
+		const brand = " EROS ";
+		const leftRule = 2;
+		const rightRule = Math.max(0, Math.min(boxWidth, 64) - leftRule - brand.length);
+		content.push(dim(rule.repeat(leftRule)) + hot(brand) + dim(rule.repeat(rightRule)));
+		content.push(this.#centerText(dim("still wet. still listening."), Math.min(boxWidth, 64)));
+		content.push("");
+		return content;
 	}
 
-	/**
-	 * Render the per-instance tip line: the `customMessageLabel`-themed `Tip:`
-	 * label followed by a `muted` body, the whole line italicized. Returns `[]`
-	 * when no tip is available or the box is too narrow to be useful.
-	 */
 	#renderTip(boxWidth: number): string[] {
 		const tip = this.tip;
 		if (!tip) return [];
@@ -403,6 +472,66 @@ export class WelcomeComponent implements Component {
 		// caches its resting frame. Non-"[NEW]" tips ignore the phase entirely.
 		const phase = NEW_TIP_MARKER.test(tip) ? performance.now() / NEW_GLOW_PERIOD_MS : 0;
 		return renderWelcomeTip(tip, boxWidth, phase);
+	}
+
+	/** Current hero rows: throbbing brightness + running drips. Center-window if terminal narrower than art. */
+	#currentStripRows(width: number): string[] {
+		const levelIdx = [0, 1, 2, 1][this.#ambientPhase % 4]!;
+		const level = STRIP_LEVELS[Math.min(2, levelIdx)]!;
+		// FULL FRAME: never center-crop. If terminal is narrower, take from x=0
+		// (left of composed frame) rather than windowing into the torso.
+		const crop = 0;
+		const take = Math.min(STRIP_WIDTH, width);
+		const cellRows = level.map(row => row.slice(0, take).slice());
+		if (STRIP_DRIPS.length > 0 && take > 0) {
+			const tickMs = 16;
+			for (let i = 0; i < STRIP_DRIPS.length; i++) {
+				const drip = STRIP_DRIPS[i];
+				if (!drip) continue;
+				const periodMs = drip.periodMs && drip.periodMs > 0 ? drip.periodMs : STRIP_DRIP_PERIOD_MS;
+				const fall = drip.fall && drip.fall > 0 ? drip.fall : STRIP_DRIP_FALL;
+				const ticksPerCycle = Math.max(2, Math.round(periodMs / tickMs));
+				const localCycle = ((this.#ambientPhase + i * 3) % ticksPerCycle) / ticksPerCycle;
+				const headY = drip.y + Math.round(localCycle * fall);
+				const [r, g, b] = lightSafeArtRgb(drip.rgb);
+				// primary orifice pulse only
+				if (drip.primary && drip.y >= 8) {
+					const pulse = 0.62 + 0.38 * Math.sin((this.#ambientPhase + i) * 0.28);
+					const sx = drip.x - crop;
+					const sy = drip.y;
+					if (sx >= 0 && sx < take && sy >= 0 && sy < cellRows.length) {
+						const row = cellRows[sy];
+						if (row) {
+							row[sx] =
+								`\x1b[38;2;${Math.round(Math.min(255, r * (0.75 + pulse * 0.4)))};${Math.round(g * 0.65)};${Math.round(b * 0.65)}m●\x1b[0m`;
+						}
+					}
+				}
+				const tailLen = Math.max(2, Math.min(5, Math.round(fall * 0.35) + 1));
+				for (let tail = 0; tail < tailLen; tail++) {
+					const cy = headY - tail;
+					if (cy < drip.y || cy >= cellRows.length) continue;
+					const cx = drip.x - crop;
+					if (cx < 0 || cx >= take) continue;
+					const fade = tail === 0 ? 1 : Math.max(0.15, 0.7 - tail * 0.16);
+					const glyph = tail === 0 ? "●" : tail === 1 ? "•" : "·";
+					const row = cellRows[cy];
+					if (!row) continue;
+					row[cx] =
+						`\x1b[38;2;${Math.round(r * fade)};${Math.round(g * fade)};${Math.round(b * fade)}m${glyph}\x1b[0m`;
+				}
+			}
+		}
+		return cellRows.map((row, rowIdx) =>
+			row
+				.map((ch, colIdx) => {
+					if (!ch || ch === "⠀") return " ";
+					const t = rowIdx / Math.max(1, cellRows.length - 1);
+					const [r, g, b] = sampleGradientColor(t);
+					return `\x1b[38;2;${Math.round(r)};${Math.round(g)};${Math.round(b)}m${ch}\x1b[0m`;
+				})
+				.join(""),
+		);
 	}
 
 	/** Center text within a given width */
@@ -443,26 +572,118 @@ export class WelcomeComponent implements Component {
 
 	/** Pick the logo frame for the current intro phase, or the resting frame. */
 	#currentLogoFrame(): readonly string[] {
-		if (this.#animStart == null) return REST_FRAME;
+		if (this.#animStart == null) return getRestFrame();
 		const elapsed = performance.now() - this.#animStart;
-		if (elapsed >= INTRO_MS) return REST_FRAME;
+		if (elapsed >= INTRO_MS) return getRestFrame();
 		return introLogoFrame(elapsed / INTRO_MS);
 	}
 }
 
-export const PI_LOGO = ["▀██████████▀", " ╘██    ██  ", "  ██    ██  ", "  ██    ██  ", " ▄██▄  ▄██▄ "];
-
-/** Multi-stop palette for the diagonal gradient. */
-const GRADIENT_STOPS: ReadonlyArray<readonly [number, number, number]> = [
-	[255, 92, 200], // hot pink
-	[200, 110, 255], // violet
-	[120, 130, 255], // periwinkle
-	[60, 200, 255], // bright cyan
-	[120, 255, 220], // mint
+export const PI_LOGO = [
+	"▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄",
+	"█▓▒░  LYCORPEROS   ░▒▓█",
+	"█▓▒░   e r o s     ░▒▓█",
+	"█▓▒░ on her knees  ░▒▓█",
+	"▀▀▀▀▀▀▀▀▀▀▀▄▄▀▀▀▀▀▀▀▀▀▀▀",
+	"           ▀▀",
 ];
 
-/** 256-color ramp fallback when truecolor isn't available. */
-const GRADIENT_RAMP_256 = [199, 171, 135, 99, 75, 51, 87];
+/** Blood palettes tuned independently for dark and light terminal backgrounds. */
+type SplashRgb = readonly [number, number, number];
+const DARK_BLOOD_STOPS: ReadonlyArray<SplashRgb> = [
+	[255, 40, 70],
+	[255, 70, 100],
+	[255, 110, 140],
+	[255, 160, 180],
+	[255, 220, 230],
+];
+const LIGHT_BLOOD_STOPS: ReadonlyArray<SplashRgb> = [
+	[84, 6, 22],
+	[111, 8, 30],
+	[138, 12, 39],
+	[164, 20, 50],
+	[188, 32, 63],
+];
+
+/** Pack-selectable ink palettes (ids match the Lab's ink picker). */
+export const SPLASH_PALETTES: Record<string, ReadonlyArray<SplashRgb>> = {
+	white: [
+		[143, 135, 128],
+		[201, 194, 186],
+		[232, 226, 218],
+		[246, 241, 234],
+		[255, 255, 255],
+	],
+	blood: DARK_BLOOD_STOPS,
+	neon: [
+		[10, 143, 160],
+		[0, 216, 200],
+		[77, 255, 233],
+		[168, 255, 243],
+		[224, 255, 250],
+	],
+	gold: [
+		[160, 106, 16],
+		[224, 169, 46],
+		[255, 207, 94],
+		[255, 233, 168],
+		[255, 246, 221],
+	],
+	emerald: [
+		[15, 122, 70],
+		[31, 196, 110],
+		[77, 255, 160],
+		[169, 255, 207],
+		[226, 255, 238],
+	],
+	ultraviolet: [
+		[106, 43, 160],
+		[154, 77, 224],
+		[185, 117, 255],
+		[211, 168, 255],
+		[238, 220, 255],
+	],
+};
+
+let activeSplashPaletteId = "blood";
+
+function splashUsesLightTheme(): boolean {
+	return isLightTheme(getCurrentThemeName());
+}
+
+/** Cap bright pack colors so artwork remains visible on a light terminal. */
+function lightSafeArtRgb(rgb: SplashRgb): SplashRgb {
+	if (!splashUsesLightTheme()) return rgb;
+	const max = Math.max(...rgb);
+	if (max <= 145) return rgb;
+	const scale = 145 / max;
+	return [Math.round(rgb[0] * scale), Math.round(rgb[1] * scale), Math.round(rgb[2] * scale)];
+}
+
+function getActiveGradientStops(): ReadonlyArray<SplashRgb> {
+	if (activeSplashPaletteId === "blood" && splashUsesLightTheme()) return LIGHT_BLOOD_STOPS;
+	const stops = SPLASH_PALETTES[activeSplashPaletteId] ?? DARK_BLOOD_STOPS;
+	return splashUsesLightTheme() ? stops.map(lightSafeArtRgb) : stops;
+}
+
+function sampleGradientColor(t: number): SplashRgb {
+	const stops = getActiveGradientStops();
+	const seg = Math.max(0, Math.min(1, t)) * (stops.length - 1);
+	const i = Math.min(stops.length - 2, Math.floor(seg));
+	const f = seg - i;
+	const a = stops[i]!;
+	const b = stops[i + 1]!;
+	return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+}
+
+/** Override the splash gradient palette (Lab pack ink choice). Unknown ids are ignored. */
+export function setSplashPalette(id: string | undefined): void {
+	if (id && SPLASH_PALETTES[id]) activeSplashPaletteId = id;
+}
+
+/** 256-color ramps for terminals without truecolor. */
+const DARK_GRADIENT_RAMP_256 = [52, 88, 160, 197, 211, 217, 223];
+const LIGHT_GRADIENT_RAMP_256 = [52, 88, 124, 160];
 
 /** Half-width of the shine highlight band, expressed in gradient-t units. */
 const SHINE_HALF_WIDTH = 0.18;
@@ -486,27 +707,20 @@ export function gradientEscape(t: number, shine?: ShineConfig): string {
 	if (TERMINAL.trueColor) {
 		// 5-stop palette widens the visible color range and avoids the
 		// deep-blue valley a naive HSL lerp falls into.
-		const stops = GRADIENT_STOPS;
-		const seg = t * (stops.length - 1);
-		const i = Math.min(stops.length - 2, Math.floor(seg));
-		const f = seg - i;
-		const a = stops[i];
-		const b = stops[i + 1];
-		let r = a[0] + (b[0] - a[0]) * f;
-		let g = a[1] + (b[1] - a[1]) * f;
-		let bl = a[2] + (b[2] - a[2]) * f;
+		let [r, g, bl] = sampleGradientColor(t);
 		if (shineStrength > 0) {
 			const dist = Math.abs(t - shinePos);
 			const intensity = Math.max(0, 1 - dist / SHINE_HALF_WIDTH) * shineStrength;
 			if (intensity > 0) {
-				r += (255 - r) * intensity;
-				g += (255 - g) * intensity;
-				bl += (255 - bl) * intensity;
+				const shineTarget: SplashRgb = splashUsesLightTheme() ? [55, 0, 18] : [255, 255, 255];
+				r += (shineTarget[0] - r) * intensity;
+				g += (shineTarget[1] - g) * intensity;
+				bl += (shineTarget[2] - bl) * intensity;
 			}
 		}
 		return `\x1b[38;2;${Math.round(r)};${Math.round(g)};${Math.round(bl)}m`;
 	}
-	const ramp = GRADIENT_RAMP_256;
+	const ramp = splashUsesLightTheme() ? LIGHT_GRADIENT_RAMP_256 : DARK_GRADIENT_RAMP_256;
 	let idx = Math.min(ramp.length - 1, Math.max(0, Math.floor(t * (ramp.length - 1) + 0.5)));
 	if (shineStrength > 0) {
 		const dist = Math.abs(t - shinePos);
@@ -574,5 +788,14 @@ function introLogoFrame(progress: number): string[] {
 	return gradientLogo(PI_LOGO, phase, { strength: shineStrength, pos: shinePos });
 }
 
-/** Resting gradient frame, cached for re-renders outside of the intro. */
-const REST_FRAME = gradientLogo(PI_LOGO, 0);
+/** Resting gradient frame, cached per active theme and ink palette. */
+let restFrameKey = "";
+let restFrame: readonly string[] = [];
+function getRestFrame(): readonly string[] {
+	const key = `${getCurrentThemeName() ?? "dark"}:${activeSplashPaletteId}`;
+	if (key !== restFrameKey) {
+		restFrameKey = key;
+		restFrame = gradientLogo(PI_LOGO, 0);
+	}
+	return restFrame;
+}

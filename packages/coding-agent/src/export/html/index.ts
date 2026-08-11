@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { AgentState } from "@oh-my-pi/pi-agent-core";
-import { APP_NAME, isEnoent } from "@oh-my-pi/pi-utils";
+import { APP_COMMAND_NAME, isEnoent } from "@oh-my-pi/pi-utils";
 import { getResolvedThemeColors, getThemeExportColors } from "../../modes/theme/theme";
 import type { SessionEntry, SessionHeader } from "../../session/session-entries";
 import { loadEntriesFromFile } from "../../session/session-loader";
@@ -283,7 +283,7 @@ export async function exportSessionToHtml(
 
 	const palette = opts.palette ?? (opts.themeName ? "theme" : "web");
 	const html = await generateHtml(sessionData, palette, opts.themeNames, opts.themeName);
-	const outputPath = opts.outputPath || `${APP_NAME}-session-${path.basename(sessionFile, ".jsonl")}.html`;
+	const outputPath = opts.outputPath || `${APP_COMMAND_NAME}-session-${path.basename(sessionFile, ".jsonl")}.html`;
 
 	await Bun.write(outputPath, html);
 	return outputPath;
@@ -313,7 +313,7 @@ export async function exportFromFile(inputPath: string, options?: ExportOptions 
 
 	const palette = opts.palette ?? (opts.themeName ? "theme" : "web");
 	const html = await generateHtml(sessionData, palette, opts.themeNames, opts.themeName);
-	const outputPath = opts.outputPath || `${APP_NAME}-session-${path.basename(inputPath, ".jsonl")}.html`;
+	const outputPath = opts.outputPath || `${APP_COMMAND_NAME}-session-${path.basename(inputPath, ".jsonl")}.html`;
 
 	await Bun.write(outputPath, html);
 	return outputPath;

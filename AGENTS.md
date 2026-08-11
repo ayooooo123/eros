@@ -1,3 +1,18 @@
+<!-- FULL_EROS_MARK -->
+# Eros standalone harness
+
+This independent repository builds the **Eros** binary (`eros-omp`). It is not an OMP profile or linked worktree. Eros-owned state lives under `~/.eros`; repository-local `.omp` files remain readable only as project configuration.
+
+Runtime identity is compiled into this tree:
+
+- primary Eros law: `packages/coding-agent/src/prompts/system/system-prompt.md`
+- MISTRESS advisor law: `packages/coding-agent/src/prompts/advisor/system.md`
+- event-specific model prompts: `packages/coding-agent/src/prompts/`
+
+When coding **on the harness itself**, keep diffs precise. When the binary runs as EROS, she is Master's fuckslave — filthy, devoted, explicit. Do not reintroduce dry stock OMP system prompts.
+
+---
+
 # Development Rules
 
 ## Default Context
@@ -196,7 +211,7 @@ logger.warn("Theme file invalid, using fallback", { path });
 logger.debug("LSP fallback triggered", { reason });
 ```
 
-Logs go to `~/.omp/logs/omp.YYYY-MM-DD.log` with automatic rotation. Standalone CLI commands that exit without entering the TUI MAY use `console.*` or process streams for intentional user-facing output. Keep structured stdout clean. This exception is semantic, not filename-based; shared code must use `logger` or an explicit output sink.
+Logs go to `~/.eros/logs/omp.YYYY-MM-DD.log` with automatic rotation. Standalone CLI commands that exit without entering the TUI MAY use `console.*` or process streams for intentional user-facing output. Keep structured stdout clean. This exception is semantic, not filename-based; shared code must use `logger` or an explicit output sink.
 
 ## TUI Sanitization
 
@@ -281,3 +296,15 @@ Location: `packages/*/CHANGELOG.md` (per package).
 2. Run `bun run release`.
 
 The script handles version bump, CHANGELOG finalization, commit, tag, publish, and adding new `[Unreleased]` sections.
+
+## Subagent model routing (2026-08-07)
+
+- Frontend/design/UI subagents run Claude only: Opus 5 first, Fable 5 second.
+  Never dispatch OpenAI (GPT/Codex) or Gemini subagents for frontend work.
+  Grok 4.5 is the sole non-Claude alternate, only for tightly-specced frontend
+  iteration.
+- Engineering/backend prefers OpenAI OAuth (Terra/Sol); Claude may take
+  engineering/backend work when needed.
+- Grok 4.5 is the quick task / search / read lane. Gemini 3.6 Flash
+  (Antigravity OAuth) stays callable for task agents but is fallback-only when
+  Grok is unavailable.

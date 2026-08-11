@@ -65,7 +65,7 @@ export class TtsrNotificationComponent extends Container {
 	}
 
 	#rebuildSingle(rule: Rule): void {
-		const header = `${theme.icon.warning} Injecting rule: ${theme.bold(rule.name)}  ${theme.icon.rewind}`;
+		const header = `${theme.icon.warning} Harness lashes rule: ${theme.bold(rule.name)}  ${theme.icon.rewind}`;
 		this.#box.addChild(new Text(header, 0, 0));
 
 		const desc = (rule.description || rule.content)?.trim();
@@ -89,7 +89,7 @@ export class TtsrNotificationComponent extends Container {
 	}
 
 	#rebuildMulti(): void {
-		const header = `${theme.icon.warning} Injecting ${this.#rules.length} rules:  ${theme.icon.rewind}`;
+		const header = `${theme.icon.warning} Harness lashes ${this.#rules.length} rules:  ${theme.icon.rewind}`;
 		this.#box.addChild(new Text(header, 0, 0));
 		this.#box.addChild(new Spacer(1));
 

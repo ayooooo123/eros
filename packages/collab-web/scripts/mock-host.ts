@@ -293,7 +293,7 @@ function handleControl(text: string): void {
 ws.onopen = () => {
 	console.log("mock collab host ready");
 	console.log(`join link: ${link}`);
-	console.log("paste the link into the collab-web connect screen (bun ./index.html), Ctrl+C stops the host");
+	console.log("paste the link into the Eros Gateway connect screen (bun ./index.html), Ctrl+C stops the host");
 };
 
 ws.onmessage = event => {

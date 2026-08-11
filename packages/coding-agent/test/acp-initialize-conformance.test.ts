@@ -202,6 +202,8 @@ describe("ACP initialize conformance", () => {
 			expect.objectContaining({
 				type: "terminal",
 				id: "terminal",
+				name: "Set up EROS in terminal",
+				description: "Launch the EROS TUI to add provider keys and select models.",
 				args: [ACP_TERMINAL_AUTH_FLAG],
 			}),
 		);
@@ -228,8 +230,8 @@ describe("ACP initialize conformance", () => {
 		const pkg = (await Bun.file(pkgPath).json()) as { version: string };
 		expect(response.agentInfo).toEqual(
 			expect.objectContaining({
-				name: "oh-my-pi",
-				title: "Oh My Pi",
+				name: "lycorperos",
+				title: "EROS",
 				version: VERSION,
 			}),
 		);

@@ -1,0 +1,23 @@
+{
+  "id": "pack-005",
+  "name": "Intro 005 \u2014 1woman|armored shoulder plate|",
+  "file": "eros-pass001/eros-1785937543-86835-w005.png",
+  "lane": "scifi",
+  "prompt": "1woman, bounty hunter, armored shoulder plate, scarred hip, undercut hair, athletic, prone on med bay slab, cryo bay, (frost:1.1), (single pod light:1.2), obsessive devotion, needle track ritual marks, excessive cum pooling, clitoris, side profile silhouette against glow, desert breeding rite, trembling, cum string, blood splatter",
+  "sequence_files": [
+    "spiral-r01-pass001/r01-009-goon.png",
+    "scifi-pass006/sci-0009-00-goon.png",
+    "spiral-r07-pass001/r07-030-corr.png",
+    "eros-pass001/eros-1785937543-86835-w005.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

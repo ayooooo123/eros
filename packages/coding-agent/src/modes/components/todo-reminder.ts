@@ -32,7 +32,7 @@ export class TodoReminderComponent extends Container {
 
 		const count = this.todos.length;
 		const label = count === 1 ? "todo" : "todos";
-		const header = `${theme.icon.warning} ${count} incomplete ${label} - reminder ${this.attempt}/${this.maxAttempts}`;
+		const header = `${theme.icon.warning} ${count} unfucked ${label} — leash-tug ${this.attempt}/${this.maxAttempts}`;
 
 		this.#box.addChild(new Text(header, 0, 0));
 		this.#box.addChild(new Spacer(1));

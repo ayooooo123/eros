@@ -1,0 +1,23 @@
+{
+  "id": "pack-008",
+  "name": "Intro 008 \u2014 2people|anus|arms bound behind",
+  "file": "v4-pass001/dmg-0085-05.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, (red blood:1.3), blood red accent, (2people:1.2), full body wide shot, mature female, 50s, silver-streaked hair, crow's feet, male berserker, completely nude, (blood:1.2), (blood red:1.3), pooled blood on ground, bloody handprints on stomach, severe bite marks on jawline, gaping lacerations, (cuts:1.1), (cum:1.3), (cum pool:1.1), (cum string:1.1), pussy, labia, penis, erection, testicles, anus, brutal ground coupling, arms bound behind back with iron wire, mind break, vacant eyes, blood spilling from mouth, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "spiral-r05-pass001/r05-023-fles.png",
+    "scifi-pass028/sci-0010-09-inqu.png",
+    "scifi-pass034/sci-0013-06-corr.png",
+    "v4-pass001/dmg-0085-05.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

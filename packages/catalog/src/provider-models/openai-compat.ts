@@ -111,7 +111,7 @@ const catalogSession: {
 	hasPayload: boolean;
 } = { inflight: null, payload: undefined, etag: null, hasPayload: false };
 
-const CATALOG_USER_AGENT = `omp/${VERSION} (+https://omp.sh)`;
+const CATALOG_USER_AGENT = `lycorperos/${VERSION}`;
 
 /**
  * Fetches the models.dev catalog via catalog.stencil.so, which serves a

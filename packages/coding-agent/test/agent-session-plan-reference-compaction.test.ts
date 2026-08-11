@@ -30,7 +30,7 @@ import { AuthStorage } from "../src/session/auth-storage";
 import { convertToLlm } from "../src/session/messages";
 import { SessionManager } from "../src/session/session-manager";
 
-const CONTINUE_MARKER = "Resume work on the user's most recent intent";
+const CONTINUE_MARKER = "Resume work on Master's most recent desire";
 
 type ObservedPromptCall = { messageTexts: string[] };
 

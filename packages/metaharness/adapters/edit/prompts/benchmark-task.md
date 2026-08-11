@@ -1,7 +1,7 @@
 {{task_prompt}}
 
 {{#if guided_context}}
-## Guided fix (authoritative)
+## Guided fix — Master's authoritative thrust
 
 {{guided_context}}
 {{/if}}

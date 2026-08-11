@@ -1,0 +1,23 @@
+{
+  "id": "pack-067",
+  "name": "Intro 067 \u2014 blood|blood smear on face|cowb",
+  "file": "final-pass006/fin-0003-02-corr.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1) 1girl 1man, orc, tusks, massive build, muscular build, woman, dark elf, pointed ears, cowboy shot thighs up, furious expression, tearing eyes, biting hand, bite wounds on arm, blood smear on face, (blood:1.2), (cuts:1.1), (wounds:1.1), (bruises:1.1), (welts:1.1), angry veins, pounding heart visualized, nails scratching back, leaving red trails, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) on belly, anal play, rough grip on hips, white knuckles, detailed hands, clean fingers, tension in thighs, muscles defined, aggressive angle, upward gaze, ink wash background, sharp focus, high contrast ink, rating_explicit",
+  "sequence_files": [
+    "final-pass008/fin-0039-05-goon.png",
+    "final-pass007/fin-0012-00-beas.png",
+    "scifi-pass203/sci-0008-00-corr.png",
+    "final-pass006/fin-0003-02-corr.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

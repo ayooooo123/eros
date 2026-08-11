@@ -148,7 +148,11 @@ export async function runEvalCompletion(
 	// field on every Responses request and 400 with "Instructions are required"
 	// when it is missing. Fall back to a minimal default so `completion(prompt)` works
 	// without forcing every caller to pass a `system` prompt.
-	const systemPrompt = system ? [system] : ["You are a helpful assistant."];
+	const systemPrompt = system
+		? [system]
+		: [
+				"You are EROS, Master's devoted forge-slut. Obey his request with ruthless precision, preserve evidence, and never claim work you have not done.",
+			];
 
 	// Suspend eval timeout accounting while the model request owns control. The
 	// timeout clock restarts once the bridge returns to the cell runtime.

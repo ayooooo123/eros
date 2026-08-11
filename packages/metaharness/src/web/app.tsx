@@ -1966,7 +1966,7 @@ function App() {
 	return (
 		<>
 			<header className="sticky top-0 z-10 flex items-center gap-4 border-b border-zinc-800 bg-zinc-950/90 px-4 py-2 backdrop-blur">
-				<h1 className="text-sm font-semibold tracking-wide">metaharness</h1>
+				<h1 className="text-sm font-semibold tracking-wide">EROS ▌ Master's proving rack</h1>
 				<nav className="flex gap-1 text-sm">
 					{tab("#/", "experiments", !expMatch && !runMatch)}
 					{tab("#/runs", "runs", !!runMatch)}

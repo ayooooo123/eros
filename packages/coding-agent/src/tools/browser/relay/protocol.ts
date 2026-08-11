@@ -27,9 +27,9 @@ export type RelayRpcRequest =
 	| { op: "createTab"; url: string }
 	| { op: "removeTab"; tabId: number }
 	| { op: "activateTab"; tabId: number }
-	/** Add tabs to the per-window omp group (created/reused by title), remembering prior membership. */
+	/** Add tabs to the per-window EROS group, created or reused by title. */
 	| { op: "group"; tabIds: number[]; title: string; color: string }
-	/** Return tabs to their pre-omp group (or ungroup); no-op for tabs the relay never grouped. */
+	/** Return tabs from the EROS group, or ungroup them; no-op for untouched tabs. */
 	| { op: "ungroup"; tabIds: number[] };
 
 /** Messages sent relay → extension. */

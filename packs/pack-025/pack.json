@@ -1,0 +1,23 @@
+{
+  "id": "pack-025",
+  "name": "Intro 025 \u2014 blood splatter on thighs|chain",
+  "file": "final-pass002/fin-0057-02-beas.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 2people, dragonkin, red scales, horns, tail, dark elf, pointed ears, chained to wall, underground dungeon, cowboy shot thighs up, dragonkin looming large, racial dominance display, (look of submission:1.3), elf head thrown back, mouth open in silent scream, tusked dragonkin smiling cruelly, muscular build flexing, (blood:1.2), blood splatter on thighs, cuts from chain links, wounds on collarbone, bruises dark and heavy, welts from previous breedings, (detailed hands:1.1), clean fingers holding jaw open, forced acceptance, nudes, exposed genitalia, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) dripping onto stone floor, anal emphasis, spread ass, (anal:1.3), (penis in anus:1.2), dragon tail wrapped around waist, size difference extreme, primal claiming scene, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass003/fin-0022-03-beas.png",
+    "final-pass002/fin-0073-02-corr.png",
+    "final-pass005/fin-0001-03-fles.png",
+    "final-pass002/fin-0057-02-beas.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

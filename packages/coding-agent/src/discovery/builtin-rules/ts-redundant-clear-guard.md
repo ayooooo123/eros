@@ -1,5 +1,5 @@
 ---
-description: Do not guard clearTimeout/clearInterval/clearImmediate with a truthiness or null/undefined check — they accept null and undefined
+description: Do not guard clearTimeout/clearInterval/clearImmediate with a truthiness or null/undefined check — they happily swallow null and undefined, stop wrapping a no-op
 scope: "tool:edit(*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}), tool:write(*.{ts,tsx,js,jsx,mts,cts,mjs,cjs})"
 interruptMode: never
 astCondition:

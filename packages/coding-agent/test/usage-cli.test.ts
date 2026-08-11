@@ -422,7 +422,7 @@ describe("formatUsageBreakdown", () => {
 	});
 
 	it("renders provider-level notes once per provider, not duplicated per account or limit", () => {
-		const disclaimer = "OMP-observed spend only; OpenCode usage outside OMP is not included.";
+		const disclaimer = "EROS-observed spend only; OpenCode usage outside EROS is not included.";
 		const multiAccount = [
 			makeReport(
 				"opencode-go",

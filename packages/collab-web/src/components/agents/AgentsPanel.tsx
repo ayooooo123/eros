@@ -103,6 +103,7 @@ export function AgentsPanel(props: {
 
 	return (
 		<div className="ag-panel">
+			<div className="ag-head">the den</div>
 			{sorted.mains.map(agent => (
 				<AgentRow
 					key={agent.id}
@@ -125,7 +126,7 @@ export function AgentsPanel(props: {
 					onSelect={onSelect}
 				/>
 			))}
-			{sorted.subs.length === 0 ? <div className="ag-empty">no subagents</div> : null}
+			{sorted.subs.length === 0 ? <div className="ag-empty">the den is empty</div> : null}
 		</div>
 	);
 }

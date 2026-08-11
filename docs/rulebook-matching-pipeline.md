@@ -73,7 +73,7 @@ Loads `.omp` rules from:
 - sticky user rule: `<active-native-agent-dir>/RULES.md`
 - sticky project rule: `RULES.md` from the nearest non-empty `.omp/` directory selected while walking from cwd toward the repository root; OMP does not continue farther when that directory lacks the file
 
-The active native agent directory is `~/.omp/agent` by default, follows named profiles, and honors `PI_CODING_AGENT_DIR`.
+The active native agent directory is `~/.eros/agent` by default, follows named profiles, and honors `PI_CODING_AGENT_DIR`.
 
 Normalization:
 
@@ -198,7 +198,7 @@ Within a provider, item order comes from `loadFilesFromDir` glob result ordering
 
 Notable source-order differences:
 
-- `native` appends project `.omp/rules`, user `~/.omp/agent/rules`, user `RULES.md`, then nearest project `RULES.md`.
+- `native` appends project `.omp/rules`, user `~/.eros/agent/rules`, user `RULES.md`, then nearest project `RULES.md`.
 - `omp-plugins` appends `rules/` results per configured extension package root.
 - `agents` appends project-walk `.agent`/`.agents` rule dirs before user home dirs.
 - `cursor` appends user then project results.

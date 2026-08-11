@@ -1,0 +1,23 @@
+{
+  "id": "pack-010",
+  "name": "Intro 010 \u2014 1woman|blood|blood rites|chest",
+  "file": "spiral-r01-pass001/r01-042-goon.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, 1girl, (POV:1.2) looking at viewer, blood rites, heavyset, kneeling on cold stone altar, chest heaving with exertion, knife hovering over bare breast, face twisted in terrified anticipation, lips parted wide, eyes wide and wet reflecting the blade's gleam, thick thighs spread apart, sweat glistening on pale skin, (blood:1.2), (bruises:1.1), high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "scifi-pass011/sci-0019-10-goon.png",
+    "scifi-pass006/sci-0009-10-goon.png",
+    "scifi-pass034/eros-1785904319-19818-v0.png",
+    "spiral-r01-pass001/r01-042-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

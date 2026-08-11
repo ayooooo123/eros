@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
+import { APP_DISPLAY_NAME } from "@oh-my-pi/pi-utils";
 
 const APP_NAME = "omp";
 
@@ -23,5 +24,5 @@ export async function initXdg(): Promise<void> {
 
 	console.log("\nXDG directories initialized.");
 	console.log("Ensure XDG_DATA_HOME, XDG_STATE_HOME, and XDG_CACHE_HOME");
-	console.log("are set in your shell profile for omp to use them.");
+	console.log(`are set in your shell profile for ${APP_DISPLAY_NAME} to use them.`);
 }

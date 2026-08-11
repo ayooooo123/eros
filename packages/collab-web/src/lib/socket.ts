@@ -1,5 +1,5 @@
 /**
- * Browser WebSocket wrapper for collab live-session sharing (vendored mirror
+ * Browser WebSocket wrapper for the live-session relay (vendored mirror
  * of `@oh-my-pi/pi-coding-agent/src/collab/relay-client.ts` semantics).
  *
  * Connects to a relay room, seals/opens AES-GCM frames in strict order, and
@@ -136,18 +136,18 @@ export class CollabSocket {
 			try {
 				this.onControl?.(JSON.parse(data) as RelayControlMessage);
 			} catch {
-				console.warn("collab: ignoring malformed control message");
+				console.warn("gateway: ignoring malformed control message");
 			}
 			return;
 		}
 		const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data instanceof Uint8Array ? data : null;
 		if (!bytes) {
-			console.warn("collab: ignoring binary message of unexpected shape");
+			console.warn("gateway: ignoring binary message of unexpected shape");
 			return;
 		}
 		const envelope = unpackEnvelope(bytes);
 		if (!envelope) {
-			console.warn("collab: ignoring truncated envelope");
+			console.warn("gateway: ignoring truncated envelope");
 			return;
 		}
 		this.#recvChain = this.#recvChain

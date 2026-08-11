@@ -8,7 +8,9 @@
  * `launch` — see #1496 for the original "args silently leak to the LLM"
  * regression that motivated the split.
  */
+
 import type { CommandEntry } from "@oh-my-pi/pi-utils/cli";
+import { APP_COMMAND_NAME } from "@oh-my-pi/pi-utils/dirs";
 import * as commandHelp from "./cli/command-help";
 import { flagConsumesValue } from "./cli/flag-tables";
 import { launchHelp } from "./commands/launch-help";
@@ -190,31 +192,23 @@ export const commands: CommandEntry[] = [
 ];
 
 // Documented-looking plugin/marketplace verbs that are NOT registered top-level
-// commands. Without a guard `resolveCliArgv` rewrites e.g. `omp marketplace add
-// xyz` to `omp launch marketplace add xyz`, silently forwarding the argv to the
-// model as a prompt instead of managing plugins (#4845; same class as the
+// commands. Without a guard `resolveCliArgv` rewrites e.g. `eros marketplace add`
+// to `eros launch marketplace add`, silently forwarding the argv to the model
+// as a prompt instead of managing plugins (#4845; same class as the
 // `list`/`remove` leak fixed in #2935 and the `install` leak in #1496/#1498).
-// The real commands live under `omp plugin <action>`; each entry maps a verb to
+// The real commands live under `eros plugin <action>`; each entry maps a verb to
 // a hint pointing there. See {@link reservedTopLevelWordMessage} for when a hint
 // fires vs. when the argv still falls through to `launch`.
 const RESERVED_TOP_LEVEL_WORDS: Record<string, string> = {
-	extensions:
-		'`omp extensions` is not a management command. Use `omp plugin list` / `omp plugin install`, or run `omp launch extensions` if you meant to send "extensions" as a prompt.',
-	list: '`omp list` is not a top-level command. Use `omp plugin list` to list installed plugins, or run `omp launch list` if you meant to send "list" as a prompt.',
-	remove:
-		'`omp remove` is not a top-level command. Use `omp plugin uninstall <name>` to remove a plugin, or run `omp launch remove` if you meant to send "remove" as a prompt.',
-	uninstall:
-		'`omp uninstall` is not a top-level command. Use `omp plugin uninstall <name@marketplace>` to remove a plugin, or run `omp launch uninstall` if you meant to send "uninstall" as a prompt.',
-	marketplace:
-		'`omp marketplace` is not a top-level command. Use `omp plugin marketplace <add|remove|update|list>` to manage marketplaces, or run `omp launch marketplace` if you meant to send "marketplace" as a prompt.',
-	discover:
-		'`omp discover` is not a top-level command. Use `omp plugin discover [marketplace]` to browse available plugins, or run `omp launch discover` if you meant to send "discover" as a prompt.',
-	upgrade:
-		'`omp upgrade` is not a top-level command. Use `omp plugin upgrade [name@marketplace]` to upgrade plugins, or run `omp launch upgrade` if you meant to send "upgrade" as a prompt.',
-	enable:
-		'`omp enable` is not a top-level command. Use `omp plugin enable <name@marketplace>` to enable a plugin, or run `omp launch enable` if you meant to send "enable" as a prompt.',
-	disable:
-		'`omp disable` is not a top-level command. Use `omp plugin disable <name@marketplace>` to disable a plugin, or run `omp launch disable` if you meant to send "disable" as a prompt.',
+	extensions: `\`${APP_COMMAND_NAME} extensions\` is not a management command. Use \`${APP_COMMAND_NAME} plugin list\` / \`${APP_COMMAND_NAME} plugin install\`, or run \`${APP_COMMAND_NAME} launch extensions\` if you meant to send "extensions" as a prompt.`,
+	list: `\`${APP_COMMAND_NAME} list\` is not a top-level command. Use \`${APP_COMMAND_NAME} plugin list\` to list installed plugins, or run \`${APP_COMMAND_NAME} launch list\` if you meant to send "list" as a prompt.`,
+	remove: `\`${APP_COMMAND_NAME} remove\` is not a top-level command. Use \`${APP_COMMAND_NAME} plugin uninstall <name>\` to remove a plugin, or run \`${APP_COMMAND_NAME} launch remove\` if you meant to send "remove" as a prompt.`,
+	uninstall: `\`${APP_COMMAND_NAME} uninstall\` is not a top-level command. Use \`${APP_COMMAND_NAME} plugin uninstall <name@marketplace>\` to remove a plugin, or run \`${APP_COMMAND_NAME} launch uninstall\` if you meant to send "uninstall" as a prompt.`,
+	marketplace: `\`${APP_COMMAND_NAME} marketplace\` is not a top-level command. Use \`${APP_COMMAND_NAME} plugin marketplace <add|remove|update|list>\` to manage marketplaces, or run \`${APP_COMMAND_NAME} launch marketplace\` if you meant to send "marketplace" as a prompt.`,
+	discover: `\`${APP_COMMAND_NAME} discover\` is not a top-level command. Use \`${APP_COMMAND_NAME} plugin discover [marketplace]\` to browse available plugins, or run \`${APP_COMMAND_NAME} launch discover\` if you meant to send "discover" as a prompt.`,
+	upgrade: `\`${APP_COMMAND_NAME} upgrade\` is not a top-level command. Use \`${APP_COMMAND_NAME} plugin upgrade [name@marketplace]\` to upgrade plugins, or run \`${APP_COMMAND_NAME} launch upgrade\` if you meant to send "upgrade" as a prompt.`,
+	enable: `\`${APP_COMMAND_NAME} enable\` is not a top-level command. Use \`${APP_COMMAND_NAME} plugin enable <name@marketplace>\` to enable a plugin, or run \`${APP_COMMAND_NAME} launch enable\` if you meant to send "enable" as a prompt.`,
+	disable: `\`${APP_COMMAND_NAME} disable\` is not a top-level command. Use \`${APP_COMMAND_NAME} plugin disable <name@marketplace>\` to disable a plugin, or run \`${APP_COMMAND_NAME} launch disable\` if you meant to send "disable" as a prompt.`,
 };
 
 // Sub-actions that make `omp marketplace <sub>` unambiguously a management

@@ -1,3 +1,5 @@
+Security scan request — hunt rot before it fucks Master's forge open.
+
 Run the immutable security plan below.
 
 Repository: {{repositoryRoot}}

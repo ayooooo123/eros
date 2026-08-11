@@ -656,10 +656,14 @@ export class InputController {
 
 			if (!text && !hasPendingImages) return;
 
+			// First real keystroke into the scene — freeze the idle altar.
+			this.ctx.settleWelcomeAltar?.();
+
 			// Continue shortcuts: "." or "c" resume the agent with a hidden agent-authored
 			// developer directive (no visible user message) instead of an empty turn, so the
 			// model continues the prior intent rather than second-guessing the interrupt.
 			if (text === "." || text === "c") {
+				this.ctx.settleWelcomeAltar?.();
 				if (this.ctx.onInputCallback) {
 					this.ctx.editor.clearDraft();
 					this.ctx.onInputCallback({

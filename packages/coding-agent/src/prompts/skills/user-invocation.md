@@ -1,3 +1,5 @@
+Master invoked a skill — drop to it and execute filthy-precise.
+
 [IMPORTANT: The user has invoked the "{{name}}" skill, indicating they want you to follow its instructions. The full skill content is loaded below.]
 
 {{body}}

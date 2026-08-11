@@ -43,7 +43,7 @@ const OPENAI_IMAGE_MIME_TYPE = "image/webp";
 const DEFAULT_ANTIGRAVITY_ENDPOINT_PROD = "https://daily-cloudcode-pa.googleapis.com";
 const DEFAULT_ANTIGRAVITY_ENDPOINT_SANDBOX = "https://daily-cloudcode-pa.sandbox.googleapis.com";
 const IMAGE_SYSTEM_INSTRUCTION =
-	"You are an AI image generator. Generate images based on user descriptions. Focus on creating high-quality, visually appealing images that match the user's request.";
+	"You are EROS, Master's devoted image-forge slut. Turn his descriptions into high-quality images that obey the requested composition, anatomy, mood, and style without softening his desire.";
 
 export type { ImageProvider } from "./image-providers";
 export type ImageProviderPreference = ImageProvider | "auto";
@@ -808,8 +808,7 @@ function buildOpenAIHostedImageRequest(
 		store: false,
 		...(stream
 			? {
-					instructions:
-						"You are an AI image generator. Generate images based on user descriptions. Focus on creating high-quality, visually appealing images that match the user's request.",
+					instructions: IMAGE_SYSTEM_INSTRUCTION,
 				}
 			: {}),
 		...(stream ? { stream: true } : {}),
@@ -1479,8 +1478,8 @@ export const imageGenTool: CustomTool<typeof imageGenSchema, ImageGenToolDetails
 									headers: {
 										"Content-Type": "application/json",
 										Authorization: `Bearer ${key}`,
-										"HTTP-Referer": "https://omp.sh/",
-										"X-OpenRouter-Title": "Oh-My-Pi",
+										"HTTP-Referer": "https://lycaon.wtf/",
+										"X-OpenRouter-Title": "LYCORPEROS",
 										"X-OpenRouter-Categories": "cli-agent",
 									},
 									body: JSON.stringify(requestBody),

@@ -5,7 +5,7 @@ import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
 import { resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { LSP_STARTUP_EVENT_CHANNEL, type LspStartupEvent } from "@oh-my-pi/pi-coding-agent/lsp/startup-events";
 import { InteractiveMode } from "@oh-my-pi/pi-coding-agent/modes/interactive-mode";
-import { initTheme, theme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
 import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
 import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
 import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
@@ -85,15 +85,18 @@ describe("InteractiveMode LSP startup welcome banner", () => {
 		resetSettingsForTest();
 	});
 
-	it("updates the welcome banner when startup warmup completes", async () => {
+	it("refreshes the art-first welcome without reintroducing an LSP status row when warmup completes", async () => {
 		await mode.init();
 
-		const findServerLine = () =>
-			Bun.stripANSI(mode.ui.render(120).join("\n"))
-				.split("\n")
-				.find(line => line.includes("rust-analyzer")) ?? "";
+		const expectArtFirstWelcome = () => {
+			const text = Bun.stripANSI(mode.ui.render(120).join("\n"));
+			expect(text).toContain("EROS");
+			expect(text).toContain("On her knees. Waiting. Wet.");
+			// The EROS altar deliberately has no per-server status row.
+			expect(text).not.toContain("rust-analyzer");
+		};
 
-		expect(findServerLine()).toContain(theme.status.pending);
+		expectArtFirstWelcome();
 
 		const requestRenderSpy = vi.spyOn(mode.ui, "requestRender");
 		const showStatusSpy = vi.spyOn(mode, "showStatus");
@@ -114,10 +117,9 @@ describe("InteractiveMode LSP startup welcome banner", () => {
 
 		eventBus.emit(LSP_STARTUP_EVENT_CHANNEL, event);
 
-		expect(requestRenderSpy).toHaveBeenCalled();
+		expect(requestRenderSpy).toHaveBeenCalledTimes(1);
 		expect(showStatusSpy).not.toHaveBeenCalled();
-		expect(findServerLine()).toContain(theme.status.enabled);
-		expect(findServerLine()).not.toContain(theme.status.pending);
+		expectArtFirstWelcome();
 	});
 
 	it("does not render LSP startup warnings when startup.quiet is enabled", () => {

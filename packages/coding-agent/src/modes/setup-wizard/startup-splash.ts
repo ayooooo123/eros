@@ -1,6 +1,12 @@
 import { type Component, matchesKey, type OverlayFocusOwner } from "@oh-my-pi/pi-tui";
 import type { InteractiveModeContext } from "../types";
-import { renderSetupSplash, SETUP_SPLASH_MS, SETUP_TICK_MS } from "./scenes/splash";
+import {
+	applyErosDarkTerminal,
+	getStartupSplashDuration,
+	renderSetupSplash,
+	restoreTerminalColors,
+	SETUP_TICK_MS,
+} from "./scenes/splash";
 
 export interface RunStartupSplashOptions {
 	readonly durationMs?: number;
@@ -21,7 +27,7 @@ class StartupSplashComponent implements Component, OverlayFocusOwner {
 		readonly ctx: InteractiveModeContext,
 		options: RunStartupSplashOptions = {},
 	) {
-		this.#durationMs = options.durationMs ?? SETUP_SPLASH_MS;
+		this.#durationMs = options.durationMs ?? getStartupSplashDuration();
 		this.#tickMs = options.tickMs ?? SETUP_TICK_MS;
 		this.#now = options.now ?? (() => performance.now());
 	}
@@ -96,6 +102,12 @@ export async function runStartupSplash(
 		margin: 0,
 		fullscreen: true,
 	});
+	// Own the glass: force dark bg so Ghostty light theme cannot wash the art.
+	try {
+		applyErosDarkTerminal();
+	} catch {
+		/* non-TTY / redirected */
+	}
 	try {
 		ctx.ui.setFocus(component);
 		await component.run();
@@ -103,5 +115,10 @@ export async function runStartupSplash(
 		component.dispose();
 		ctx.ui.setFocus(component);
 		overlay.hide();
+		try {
+			restoreTerminalColors();
+		} catch {
+			/* ignore */
+		}
 	}
 }

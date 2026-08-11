@@ -157,6 +157,7 @@ import { containsWorkflow, renderWorkflowNotice } from "../modes/workflow";
 import { type PlanApprovalDetails, resolveApprovedPlan } from "../plan-mode/approved-plan";
 import { listPlanFiles, readPlanFile } from "../plan-mode/plan-files";
 import type { PlanModeState } from "../plan-mode/state";
+import mistressConsultTemplate from "../prompts/advisor/mistress-consult.md" with { type: "text" };
 import goalModeContextPrompt from "../prompts/goals/goal-mode-context.md" with { type: "text" };
 import goalTodoContextPrompt from "../prompts/goals/goal-todo-context.md" with { type: "text" };
 import autoContinuePrompt from "../prompts/system/auto-continue.md" with { type: "text" };
@@ -642,7 +643,7 @@ export class AgentSession {
 		if (mode === "off") return;
 		try {
 			this.#powerAssertion = MacOSPowerAssertion.start({
-				reason: "Oh My Pi agent session",
+				reason: "EROS agent session",
 				idle: true,
 				display: mode === "display" || mode === "system",
 				system: mode === "system",
@@ -9035,6 +9036,34 @@ export class AgentSession {
 	 */
 	isAdvisorEnabled(): boolean {
 		return this.#advisors.isAdvisorEnabled();
+	}
+
+	/**
+	 * On-demand MISTRESS consult (`/mistress`). Ensures the advisor runtime is
+	 * live — a mid-session enable is rewound so she reads the full transcript
+	 * rather than only future turns — injects the summon as a hidden custom
+	 * message, then feeds every live advisor immediately.
+	 *
+	 * @returns true when a live advisor accepted the consult; false when no model
+	 * is assigned to the advisor role.
+	 */
+	async consultMistress(note?: string): Promise<boolean> {
+		if (!this.#advisors.isAdvisorEnabled()) {
+			const active = this.#advisors.setAdvisorEnabled(true);
+			if (!active) return false;
+			// Seeded-on-enable advisors would only see future turns; rewind so the
+			// consult replays the full current transcript.
+			this.#advisors.resetAllRuntimes();
+		}
+		const content = prompt.render(mistressConsultTemplate, { note: note?.trim() || undefined }).trim();
+		await this.sendCustomMessage({
+			customType: "mistress-consult",
+			content,
+			display: false,
+			attribution: "user",
+		});
+		this.#advisors.consultNow();
+		return true;
 	}
 
 	/**

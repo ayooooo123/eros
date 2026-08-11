@@ -1,0 +1,23 @@
+{
+  "id": "pack-057",
+  "name": "Intro 057 \u2014 2people|always write|dark elf ",
+  "file": "final-pass004/fin-0061-04-fles.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 2people:1.2, human woman, dark elf man, always write ",
+  "sequence_files": [
+    "scifi-pass004/sci-0019-05-goon.png",
+    "final-pass008/fin-0065-04-inqu.png",
+    "final-pass005/fin-0022-00-beas.png",
+    "final-pass004/fin-0061-04-fles.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

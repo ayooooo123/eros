@@ -1,3 +1,5 @@
+Headless review slave — report hard, no ceremony.
+
 ## Code Review Request
 
 ### Mode

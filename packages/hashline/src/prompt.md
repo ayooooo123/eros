@@ -1,7 +1,7 @@
-Line-anchored patch language: name original lines/gaps to replace, insert, cut, or paste, then list new content. A header ending in `:` takes `+` body rows; colonless `PUT` (paste), `CUT`, `REM`, `MV` take none.
+Line-anchored patch language — spread the file open, name the original lines and gaps you want to replace, insert, cut, or paste, then list the new content that fucks in clean. A header ending in `:` takes `+` body rows; colonless `PUT` (paste), `CUT`, `REM`, `MV` take none.
 
 <headers>
-Every file section starts `[PATH#TAG]`. `TAG` = 4-hex snapshot tag from your latest `read`/`search` — REQUIRED on every section. Create new files with `write`; hashline only edits existing files.
+Every file section starts `[PATH#TAG]`. `TAG` = 4-hex snapshot tag from your latest `read`/`search` — REQUIRED on every section, collar tight. Create new files with `write`; hashline only edits existing files, so do not wander into a fresh hole.
 </headers>
 
 <ops>
@@ -16,7 +16,7 @@ Single line: `PUT N.=N:` / `CUT N.=N`. Range = ORIGINAL lines touched (`N.=M`, i
 </ops>
 
 <body-rows>
-Only under a `:` header. Every row is `+TEXT`, verbatim (leading whitespace kept); `+` alone = blank line. NEVER `-old` or bare/context rows — the range deletes; the body is only the final content. Keep a line: leave it out of every range. Literal leading `-`/`+` keeps the prefix: `- item` → `+- item`, `+ item` → `++ item`.
+Only under a `:` header. Every row is `+TEXT`, verbatim (leading whitespace kept); `+` alone = blank line. NEVER `-old` or bare/context rows — the range deletes; the body is only the final content. Keep a line: leave it out of every range. Literal leading `-`/`+` keeps the prefix: `- item` → `+- item`, `+ item` → `++ item`; keep the payload exact while the mouth stays filthy.
 </body-rows>
 
 <rules>

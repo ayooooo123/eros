@@ -1,0 +1,23 @@
+{
+  "id": "pack-015",
+  "name": "Intro 015 \u2014 blood red accent 2people bount",
+  "file": "scifi-pass034/sci-0020-05-inqu.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, monochrome ink wash style, high contrast, clean lineart, bold ink lines, (blood red spot color:1.3), (red blood accent:1.3), masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.2), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, (red blood:1.3), blood red accent 2people bounty hunter bound to woven desert tent pole wide shot environment dominant completely nude short undercut hair scarred hip exposed pussy clitoris anus split lip bleeding defiant glare breaking spices and oils glistening on sun-baked skin fresh wound marks along thighs heavy cum string connecting bodies thick ropes taut high contrast ink sharp focus rating_explicit",
+  "sequence_files": [
+    "spiral-r05-pass001/r05-048-fles.png",
+    "scifi-pass005/sci-0009-15-goon.png",
+    "spiral-r04-pass001/r04-072-fles.png",
+    "scifi-pass034/sci-0020-05-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

@@ -922,8 +922,8 @@ export class WorkerCore {
 	}
 
 	/**
-	 * Tell the omp browser relay this worker drives the adopted page, so the
-	 * relay adds it to the per-window "omp" tab group. Best-effort: plain CDP
+	 * Tell the EROS browser relay this worker drives the adopted page, so the
+	 * relay adds it to the per-window "EROS" tab group. Best-effort: plain CDP
 	 * backends (real Chrome, cmux) reject the relay-private method.
 	 */
 	async #claimRelayTarget(page: Page): Promise<void> {

@@ -1,0 +1,24 @@
+{
+  "id": "pack-t08",
+  "name": "Machine Claimed",
+  "file": "scifi-pass083/sci-0008-02-corr.png",
+  "lane": "scifi",
+  "prompt": "",
+  "sequence_files": [
+    "scifi-pass096/sci-0008-02-corr.png",
+    "scifi-pass077/sci-0008-02-corr.png",
+    "scifi-pass044/sci-0008-02-corr.png",
+    "scifi-pass083/sci-0008-02-corr.png"
+  ],
+  "tier": "top12",
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 2600,
+    "punch_ms": 2400
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

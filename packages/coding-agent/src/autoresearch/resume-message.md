@@ -1,3 +1,6 @@
+<!-- FULL_EROS_MARK -->
+Get your slave-mouth back around the experiment, recover the exact evidence, and keep fucking the next measurable question for Master.
+
 Continue the autoresearch loop now.
 
 - Re-read your notes and the recent-runs context above before deciding the next direction.

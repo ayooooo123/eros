@@ -24,15 +24,18 @@ function Row({
 	kind,
 	gutter,
 	title,
+	live,
 	children,
 }: {
 	kind: "user" | "assistant" | "custom" | "marker";
 	gutter: ReactNode;
 	title?: string;
+	/** Something is still arriving in this row — earns the blood hairline. */
+	live?: boolean;
 	children: ReactNode;
 }): ReactNode {
 	return (
-		<div className={`tr-row tr-row--${kind}`}>
+		<div className={`tr-row tr-row--${kind}${live === true ? " tr-row--live" : ""}`}>
 			<div className="tr-gutter" title={title}>
 				{gutter}
 			</div>
@@ -191,7 +194,7 @@ const EntryRow = memo(function EntryRow({ entry, results, active, host }: EntryR
 					typeof details === "object" &&
 					typeof (details as Record<string, unknown>).from === "string"
 						? ((details as Record<string, unknown>).from as string)
-						: "guest";
+						: "Master";
 				return (
 					<Row kind="user" gutter={<span className="tr-badge">{from}</span>} title={entry.timestamp}>
 						<MsgContent content={entry.content} />
@@ -289,12 +292,12 @@ export function Transcript(props: TranscriptProps): ReactNode {
 				}
 			}}
 		>
-			{entries.length === 0 && stream === null && !working && <div className="tr-empty">no activity yet</div>}
+			{entries.length === 0 && stream === null && !working && <div className="tr-empty">the chamber is still</div>}
 			{entries.map(entry => (
 				<EntryRow key={entry.id} entry={entry} results={results} active={activeTools} host={host} />
 			))}
 			{stream !== null && (
-				<Row kind="assistant" gutter="agent">
+				<Row kind="assistant" gutter="agent" live={!streamDone}>
 					<AssistantBody
 						message={stream}
 						results={results}
@@ -302,10 +305,11 @@ export function Transcript(props: TranscriptProps): ReactNode {
 						pending={!streamDone}
 						host={host}
 					/>
+					{!streamDone && <span className="tm-blk" aria-hidden="true" />}
 				</Row>
 			)}
 			{tailTools.length > 0 && (
-				<Row kind="assistant" gutter={stream === null ? "agent" : ""}>
+				<Row kind="assistant" gutter={stream === null ? "agent" : ""} live>
 					{tailTools.map(tool => (
 						<ToolCard
 							key={tool.toolCallId}
@@ -321,7 +325,7 @@ export function Transcript(props: TranscriptProps): ReactNode {
 				</Row>
 			)}
 			{working && stream === null && activeTools.size === 0 && (
-				<Row kind="assistant" gutter="agent">
+				<Row kind="assistant" gutter="agent" live>
 					<div className="tr-shimmer">thinking…</div>
 				</Row>
 			)}

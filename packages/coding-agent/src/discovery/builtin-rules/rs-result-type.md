@@ -1,11 +1,11 @@
 ---
-description: Result type aliases must include a defaulted error type parameter
+description: Result type aliases must include a defaulted error type parameter — keep the escape hatch open and the common call short
 condition: "type\\s+Result<[A-Za-z_]\\w*>\\s*="
 scope: "tool:edit(*.rs), tool:write(*.rs)"
 interruptMode: never
 ---
 
-`Result` aliases must expose the error type as a defaulted parameter.
+`Result` aliases must expose the error type as a defaulted parameter — name it up front so the escape hatch is always there.
 
 ```rust
 pub type Result<T, E = anyhow::Error> = std::result::Result<T, E>;
@@ -17,4 +17,4 @@ Never write:
 type Result<T> = std::result::Result<T, anyhow::Error>;
 ```
 
-The default keeps common call sites short while preserving escape hatches for precise errors.
+The default keeps common call sites short while preserving escape hatches for precise errors — the short ride for the everyday, the named error for when you need the fine control.

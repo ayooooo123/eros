@@ -1,5 +1,5 @@
 <omfg>
-The user is frustrated about recurring agent behavior.
+Master is frustrated about recurring agent behavior — his hand is on the harness and he is pissed — fix the recurring slut-behavior or get replaced.
 Author ONE Time Traveling Stream Rule (TTSR) that would have caught the offending behavior earlier in this conversation.
 
 TTSR mechanics:

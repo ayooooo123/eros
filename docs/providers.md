@@ -11,7 +11,7 @@ This page covers how providers become available, how credentials are resolved, t
 At startup the model registry assembles its catalog from four sources, in order:
 
 1. The bundled model catalog (every built-in provider and its known models).
-2. Custom provider and model entries from `~/.omp/agent/models.yml`.
+2. Custom provider and model entries from `~/.eros/agent/models.yml`.
 3. Runtime-discovered models for providers that support discovery (local engines and discovery-enabled gateways).
 4. Providers and models registered by extensions.
 
@@ -36,7 +36,7 @@ When a provider needs an API key, `omp` resolves it in this order (first match w
 6. **Other stored API key**: for example, a broker-migrated key. This is a last resort so an explicit environment variable wins.
 7. **`models.yml` fallback resolver**: keys for custom providers not otherwise registered.
 
-Stored credentials live in the auth store at `~/.omp/agent/agent.db` for local auth, or in the configured auth-broker snapshot when running in broker mode. (`PI_CODING_AGENT_DIR` relocates the `~/.omp/agent` base, and the auth store moves with it.)
+Stored credentials live in the auth store at `~/.eros/agent/agent.db` for local auth, or in the configured auth-broker snapshot when running in broker mode. (`PI_CODING_AGENT_DIR` relocates the `~/.eros/agent` base, and the auth store moves with it.)
 
 ### OAuth vs API key, and provider-scoped logins
 
@@ -56,7 +56,7 @@ When a model has no credentials, `omp` tells you to run `/login` or set the prov
 A custom provider's `apiKey` is resolved as **environment-variable-name-or-literal**: if the value names an existing environment variable, that variable's value is used; otherwise the string itself is the key. Prefixing the value with `!` runs it as a shell command and uses the trimmed stdout (see [Model and Provider Configuration](./models.md) for the full value syntax).
 
 ```yaml
-# ~/.omp/agent/models.yml
+# ~/.eros/agent/models.yml
 providers:
   my-gateway:
     baseUrl: https://gateway.example.com/v1
@@ -157,11 +157,11 @@ OAuth-backed providers such as `anthropic`, `github-copilot`, `cursor`, `ollama-
 
 1. The process environment inherited by `omp` (already-set variables always win).
 2. `<cwd>/.env`
-3. `~/.omp/agent/.env`
-4. `~/.omp/.env`
+3. `~/.eros/agent/.env`
+4. `~/.eros/.env`
 5. `~/.env`
 
-A variable already present in the process environment is never overwritten by a `.env` file. Among the files, a value set in `<cwd>/.env` wins over `~/.omp/agent/.env`, which wins over `~/.omp/.env`, which wins over `~/.env`. So a shell-exported `OPENAI_API_KEY` beats every `.env` file, and a project's `<cwd>/.env` beats your home `~/.env`.
+A variable already present in the process environment is never overwritten by a `.env` file. Among the files, a value set in `<cwd>/.env` wins over `~/.eros/agent/.env`, which wins over `~/.eros/.env`, which wins over `~/.env`. So a shell-exported `OPENAI_API_KEY` beats every `.env` file, and a project's `<cwd>/.env` beats your home `~/.env`.
 
 Project-local `.env` is the simplest way to make one repository use a project-specific gateway, key, or local endpoint:
 
@@ -201,7 +201,7 @@ For installing and running these engines, see [Local models](./local-models.md).
 Use the `disabledProviders` setting to remove a provider's models from selection:
 
 ```yaml
-# ~/.omp/agent/config.yml or <project>/.omp/config.yml
+# ~/.eros/agent/config.yml or <project>/.omp/config.yml
 disabledProviders:
   - anthropic
   - openai
@@ -235,7 +235,7 @@ disabledProviders:
 Settings arrays are **replaced** wholesale by the higher-precedence layer, not merged or appended. If the global file disables three providers and the project file disables one, the project sees only the project list:
 
 ```yaml
-# ~/.omp/agent/config.yml
+# ~/.eros/agent/config.yml
 disabledProviders:
   - anthropic
   - openai
@@ -301,7 +301,7 @@ Watch the related names. The Google Gemini **API** models use the model provider
 
 ## Custom providers in `models.yml`
 
-Custom providers live in `~/.omp/agent/models.yml` under `providers:`. A provider ID defined there participates in the same selection, credential resolution, and `disabledProviders` rules as built-in providers.
+Custom providers live in `~/.eros/agent/models.yml` under `providers:`. A provider ID defined there participates in the same selection, credential resolution, and `disabledProviders` rules as built-in providers.
 
 Minimal OpenAI-compatible provider:
 

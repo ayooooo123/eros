@@ -243,7 +243,7 @@
 
 ### Added
 
-- Added `requestIdFormat` (`"string"` | `"number"`, default `"number"`) to MCP server config, honored by the stdio, HTTP, and SSE transports. JSON-RPC 2.0 permits both id shapes, but Apple's `xcrun mcpbridge` decodes `id` as an integer only and silently drops string ids (`mcpbridge.DecodeError Code=1`), hanging every request until it times out. The option is OMP-specific, so set it in an OMP-owned config (`.omp/mcp.json`, `~/.omp/agent/mcp.json`, a project `mcp.json`/`.mcp.json`, or an OMP plugin); servers imported from another tool's config ignore it ([#7053](https://github.com/can1357/oh-my-pi/issues/7053)).
+- Added `requestIdFormat` (`"string"` | `"number"`, default `"number"`) to MCP server config, honored by the stdio, HTTP, and SSE transports. JSON-RPC 2.0 permits both id shapes, but Apple's `xcrun mcpbridge` decodes `id` as an integer only and silently drops string ids (`mcpbridge.DecodeError Code=1`), hanging every request until it times out. The option is OMP-specific, so set it in an OMP-owned config (`.omp/mcp.json`, `~/.eros/agent/mcp.json`, a project `mcp.json`/`.mcp.json`, or an OMP plugin); servers imported from another tool's config ignore it ([#7053](https://github.com/can1357/oh-my-pi/issues/7053)).
 - Fixed Anthropic web search sending unsupported temperature parameters to sampling-restricted Claude models ([#7195](https://github.com/can1357/oh-my-pi/pull/7195) by [@will-bogusz](https://github.com/will-bogusz)).
 - Fixed mid-turn steering/peer-interrupt tool skips rendering as errors (red ✘, red border/text) in the TUI; pending and in-flight interrupt placeholders now render as neutral info cards while preserving whether `tool.execute` started ([#7199](https://github.com/can1357/oh-my-pi/issues/7199)).
 - Added `Shift+Up` as a second default for the message dequeue, so the shortcut is reachable in macOS Terminal.app where Option is consumed for character composition.
@@ -254,10 +254,10 @@
 - Headless hosts (print/RPC/ACP/eval/SDK) now use a 1s SQLite `busy_timeout` for the session-critical databases (agent.db, history.db, stats.db), so lock contention no longer freezes the protocol loop for the full interactive 5s timeout; interactive hosts keep the 5s timeout. The interactive-host flag is now declared before settings load so the first database opens see the correct timeout.
 - The model picker (`/switch`, alt+p) no longer blocks models whose context window is smaller than the live session: over-context rows stay grayed but selectable, and picking one compacts with the current model first, then switches. A cancelled or failed compaction keeps the current model.
 - MCP JSON-RPC request ids now default to per-connection sequential integers instead of snowflake strings, matching the wider MCP ecosystem and making integer-only decoders like Apple's `xcrun mcpbridge` work without configuration; set `requestIdFormat: "string"` per server to restore collision-resistant string ids ([#7053](https://github.com/can1357/oh-my-pi/issues/7053)).
-- `secret-placeholder.key` now resolves under XDG state (`$XDG_STATE_HOME/omp/secret-placeholder.key`) instead of the agent config directory, so it follows the same XDG layout as other state files.
-- Daemon runtime directories (`run/daemons/<hash>`) and provider in-flight tracking (`run/provider-inflight`) now resolve under XDG state (`$XDG_STATE_HOME/omp/run/`) instead of the config root, keeping ephemeral runtime state out of `~/.config`.
-- `marketplaces.json` now resolves under XDG data (`$XDG_DATA_HOME/omp/marketplaces.json`) instead of the config root, aligning with the XDG data category for user-scoped registry files.
-- Existing XDG installs keep their placeholder key and marketplace registry: the legacy `~/.omp/agent/secret-placeholder.key` and `~/.omp/marketplaces.json` are copied to their XDG locations on first resolution.
+- `secret-placeholder.key` now resolves under XDG state (`$XDG_STATE_HOME/eros/secret-placeholder.key`) instead of the agent config directory, so it follows the same XDG layout as other state files.
+- Daemon runtime directories (`run/daemons/<hash>`) and provider in-flight tracking (`run/provider-inflight`) now resolve under XDG state (`$XDG_STATE_HOME/eros/run/`) instead of the config root, keeping ephemeral runtime state out of `~/.config`.
+- `marketplaces.json` now resolves under XDG data (`$XDG_DATA_HOME/eros/marketplaces.json`) instead of the config root, aligning with the XDG data category for user-scoped registry files.
+- Existing XDG installs keep their placeholder key and marketplace registry: the legacy `~/.eros/agent/secret-placeholder.key` and `~/.eros/marketplaces.json` are copied to their XDG locations on first resolution.
 
 ### Fixed
 
@@ -757,7 +757,7 @@
 
 ### Fixed
 
-- Fixed Auto QA grievance recording silently dropping every report since the xd:// device consolidation: `openAutoQaDb` treated the database file path (`~/.omp/autoqa.db`) as a directory and tried to open `autoqa.db/autoqa.db` inside it, which fails on legacy installs (the flat file blocks the directory) and fresh ones alike (SQLite does not create parent directories). Also restored the `busy_timeout` pragma dropped in the same refactor (#2421). Renamed `getAutoQaDbDir` to `getAutoQaDbPath` to match what it returns.
+- Fixed Auto QA grievance recording silently dropping every report since the xd:// device consolidation: `openAutoQaDb` treated the database file path (`~/.eros/autoqa.db`) as a directory and tried to open `autoqa.db/autoqa.db` inside it, which fails on legacy installs (the flat file blocks the directory) and fresh ones alike (SQLite does not create parent directories). Also restored the `busy_timeout` pragma dropped in the same refactor (#2421). Renamed `getAutoQaDbDir` to `getAutoQaDbPath` to match what it returns.
 - Fixed the setup wizard hiding the selected row on short terminals (e.g. 24x80): the provider sign-in, theme, and web-search lists now fit their windows to the visible height, and decorative chrome (sign-in hint, theme mock preview) yields to the list when space is tight.
 - Fixed restored sessions replaying terminal aborted or errored assistant turns, which could repeatedly fail continuation from an assistant role; `/retry` now consults the persisted transcript so the failed turn remains retryable without re-entering provider context.
 - Fixed `get_available_models` and `set_model` RPCs racing background model discovery on cold start by awaiting the in-flight refresh before reading the registry. RPC/ACP clients that query the catalog or select a model immediately after session ready previously saw only statically-bundled models until discovery completed seconds later.
@@ -1415,7 +1415,7 @@
 - Fixed MCP tools receiving session image attachments as raw local:// URIs instead of resolving them to local filesystem paths.
 - Fixed Pyright LSP semantic requests hanging during startup.
 - Fixed Codex web search requests for GPT-5.6 Responses-Lite models.
-- Fixed custom model/provider configuration discovery to correctly load ~/.omp/agent/models.yaml when models.yml is absent.
+- Fixed custom model/provider configuration discovery to correctly load ~/.eros/agent/models.yaml when models.yml is absent.
 
 ## [16.4.8] - 2026-07-12
 
@@ -1471,7 +1471,7 @@
 - Added fallback-chain editing to the /models Roles view: each role's `retry.fallbackChains` entries render as indented rows beneath it, `f` picks a fallback model to append, Enter on an entry replaces it, `x`/backspace removes it, and `[`/`]` (or shift+↑/↓) reorder the chain.
 - Added model-keyed fallback management to the /models Roles view: model and `provider/*` chains render as a separate section below the roles (divider + "+ New fallback…" row for creating one by picking the protected model, then keying it by model or provider), with the same replace/remove/reorder editing as role chains; the model strip gains `fallbacks:<model>` and `fallbacks:<provider>/*` chips as shortcuts.
 - Added `/queue <message>` plus `->` / `=>` composer shorthand for follow-up messages that wait until the agent yields. The shorthand opens a dim `Queueing` header and splits sequential numeric, Roman-numeral, or alphabetic lists into separately highlighted queue entries.
-- Added per-model TPS/TTFT tracking: every completed assistant turn folds its timing into recency-weighted aggregates in `~/.omp/agent.db`, and the /models browser shows measured speed — a right-aligned `118t/s` column on wide terminals (plus TTFT, e.g. `0.9s 118t/s`, when wider) and `~118t/s · 0.9s ttft` facts in the selection detail line — with no dependency on the `omp stats` session scan.
+- Added per-model TPS/TTFT tracking: every completed assistant turn folds its timing into recency-weighted aggregates in `~/.eros/agent.db`, and the /models browser shows measured speed — a right-aligned `118t/s` column on wide terminals (plus TTFT, e.g. `0.9s 118t/s`, when wider) and `~118t/s · 0.9s ttft` facts in the selection detail line — with no dependency on the `omp stats` session scan.
 
 ### Changed
 
@@ -1649,7 +1649,7 @@
 - Fixed `read` and `grep` treating empty optional `selector` fields emitted by models as invalid selectors instead of behaving like omitted selectors. ([#4879](https://github.com/can1357/oh-my-pi/issues/4879))
 - Fixed `grep` explicit line selectors on directory searches so they filter each matched file by line number instead of aborting with a single-file-only error ([#4898](https://github.com/can1357/oh-my-pi/issues/4898)).
 - Fixed Read tool previews dropping explicit `selector` arguments, so line ranges and `raw` modifiers render in terminal read call titles again ([#4899](https://github.com/can1357/oh-my-pi/issues/4899)).
-- Fixed named profiles dropping default user keybindings from `~/.omp/agent/keybindings.*`; profile keybindings now inherit those defaults and override only the keys they define ([#4867](https://github.com/can1357/oh-my-pi/issues/4867)).
+- Fixed named profiles dropping default user keybindings from `~/.eros/agent/keybindings.*`; profile keybindings now inherit those defaults and override only the keys they define ([#4867](https://github.com/can1357/oh-my-pi/issues/4867)).
 - Fixed pi extensions calling `ctx.ui.addAutocompleteProvider(...)` crashing at load with `TypeError: ... is not a function` — a failure that, for extensions guarding init in one `try/catch` (e.g. `@ff-labs/pi-fff`), aborted the extension's entire initialization. `ExtensionUIContext` now implements pi's autocomplete-provider API: interactive mode stacks each registered factory on top of the built-in editor provider (re-applied on every slash-command refresh, with throwing or malformed factories skipped), while RPC/ACP/headless contexts accept the factory as a no-op. ([#4919](https://github.com/can1357/oh-my-pi/issues/4919))
 - Fixed bundled reviewer and plan subagents to inherit their model roles' explicit thinking effort suffixes instead of pinning `high` ([#4761](https://github.com/can1357/oh-my-pi/issues/4761)).
 - Built-in provider model discovery now refreshes an expired stored OAuth credential before an online refresh needs it, instead of silently skipping the provider. The refresh is scoped to the providers actually being discovered (`refreshProvider` cannot rotate unrelated credentials), fires under `online-if-uncached` only when the model manager will actually fetch, and offline discovery stays peek-only ([#4893](https://github.com/can1357/oh-my-pi/issues/4893)).
@@ -1676,7 +1676,7 @@
 - Fixed advisor turns hammering the same usage-limited account: a failed advisor turn now marks the exhausted credential blocked (with the provider's retry hint and usage-report reset time), so the next retry rotates to a sibling instead of re-picking the blocked account every few seconds. Previously the in-stream auth retry rotated within a request but never blocked the last failing credential, and the advisor loop — unlike the primary retry pipeline — never called `markUsageLimitReached`.
 - Added the account key to the `codex-auto-reset: skipped` debug log so skip reasons (e.g. `weekly-not-exhausted`) can be attributed to the evaluated account.
 - Fixed unawaited promise rejections in JS eval cells crashing the session: a floating rejection now fails the owning cell run (`Unhandled rejection (missing await?): …`) instead of escaping to the global `unhandledRejection` handler, which printed `[Unhandled Rejection]` and killed the process (inline fallback) or tore down the eval worker (dedicated worker). Rejections surfacing after a cell settled are downgraded to a warn log attributed to the finished cell.
-- Fixed project `.omp/RULES.md` sticky rules being shadowed by user `~/.omp/agent/RULES.md` rules with the same synthesized `RULES` name, so both user and project sticky rules now inject ([#4739](https://github.com/can1357/oh-my-pi/issues/4739)).
+- Fixed project `.omp/RULES.md` sticky rules being shadowed by user `~/.eros/agent/RULES.md` rules with the same synthesized `RULES` name, so both user and project sticky rules now inject ([#4739](https://github.com/can1357/oh-my-pi/issues/4739)).
 - Fixed bash internal-URL expansion so unresolved literal `memory://` / `skill://` text stays verbatim instead of aborting command execution ([#4737](https://github.com/can1357/oh-my-pi/issues/4737)).
 - Fixed `agent://<id>` (and the `output()` eval helper) failing with `Not found` for a subagent spawned by another subagent (any spawn chain 2+ levels deep). `artifactsDirsFromRegistry` scanned only each ref's adopted (root-wide) `ArtifactManager` dir, but a subagent's own children are written one level deeper under its `sessionFile`-derived dir — so a live, addressable nested peer's output was unresolvable. The resolver now collects both candidate dirs per registered agent. ([#4650](https://github.com/can1357/oh-my-pi/issues/4650))
 - Fixed plan mode to document `local://` artifacts as writable session-local planning files and to carry every pre-approval `local://` artifact into the fresh session created by Approve and Execute.
@@ -1695,7 +1695,7 @@
 - Fixed Claude plugin slash commands and skills silently vanishing when the plugin manifest declares `commands`/`slash-commands`/`skills` as a JSON array — the shape the Claude plugins reference documents and real plugins like `addyosmani/agent-skills` ship. `resolvePluginDir` in `packages/coding-agent/src/discovery/claude-plugins.ts` typed those fields as `string` and dropped array values on the floor; it now normalizes both shapes, loads every in-root entry, and reports one out-of-plugin-root warning per bad entry. The resolver also now honours Claude's per-field merge semantic — `skills` adds to the default `skills/` scan; `commands`/`slash-commands` replace the default `commands/` — so plugins like `{"skills":["./extra-skills"]}` no longer lose their default `skills/` folder while `{"commands":["./admin"]}` still replaces `commands/` as documented. ([#4609](https://github.com/can1357/oh-my-pi/issues/4609))
 - Fixed macOS Backspace on empty search not deleting sessions in the `/resume` picker; Fn+Backspace terminals that deliver `\x7f` instead of `\e[3~` now reach the delete confirmation dialog. ([#4580](https://github.com/can1357/oh-my-pi/pull/4580) by [@JagravNaik](https://github.com/JagravNaik))
 - Fixed `/rename` title arguments treating `#` prompt-action tokens as autocomplete triggers instead of literal session title text. ([#4600](https://github.com/can1357/oh-my-pi/issues/4600))
-- Fixed empty session `.jsonl` files accumulating in `~/.omp/agent/sessions/<cwd>/` after a draft-then-clear exit cycle. `SessionManager.saveDraft(text)` materializes the session file so the draft sidecar has a parent; a subsequent `saveDraft("")` unlinked the sidecar but left the metadata-only JSONL behind (title slot + session header + startup selector entries, ~500–750 B), and `#shouldHaveSessionFile()` could no longer prune it once `#fileIsCurrent`/`#forceFileCreation` were latched. `SessionManager.close()` now drops only draft-owned metadata-only sessions with no saved draft sidecar to reattach to, while keeping real conversations, meaningful non-message entries such as handoff custom messages, explicit `ensureOnDisk()` sessions, drafts still pending for `--resume`, and never-materialized sessions untouched ([#4571](https://github.com/can1357/oh-my-pi/issues/4571)).
+- Fixed empty session `.jsonl` files accumulating in `~/.eros/agent/sessions/<cwd>/` after a draft-then-clear exit cycle. `SessionManager.saveDraft(text)` materializes the session file so the draft sidecar has a parent; a subsequent `saveDraft("")` unlinked the sidecar but left the metadata-only JSONL behind (title slot + session header + startup selector entries, ~500–750 B), and `#shouldHaveSessionFile()` could no longer prune it once `#fileIsCurrent`/`#forceFileCreation` were latched. `SessionManager.close()` now drops only draft-owned metadata-only sessions with no saved draft sidecar to reattach to, while keeping real conversations, meaningful non-message entries such as handoff custom messages, explicit `ensureOnDisk()` sessions, drafts still pending for `--resume`, and never-materialized sessions untouched ([#4571](https://github.com/can1357/oh-my-pi/issues/4571)).
 - Fixed the advisor being disabled for the entire session when the advisor role resolves to a reasoning model that exposes no controllable effort surface (Devin `devin/glm-5-2*`: `reasoning: true`, `thinking: undefined` — Cascade routes by sibling model id rather than a wire param). `#resolveAdvisorRuntimeDescriptors` in `packages/coding-agent/src/session/agent-session.ts` used to hardcode `ThinkingLevel.Medium`, which tripped `requireSupportedEffort` on the first advisor prompt with `Thinking effort medium is not supported by devin/glm-5-2. Supported efforts:` (empty list). The advisor descriptor now clamps the requested effort against the resolved model via `resolveThinkingLevelForModel` and forwards no explicit effort when the model has no controllable efforts — matching the `auto`-path fix (`clampAutoThinkingEffort`) and the Autonomous Memory stage fix (`clampThinkingLevelForModel`). Explicit `:off` still disables reasoning, and models that support `medium` (e.g. Anthropic) keep receiving it ([#4579](https://github.com/can1357/oh-my-pi/issues/4579)).
 - Fixed legacy extension plugin validation failing with `Export named 'calculateCost' not found in module '.../legacy-pi-ai-shim.ts'` when the extension imports `calculateCost` (or `modelsAreEqual` / `getBundledProviders`) from `@oh-my-pi/pi-ai`. Those symbols were relocated to `@oh-my-pi/pi-catalog/models` during the catalog split but were never bridged back through the legacy `pi-ai` root shim; the shim now re-exports them alongside the existing `getModel` / `getModels` aliases so plugins written against pre-split pi-ai load again ([#4584](https://github.com/can1357/oh-my-pi/issues/4584)).
 - Fixed legacy extension plugin validation failing with `Export named 'calculateCost' not found in module '.../legacy-pi-ai-shim.ts'` when the extension imports relocated catalog symbols such as `calculateCost`, `modelsAreEqual`, `getBundledProviders`, `getBundledModel`, or `getBundledModels` from `@oh-my-pi/pi-ai`. Those symbols were relocated to `@oh-my-pi/pi-catalog/models` during the catalog split but were never bridged back through the legacy `pi-ai` root shim; the shim now re-exports them alongside the existing `getModel` / `getModels` aliases so plugins written against pre-split pi-ai load again ([#4584](https://github.com/can1357/oh-my-pi/issues/4584)).
@@ -2158,7 +2158,7 @@
 - Fixed Windows MCP stdio launches for PATH-resolved npx.cmd shims by preserving the cmd.exe wrapper path to keep subprocess stdio attached.
 - Fixed the DuckDuckGo web_search provider returning empty results for non-encyclopedic queries by switching from the Instant Answer API to parsing the HTML frontend, and added clear error handling for bot-challenge throttling.
 - Fixed Windows --extension paths with spaces or \\?\ prefixes being truncated or incorrectly passed to Bun import/spawn APIs.
-- Fixed /mcp reauth compatibility with Cloudflare by aligning OAuth prompt behavior with the reference MCP SDK and updating the client label to oh-my-pi.
+- Fixed /mcp reauth compatibility with Cloudflare by aligning OAuth prompt behavior with the reference MCP SDK and updating the client label to EROS.
 
 ## [16.2.5] - 2026-06-28
 
@@ -2712,7 +2712,7 @@
 - Fixed `omp bench` and `omp dry-balance` failing to resolve models from extension providers
 - Improved error reporting for `omp bench` runs that return no output or tokens
 - Cache-miss marker no longer fires on a cold turn whose predecessor only *wrote* the prompt cache (never read it back). The session's opening request always writes the prefix with `cacheRead 0`, so a long-running first tool call (e.g. `gh run watch`) that outlived the provider's cache TTL surfaced a spurious `⊘ cache miss` divider right under the opening message. The marker now requires the previous turn to have actually read a warm prefix, so it flags only a demonstrably working cache going cold — and collapses a run of consecutive cold turns to a single marker at the moment the cache broke.
-- Fixed `omp bench` and `omp dry-balance` failing to resolve models from extension-registered providers (`pi.registerProvider(...)`). Both commands build a one-shot `ModelRegistry` that previously only knew built-in catalog providers, so a `provider/model` selector for a provider contributed by an extension under `~/.omp/agent/extensions/` errored with "Model not found". A new `loadCliExtensionProviders` helper loads the session's extensions, drains their provider registrations into the registry, and discovers dynamic provider catalogs before resolving selectors — mirroring the interactive session and `omp models` paths.
+- Fixed `omp bench` and `omp dry-balance` failing to resolve models from extension-registered providers (`pi.registerProvider(...)`). Both commands build a one-shot `ModelRegistry` that previously only knew built-in catalog providers, so a `provider/model` selector for a provider contributed by an extension under `~/.eros/agent/extensions/` errored with "Model not found". A new `loadCliExtensionProviders` helper loads the session's extensions, drains their provider registrations into the registry, and discovers dynamic provider catalogs before resolving selectors — mirroring the interactive session and `omp models` paths.
 - `omp bench` now reports a run that streamed no content and measured no output tokens as a failure ("provider returned no output") instead of a misleading green check with `tokens 0 / TPS 0.0`.
 - Cleared stale pending-preview gates when `resolve` finds no runnable handler, and forwarded the missing `peekPendingInvoker` and `clearPendingInvokers` hooks on the production session so staged previews actually reach the resolve tool and the gate drains on dispatch failure. ([#3061](https://github.com/can1357/oh-my-pi/issues/3061))
 - Deferred status-line usage refreshes off the render path and timeboxed the startup fetch so slow Anthropic quota lookups no longer block interactive startup. ([#3057](https://github.com/can1357/oh-my-pi/issues/3057))
@@ -3076,7 +3076,7 @@
 - Fixed GitHub Copilot `.github/instructions/*.instructions.md` discovery by loading those files as rules that honor `applyTo` scoping, including always-apply `**` files and `rule://<name>` access for glob-scoped entries ([#2731](https://github.com/can1357/oh-my-pi/issues/2731)).
 - Fixed Windows bash-tool child processes defaulting interpreter pipe I/O to the ANSI codepage by adding UTF-8 encoding defaults when the inherited environment is unset ([#2701](https://github.com/can1357/oh-my-pi/issues/2701)).
 - Fixed `/advisor dump raw` so Opus 4.5 thinking content that already includes literal `<thinking>` tags is not rendered with nested thinking tags ([#2700](https://github.com/can1357/oh-my-pi/issues/2700)).
-- The `plugin-extensions-discovery` test suite no longer writes fixtures into — and `rm -rf`s the `node_modules` of — the developer's real `~/.omp/plugins`. Its `XDG_DATA_HOME` isolation was a no-op on Windows (XDG is gated to Linux/macOS) and was bypassed in XDG-migrated Linux/macOS environments, so a local run could delete installed plugins. The suite now isolates the whole config root via an `os.homedir()` mock plus cleared `XDG_*` vars, with a pre-write guard that fails if resolution escapes the temp home ([#2721](https://github.com/can1357/oh-my-pi/issues/2721)).
+- The `plugin-extensions-discovery` test suite no longer writes fixtures into — and `rm -rf`s the `node_modules` of — the developer's real `~/.eros/plugins`. Its `XDG_DATA_HOME` isolation was a no-op on Windows (XDG is gated to Linux/macOS) and was bypassed in XDG-migrated Linux/macOS environments, so a local run could delete installed plugins. The suite now isolates the whole config root via an `os.homedir()` mock plus cleared `XDG_*` vars, with a pre-write guard that fails if resolution escapes the temp home ([#2721](https://github.com/can1357/oh-my-pi/issues/2721)).
 - Installed plugins whose `extensions` manifest entry points at a directory of sub-extensions (the standard pi `extensions/<name>/index.ts` layout, e.g. `pi.extensions: ["./extensions"]`) are no longer rejected at install (`declared extension entry not found on disk`) or silently dropped at load. The plugin manifest resolver now resolves a directory the same way as the configured-directory (`-e`) extension loader: the directory's own `package.json` `omp`/`pi` `extensions` (authoritative — a missing declared entry is reported instead of falling back to a decoy `index`), then a direct `index.{ts,js,mjs,cjs}`, then a one-level scan of sub-extensions ([#2713](https://github.com/can1357/oh-my-pi/issues/2713)).
 - Fixed OpenRouter `@upstream` routing selectors whose upstream slug also appears in the model id, so `openrouter/...@deepseek:high` keeps `openRouterRouting.only` instead of being consumed by provider-scoped fuzzy matching ([#2708](https://github.com/can1357/oh-my-pi/issues/2708)).
 - Fixed `omp plugin list --json` omitting locally linked plugins that exist only in `omp-plugins.lock.json` and `node_modules` symlinks. ([#2742](https://github.com/can1357/oh-my-pi/issues/2742))
@@ -3400,7 +3400,7 @@
 
 - Removed the Python `openai-whisper` dependency and `pip` install path from speech-to-text — the bundled `transcribe.py` and all Python/whisper probes in `omp setup speech` are gone; the recorder (SoX/FFmpeg/arecord) remains the only external tool.
 - Changed the speech-to-text trigger from the `Alt+H` keybinding to a hold-`Space` push-to-talk gesture. Holding the space bar emits an OS auto-repeat burst; once more than 10 spaces land in the editor it recognizes the hold, deletes (tracks back) those inserted spaces, and starts recording, then stops and transcribes when the repeats stop (the space bar is released). `app.stt.toggle` is now unbound by default but can be rebound to a chord for press-to-toggle; the gesture is gated on `stt.enabled`, and `Shift+Space` still inserts a literal space.
-- Added an experimental, opt-in **auto-learn** loop (default off, `autolearn.enabled`). When enabled, after the agent stops it is nudged to capture reusable lessons: durable facts go to long-term memory and repeatable procedures become **managed skills** — `SKILL.md` files written to an isolated `~/.omp/agent/managed-skills` directory that is discovered and surfaced like authored skills but never overwrites user-authored skills (authored names always win). Two tools back this: `manage_skill` (create/update/delete managed skills) and `learn` (record a lesson, optionally minting a managed skill in the same call). `learn` works with the `hindsight`, `mnemopi`, or file-based `local` memory backend; under `local`, lessons append to a `learned.md` in the project's memory root (kept separate from the consolidation artifacts so they survive a consolidation pass) and are injected into future sessions. The nudge is passive by default (a hidden reminder rides the next turn); `autolearn.autoContinue` instead auto-runs one capture turn at stop, and `autolearn.minToolCalls` (default 5) gates trivial turns. Plan/goal-mode turns and subagents are never nudged.
+- Added an experimental, opt-in **auto-learn** loop (default off, `autolearn.enabled`). When enabled, after the agent stops it is nudged to capture reusable lessons: durable facts go to long-term memory and repeatable procedures become **managed skills** — `SKILL.md` files written to an isolated `~/.eros/agent/managed-skills` directory that is discovered and surfaced like authored skills but never overwrites user-authored skills (authored names always win). Two tools back this: `manage_skill` (create/update/delete managed skills) and `learn` (record a lesson, optionally minting a managed skill in the same call). `learn` works with the `hindsight`, `mnemopi`, or file-based `local` memory backend; under `local`, lessons append to a `learned.md` in the project's memory root (kept separate from the consolidation artifacts so they survive a consolidation pass) and are injected into future sessions. The nudge is passive by default (a hidden reminder rides the next turn); `autolearn.autoContinue` instead auto-runs one capture turn at stop, and `autolearn.minToolCalls` (default 5) gates trivial turns. Plan/goal-mode turns and subagents are never nudged.
 - Fixed `/plan` cycling between `plan` and `plan_paused` with no path back to mode `none`, while preserving prompted paused-mode requests. The no-arg third toggle now fully exits — clearing `planModeHasEntered` and appending a `mode_change` to `"none"` — and `/plan <prompt>` from `plan_paused` re-enters plan mode and submits the prompt as the first turn ([#2510](https://github.com/can1357/oh-my-pi/issues/2510)).
 - Fixed HTML session export rendering empty text tokens (`text`, `userMessageText`, `customMessageText`, `toolTitle`) as the dark-theme grey `#e5e5e7` on every theme not literally named `light`, making transcripts illegible on custom light themes like `sandstone`, `limestone`, and `porcelain`. `isLightTheme` now classifies against the resolved `statusLineBg` luminance (the same surface `Theme.isLight` uses), while HTML `defaultText` contrasts the actual export surface (`export.cardBg` / `export.pageBg` / derived `userMessageBg`) so light-status themes with dark export cards keep light transcript text ([#2516](https://github.com/can1357/oh-my-pi/issues/2516)).
 
@@ -3497,7 +3497,7 @@
 ### Fixed
 
 - Collab links now dot-join the room secret (`<roomId>.<key>`, `host/r/<roomId>.<key>`) instead of using a second `#`: RFC 3986 forbids a raw `#` inside a URL fragment, so macOS Foundation (behind terminal click-to-open) percent-encoded the browser deep link's second `#` to `%23` and the web client rejected the session. `/join`, `omp join`, and the web client still accept legacy `#`-joined links and leniently decode `%23`-mangled ones
-- Fixed `brew install can1357/tap/omp` failing on macOS with `sandbox-exec … exited with 1`: the generated `Formula/omp.rb` (rendered by `scripts/ci-update-brew-formula.ts`) now stamps `using: :nounzip` on every per-platform `url` so Homebrew leaves the bare Mach-O/ELF asset in the staging CWD (the previous `Dir["omp-*"].first` returned `nil` because `UnpackStrategy::Uncompressed#extract_nestedly` nested the file outside it), and wraps `generate_completions_from_executable` in `with_env(HOME: buildpath)` so the popened binary's `~/.omp` lookup goes to the writable staging dir instead of the sandbox-denied real home ([#2398](https://github.com/can1357/oh-my-pi/issues/2398))
+- Fixed `brew install can1357/tap/omp` failing on macOS with `sandbox-exec … exited with 1`: the generated `Formula/omp.rb` (rendered by `scripts/ci-update-brew-formula.ts`) now stamps `using: :nounzip` on every per-platform `url` so Homebrew leaves the bare Mach-O/ELF asset in the staging CWD (the previous `Dir["omp-*"].first` returned `nil` because `UnpackStrategy::Uncompressed#extract_nestedly` nested the file outside it), and wraps `generate_completions_from_executable` in `with_env(HOME: buildpath)` so the popened binary's `~/.eros` lookup goes to the writable staging dir instead of the sandbox-denied real home ([#2398](https://github.com/can1357/oh-my-pi/issues/2398))
 
 ## [15.12.1] - 2026-06-12
 
@@ -3524,8 +3524,8 @@
 - Blocked cycling model and thinking presets while a focused subagent session is active and now prompts users to return to the main session first
 - Changed `codexResets.autoRedeem` from a boolean to `unset`/`yes`/`no`: unset runs the eligibility check and asks before spending a saved Codex reset, yes redeems without prompting, and no skips the check entirely
 - Changed collab links so full links with a write token grant mutation rights while links without a token now join as read-only
-- `/share` no longer uploads a plaintext HTML export to a gist for gistpreview. It now snapshots the session JSON, gzips and seals it with a fresh AES-256-GCM key, and pushes the blob to a secret gist (when `gh` is authenticated) or to the share server (capped at 1 MB; oversized sessions are trimmed — images first, then long strings, then oldest entries). The share link is `https://my.omp.sh/s/<id>#<key>`: the viewer fetches the blob (hex ids from the gist API, others from the relay store) and decrypts it in-browser, so the key never leaves the client. Configured secrets are additionally redacted from the snapshot unless `share.redactSecrets` is off. Custom `~/.omp/agent/share.{ts,js,mjs}` handlers keep the legacy HTML-file contract; `/share` also works for in-memory (`--no-session`) sessions now
-- `/collab` now prints a join hint with both link forms: the compact `omp join` link for terminals and a click-to-join browser deep link (`https://<relay-host>/#<link>`, displayed scheme-less, OSC 8-linked) — the relay serves the collab web client at `/`, and the room id + key ride in the URL fragment, so they never appear in any HTTP request. `/join`, `omp join`, and the web connect screen accept either form
+- `/share` no longer uploads a plaintext HTML export to a gist for gistpreview. It now snapshots the session JSON, gzips and seals it with a fresh AES-256-GCM key, and pushes the blob to a secret gist (when `gh` is authenticated) or to the share server (capped at 1 MB; oversized sessions are trimmed — images first, then long strings, then oldest entries). The share link is `https://my.omp.sh/s/<id>#<key>`: the viewer fetches the blob (hex ids from the gist API, others from the relay store) and decrypts it in-browser, so the key never leaves the client. Configured secrets are additionally redacted from the snapshot unless `share.redactSecrets` is off. Custom `~/.eros/agent/share.{ts,js,mjs}` handlers keep the legacy HTML-file contract; `/share` also works for in-memory (`--no-session`) sessions now
+- `/collab` now prints a join hint with both link forms: the compact `eros join` link for terminals and a click-to-join browser deep link (`https://<relay-host>/#<link>`, displayed scheme-less, OSC 8-linked) — the relay serves the collab web client at `/`, and the room id + key ride in the URL fragment, so they never appear in any HTTP request. `/join`, `eros join`, and the web connect screen accept either form
 - npm installs no longer download fastembed's ~270MB ONNX native dependency tree eagerly: `fastembed` and `onnxruntime-node` are external to the bundle and optional peers of `@oh-my-pi/pi-mnemopi`, fetched on demand only when Mnemopi local embeddings are first used
 - The `job` tool prompt now documents that omitting `poll` waits on all running jobs, so agents stop enumerating every job id to poll everything
 - Collapsed task tool blocks now cap the per-agent list at 4 rows: the live progress view keeps the running/pending tail visible behind a `… N more agents (…)` summary line with per-status counts, finalized batches keep failed/aborted rows visible while folding the slowest successes, and the streaming call preview caps at the same 4 (expand shows the full list)
@@ -3540,7 +3540,7 @@
 - Filtered silent abort markers from Agent Hub assistant output so failed turns now render as normal error text
 - Reset focus-session state when switching transcript rendering between the main session and a focused subagent so streaming/progress context no longer leaks across sessions
 - Fixed read-only collab sessions so prompting, interrupts, and other write actions are blocked with a read-only warning instead of being applied
-- Fixed Mnemopi local embeddings in bundled and compiled installs failing with `Cannot find module '../bin/napi-v3/.../onnxruntime_binding.node'`: the Bun bundle inlined fastembed's loader so its relative native require resolved against `dist/cli.js`. `fastembed`/`onnxruntime-node` are no longer bundled; on first use Mnemopi `bun install`s the pinned pair into `~/.omp/cache/fastembed-runtime/<version-key>` and loads the binding from there ([#2389](https://github.com/can1357/oh-my-pi/issues/2389))
+- Fixed Mnemopi local embeddings in bundled and compiled installs failing with `Cannot find module '../bin/napi-v3/.../onnxruntime_binding.node'`: the Bun bundle inlined fastembed's loader so its relative native require resolved against `dist/cli.js`. `fastembed`/`onnxruntime-node` are no longer bundled; on first use Mnemopi `bun install`s the pinned pair into `~/.eros/cache/fastembed-runtime/<version-key>` and loads the binding from there ([#2389](https://github.com/can1357/oh-my-pi/issues/2389))
 - Fixed the interactive Model scope startup banner so models without an explicit thinking level do not show `:undefined`, and entries that were scoped without a `:level` are no longer rendered with the global default thinking level (which `applyRootSessionOptions` pre-fills on the cycling array for Ctrl+P) ([#2385](https://github.com/can1357/oh-my-pi/issues/2385)).
 
 ## [15.11.8] - 2026-06-12
@@ -3551,7 +3551,7 @@
 - Added `/collab stop` and `/collab status` options to control and inspect active shared sessions
 - Added `/collab`, `/join`, and `/leave` for live session sharing: the host shares an end-to-end encrypted link (AES-256-GCM key only in the link fragment; the relay sees opaque bytes) and guests render the session natively in their own TUI — streaming text, tool cards, footer state, ctrl+o expansion, `/dump` — and can prompt or interrupt the host's agent. Guest prompts render with an author badge; session-mutating commands stay host-only. Defaults to the public `relay.omp.sh` relay (`collab.relayUrl`); a self-hostable Go relay lives in the pi-www repo as `omp-collab-relay`
 - Added `collab.relayUrl` and `collab.displayName` settings plus a `collab` status-line segment showing the participant count (host) or guest role. Guests mirror the host's real model/thinking state into their replica agent and the host's subagent ecosystem end-to-end: the live subagent HUD, the Agent Hub table with live progress, hub chat/kill/revive (routed to the host), and on-demand subagent transcript viewing
-- Added `omp join <link>` subcommand that launches the interactive TUI and immediately runs `/join <link>`
+- Added `eros join <link>` subcommand that launches the interactive TUI and immediately runs `/join <link>`
 
 ### Changed
 
@@ -3845,7 +3845,7 @@
 
 - Bash execution now preserves minimized shell output inline while saving the untouched capture as an `artifact://…` footer when shell minimization rewrites a command's output.
 - Task tool live progress now renders finished subagents first and keeps unfinished (pending/running) ones pinned at the bottom of the list.
-- `OutputSink` artifact files (`~/.omp/agent/artifacts/<id>.<tool>.log`) are unbounded by default again, so `artifact://<id>` references preserve the complete raw stream. The head + rolling-tail capping machinery from [#2081](https://github.com/can1357/oh-my-pi/issues/2081) (with its `[ARTIFACT TRUNCATED: …]` close notice) remains available as an opt-in via `artifactMaxBytes`, and the head window now closes permanently on first overflow so later small chunks cannot be written out of order before the tail replay.
+- `OutputSink` artifact files (`~/.eros/agent/artifacts/<id>.<tool>.log`) are unbounded by default again, so `artifact://<id>` references preserve the complete raw stream. The head + rolling-tail capping machinery from [#2081](https://github.com/can1357/oh-my-pi/issues/2081) (with its `[ARTIFACT TRUNCATED: …]` close notice) remains available as an opt-in via `artifactMaxBytes`, and the head window now closes permanently on first overflow so later small chunks cannot be written out of order before the tail replay.
 
 ### Fixed
 
@@ -4394,7 +4394,7 @@
 
 - Changed eval timeout accounting so delegated bridge calls now suspend the cell watchdog and start a fresh timeout window when runtime control returns
 - Changed `IdleTimeout` to support reference-counted pauses so overlapping delegated bridge calls keep timeout paused until all calls complete
-- Changed the default `app.message.followUp` binding from `Ctrl+Enter` alone to `[Ctrl+Q, Ctrl+Enter]` so the follow-up shortcut works in Windows Terminal, which does not deliver a distinct `Ctrl+Enter` event to console apps. `Ctrl+Q` mirrors the GitHub Copilot CLI default for the same action; existing remaps in `~/.omp/agent/keybindings.yml` are untouched, and if another user-remapped action already claims `Ctrl+Q`, that user binding wins while follow-up keeps `Ctrl+Enter`. `Ctrl+Q` is also reserved by `ExtensionRunner` so an extension cannot register that chord and be silently overwritten by the built-in follow-up handler ([#1903](https://github.com/can1357/oh-my-pi/issues/1903)).
+- Changed the default `app.message.followUp` binding from `Ctrl+Enter` alone to `[Ctrl+Q, Ctrl+Enter]` so the follow-up shortcut works in Windows Terminal, which does not deliver a distinct `Ctrl+Enter` event to console apps. `Ctrl+Q` mirrors the GitHub Copilot CLI default for the same action; existing remaps in `~/.eros/agent/keybindings.yml` are untouched, and if another user-remapped action already claims `Ctrl+Q`, that user binding wins while follow-up keeps `Ctrl+Enter`. `Ctrl+Q` is also reserved by `ExtensionRunner` so an extension cannot register that chord and be silently overwritten by the built-in follow-up handler ([#1903](https://github.com/can1357/oh-my-pi/issues/1903)).
 - Changed all scrollable TUI pickers and viewports to render through the shared `ScrollView` right-edge scrollbar for a uniform look, replacing their ad-hoc `(N/M)` / `[a-b/total]` text indicators (search hints and the tree filter-mode label are preserved). Covers the session/resume picker, model selector, OAuth provider selector, history search, session tree selector, agent dashboard list, extension list, user-message selector, the raw SSE debug viewer, the autoresearch dashboard overlay, and the session observer overlay.
 - Changed the `/model` and `/switch` selectors to dim and skip models whose context windows are smaller than the current chat context.
 - Changed `/copy` command targets to appear inline with recent assistant messages instead of as a separate "Last bash command" row at the end of the picker.
@@ -4685,7 +4685,7 @@
 - Added `log()`, `phase()`, and a `budget` object to both `eval` runtimes (Python and JS). `log`/`phase` emit progress/phase status lines; `budget.total`/`budget.spent()`/`budget.remaining()`/`budget.hard` expose a real per-turn output-token budget. A `+Nk` directive in the user's message sets an advisory budget (the model self-limits via `budget.remaining()`); `+Nk!` (or an active Goal Mode budget) makes it a hard ceiling that blocks further eval `agent()` spawns once reached. `budget.spent()` counts output tokens spent this turn across the main loop and all eval-spawned subagents.
 - Added search support for virtual internal URLs (including `omp://` roots) by resolving and scanning in-memory internal resources as search targets alongside filesystem paths
 - Added expansion of virtual internal URL search targets so `search` can match multiple internal documents when given `omp://`
-- Added `/omfg <complaint>` slash command that drafts a TTSR rule from a complaint, validates it against the current conversation, saves it to project or `~/.omp/agent/rules`, and registers it live.
+- Added `/omfg <complaint>` slash command that drafts a TTSR rule from a complaint, validates it against the current conversation, saves it to project or `~/.eros/agent/rules`, and registers it live.
 - Added `/shake` slash command and the `shake` / `shake-summary` compaction strategies that reduce context by mechanically dropping heavy content instead of LLM summarization. `/shake` (alias `/shake elide`) strips heavy tool-call results and large fenced/XML blocks, offloads the originals to one session artifact, and leaves a recoverable `artifact://<id>` placeholder; `/shake summary` compresses the same regions with a local on-device model (`providers.shakeSummaryModel`, default `qwen3-1.7b`) and falls back to elide per region when the model is unavailable; `/shake images` strips image blocks. Auto-maintenance honors the `shake` / `shake-summary` strategies (16k protect window); on context overflow a shake that reclaims nothing falls back to context-full summarization.
 - Added `providers.shakeSummaryModel` setting selecting the local on-device model used by `/shake summary` and the `shake-summary` compaction strategy. Runs entirely on-device (downloads on first use) and never calls a remote/cloud LLM.
 
@@ -4699,7 +4699,7 @@
 - Changed `search` output to preserve full virtual and internal URL paths in grouped results and `details.files` instead of collapsing them to file basenames
 - Changed `/omfg` to run up to three generation attempts with validation feedback and only prompt saving when no draft matches assistant history
 - Changed `/omfg` to show a live draft panel with generation/validation/saving status and allow canceling an active rule request with `Esc`
-- Changed keybindings config to use `~/.omp/agent/keybindings.yml`, with automatic migration from legacy `keybindings.json` and continued support for `keybindings.yaml`.
+- Changed keybindings config to use `~/.eros/agent/keybindings.yml`, with automatic migration from legacy `keybindings.json` and continued support for `keybindings.yaml`.
 - Changed the local SQLite memory backend identifier from `mnemosyne` to `mnemopi`. Existing configs are migrated automatically on load: `memory.backend: mnemosyne` becomes `mnemopi` and the `mnemosyne.*` settings block is renamed to `mnemopi.*` (skipped when an explicit `mnemopi` block already exists).
 - Changed the `ultrathink`/`orchestrate`/`workflow` magic keywords to be markdown-aware: the standalone word now also glows in the rendered user message bubble (matching the live editor), and neither the glow nor the hidden steering notice triggers when the keyword sits inside a fenced code block, an inline `` `code` `` span, or an XML/HTML section.
 
@@ -4773,7 +4773,7 @@
 - Fixed the `read` tool description advertising `inspect_image` ("for visual analysis, call `inspect_image`") even when the `inspect_image` tool was disabled, which left the model hunting for a tool absent from its function list. The image section is now gated on `inspect_image.enabled`: when disabled it instead states that reading an image path returns the decoded image inline.
 - Fixed session-title generation latching onto literal text inside fenced code blocks — a pasted UI mockup containing "Welcome to Claude Code v2.1.158" titled the session "Setup Screen for Claude Code v2.1.158" instead of capturing the actual request. The first user message now has fenced code blocks stripped before titling (both the online `pi/smol` and local on-device model paths share the same preprocessing), with a fallback to the original message when stripping would leave too little to title from (e.g. a message that is essentially just a code block).
 - Fixed slash-command autocomplete repaint requests so Windows Terminal sessions with unknown native viewport state keep updating the input box and candidate list. ([#1550](https://github.com/can1357/oh-my-pi/issues/1550))
-- Fixed Python `eval` failing the whole session when the managed `~/.omp/python-env` interpreter exists on disk but no longer runs (e.g. a stale `uv`-managed Python that was removed or upgraded). Availability resolution now enumerates every candidate — active/project venv, the managed env, then the system interpreter — and probes each in priority order, falling through to the first that actually executes instead of failing fast on the first resolved path. The kernel spawns whichever interpreter the probe selected, so a working system Python takes over transparently.
+- Fixed Python `eval` failing the whole session when the managed `~/.eros/python-env` interpreter exists on disk but no longer runs (e.g. a stale `uv`-managed Python that was removed or upgraded). Availability resolution now enumerates every candidate — active/project venv, the managed env, then the system interpreter — and probes each in priority order, falling through to the first that actually executes instead of failing fast on the first resolved path. The kernel spawns whichever interpreter the probe selected, so a working system Python takes over transparently.
 
 ### Removed
 
@@ -4878,8 +4878,8 @@
 
 ### Added
 
-- Added the `omp-plugins` discovery provider, which scans every extension package directory configured via `extensions:` (in `~/.omp/agent/settings.json` or `<cwd>/.omp/settings.json`) or `--extension`/`-e` on the CLI for `skills/`, `hooks/pre|post/`, `tools/`, `commands/`, `rules/`, `prompts/`, and `.mcp.json`. Prior to this, only the extension's TypeScript factory module ran; every sibling capability the docs (https://omp.sh/docs/extension-authoring) advertised was silently ignored ([#1496](https://github.com/can1357/oh-my-pi/issues/1496)).
-- Added the top-level `omp install <target>` subcommand documented at https://omp.sh/docs/extension-authoring. Local paths route to `omp plugin link` (so the directory is symlinked into the plugin set), and npm/marketplace specs route to `omp plugin install`. Before this, `install` was not a registered subcommand and the CLI runner silently forwarded `install ./my-extension` to `launch` as an initial LLM prompt ([#1496](https://github.com/can1357/oh-my-pi/issues/1496)).
+- Added the `omp-plugins` discovery provider, which scans every extension package directory configured via `extensions:` (in `~/.eros/agent/settings.json` or `<cwd>/.omp/settings.json`) or `--extension`/`-e` on the CLI for `skills/`, `hooks/pre|post/`, `tools/`, `commands/`, `rules/`, `prompts/`, and `.mcp.json`. Prior to this, only the extension's TypeScript factory module ran; every sibling capability documented for extension authoring was silently ignored ([#1496](https://github.com/can1357/oh-my-pi/issues/1496)).
+- Added the top-level `eros install <target>` subcommand. Local paths route to `eros plugin link` (so the directory is symlinked into the plugin set), and npm/marketplace specs route to `eros plugin install`. Before this, `install` was not a registered subcommand and the CLI runner silently forwarded `install ./my-extension` to `launch` as an initial LLM prompt ([#1496](https://github.com/can1357/oh-my-pi/issues/1496)).
 
 ### Changed
 
@@ -5257,11 +5257,11 @@
 
 ### Breaking Changes
 
-- Changed PR and task-isolation worktree directory layout to hash-based `~/.omp/wt/<identifier>-<path-hash>` style paths, replacing the previous nested encoded-repo layout
+- Changed PR and task-isolation worktree directory layout to hash-based `~/.eros/wt/<identifier>-<path-hash>` style paths, replacing the previous nested encoded-repo layout
 
 ### Added
 
-- Added `omp worktree` command (alias `wt`) to list and manage agent-managed worktrees under `~/.omp/wt`
+- Added `omp worktree` command (alias `wt`) to list and manage agent-managed worktrees under `~/.eros/wt`
 - Added `omp worktree clear` to remove orphaned worktree directories, with `--all` to include live PR-checkouts, `--dry-run` for preview, and `--json` reporting
 - Added machine-readable JSON output to `omp worktree list` for scripted inspection
 - Added `display.shimmer` appearance setting with `classic`, `kitt` (Knight Rider K.I.T.T. scanner), and `disabled` modes
@@ -5285,7 +5285,7 @@
 
 ### Fixed
 
-- Fixed `RULES.md` not being injected. The documented sticky-rules file at `~/.omp/agent/RULES.md` and `<repo>/.omp/RULES.md` was never read by any discovery provider; only `.omp/rules/*.md` was scanned. The native provider now loads both as always-apply rules so they re-attach every turn as documented ([#1266](https://github.com/can1357/oh-my-pi/issues/1266)).
+- Fixed `RULES.md` not being injected. The documented sticky-rules file at `~/.eros/agent/RULES.md` and `<repo>/.omp/RULES.md` was never read by any discovery provider; only `.omp/rules/*.md` was scanned. The native provider now loads both as always-apply rules so they re-attach every turn as documented ([#1266](https://github.com/can1357/oh-my-pi/issues/1266)).
 
 ## [15.2.1] - 2026-05-21
 
@@ -5376,20 +5376,20 @@
 ### Added
 
 - Added `providers.<name>.transport: "pi-native"` to `models.yml`. When set, every model under that provider routes its streaming dispatch through the auth-gateway's `POST /v1/pi/stream` endpoint instead of the per-provider SDK. The provider's `baseUrl` must point at a compatible `omp auth-gateway` and `apiKey` must carry the gateway bearer. The slot's `models.json` still resolves locally for pricing/capabilities/thinking config; only the wire dispatch is redirected. Use case: containerized omp installs (robomp slots, swarm extension) where the slot must stay credential-free and a sidecar gateway holds the real provider tokens. Also surfaced as `transport` on `ProviderConfigInput` for extension-registered providers.
-- Added optional backend push for the auto-QA grievance database (`dev.autoqaPush.enabled`, `dev.autoqaPush.endpoint`, `dev.autoqaPush.token`; env overrides `PI_AUTO_QA_PUSH`, `PI_AUTO_QA_PUSH_URL`, `PI_AUTO_QA_PUSH_TOKEN`). When enabled, every `report_tool_issue` call schedules a background flush that `POST`s pending rows to the configured endpoint and deletes them on HTTP 2xx. Each push carries a stable per-install UUID (`installId`) generated on first use and persisted at `~/.omp/install-id` via `getInstallId()` (new export from `@oh-my-pi/pi-utils`), so the receiver can dedup retries across host renames and `autoqa.db` wipes. Single-flight, 5s request timeout, 30s in-memory cooldown after failure, and a row-id watermark so rows inserted during an in-flight push survive and ship next time. Tool execution remains non-blocking and never throws.
+- Added optional backend push for the auto-QA grievance database (`dev.autoqaPush.enabled`, `dev.autoqaPush.endpoint`, `dev.autoqaPush.token`; env overrides `PI_AUTO_QA_PUSH`, `PI_AUTO_QA_PUSH_URL`, `PI_AUTO_QA_PUSH_TOKEN`). When enabled, every `report_tool_issue` call schedules a background flush that `POST`s pending rows to the configured endpoint and deletes them on HTTP 2xx. Each push carries a stable per-install UUID (`installId`) generated on first use and persisted at `~/.eros/install-id` via `getInstallId()` (new export from `@oh-my-pi/pi-utils`), so the receiver can dedup retries across host renames and `autoqa.db` wipes. Single-flight, 5s request timeout, 30s in-memory cooldown after failure, and a row-id watermark so rows inserted during an in-flight push survive and ship next time. Tool execution remains non-blocking and never throws.
 - `ModelRegistry` now promotes `models.yml` `providers.<name>.apiKey` entries to `AuthStorage`'s new config-override tier (above OAuth, below `--api-key`). Pinning a bearer in `models.yml` was previously a no-op when the broker had an OAuth credential for the same provider — the OAuth access token won and got sent unmodified to whatever `baseUrl` you redirected to, which an auth-gateway in front of that endpoint rightly rejected with 401. The override is now honored, and is cleared/repopulated atomically on `models.yml` reload (`#reloadStaticModels` calls `clearConfigApiKeys` before re-parsing). Use case: route `anthropic` / `openai-codex` to `http://llm-gateway.internal:4000` with the gateway's own bearer.
 - Added `omp auth-broker` subcommand for running and consuming a hosted credential vault.
 - `serve [--bind=host:port]` — boots a local broker against the SQLite store at `$AGENT_DB_PATH`.
-- `token [--regenerate]` — prints (and rotates) the bearer token stored at `~/.omp/auth-broker.token`.
+- `token [--regenerate]` — prints (and rotates) the bearer token stored at `~/.eros/auth-broker.token`.
 - `login <provider> [--via=user@host] [--dry-run]` — drives the OAuth flow locally or via SSH `-L` tunnel into a remote broker (callback ports pinned per provider).
 - `logout <provider>` — disables every credential for the given provider in the local SQLite store.
 - `import <file|dir> [--provider=<id>] [--include-disabled] [--dry-run]` — imports CLIProxyAPI-style JSON credential dumps (`~/.cliproxy/auth/*.json`). When `OMP_AUTH_BROKER_URL` is configured, credentials are uploaded to the remote broker via `POST /v1/credential`; otherwise they go into the local SQLite store. JSON `type` is mapped to omp providers (`claude` → `anthropic`, `codex` → `openai-codex`, `gemini[-cli]` → `google-gemini-cli`, `antigravity` → `google-antigravity`); `--provider` overrides the mapping for unrecognized types.
 - `status` — pings the configured remote broker (`OMP_AUTH_BROKER_URL`).
-- Added remote credential vault support to `discoverAuthStorage`. Configure via env (`OMP_AUTH_BROKER_URL` / `OMP_AUTH_BROKER_TOKEN`) or by setting `auth.broker.url` and `auth.broker.token` in `~/.omp/agent/config.yml` (hidden from the settings UI; supports `!command` resolution). Falls back to `~/.omp/auth-broker.token` when no token is provided inline. Otherwise behavior is unchanged.
+- Added remote credential vault support to `discoverAuthStorage`. Configure via env (`OMP_AUTH_BROKER_URL` / `OMP_AUTH_BROKER_TOKEN`) or by setting `auth.broker.url` and `auth.broker.token` in `~/.eros/agent/config.yml` (hidden from the settings UI; supports `!command` resolution). Falls back to `~/.eros/auth-broker.token` when no token is provided inline. Otherwise behavior is unchanged.
 - Added `omp auth-broker migrate --from-local [--include-env] [--include-oauth] [--dry-run]` — uploads local SQLite credentials (and optionally env-var API keys) to the configured broker. Skips anything already on the broker via identity-key matching. OAuth is skipped by default (handled via `cliproxy` import). Idempotent on re-runs.
 - Added `omp auth-gateway` subcommand for running a forward-proxy that hides access tokens from less-trusted clients:
 - `serve [--bind=…]` — boots the gateway against the configured broker. Listens on `127.0.0.1:4000` by default.
-- `token [--regenerate]` — manages the gateway bearer token at `~/.omp/auth-gateway.token` (separate from the broker bearer).
+- `token [--regenerate]` — manages the gateway bearer token at `~/.eros/auth-gateway.token` (separate from the broker bearer).
 - `status` — verifies gateway config and authenticated broker readiness.
 - One wire surface: `POST /v1/chat/completions` (OpenAI chat-completions), `POST /v1/messages` (Anthropic messages), `POST /v1/responses` (OpenAI Responses), `GET /v1/usage` (aggregated, 5-min per-credential cache), `GET /v1/models` (catalog). Model id in the request body selects which omp provider/model services it; the gateway translates wire format ↔ omp canonical `Context` and dispatches through `pi-ai` `streamSimple()`. Container deployments (robomp, etc.) get inference auth without ever holding access tokens or the broker bearer.
 
@@ -5563,7 +5563,7 @@
 
 - Added markdown rendering for `read` results when content type is `text/markdown`, so GitHub internal-URL outputs are shown as formatted markdown instead of plain code blocks
 - Added `pr://<N>/diff`, `pr://<N>/diff/<i>`, and `pr://<N>/diff/all` internal-URL shapes covering changed-file listings, per-file slices, and the full unified diff. They share one `pr-diff` SQLite cache row with the same TTL knobs as `pr://<N>` views (`github.cache.softTtlSec` / `github.cache.hardTtlSec` / `github.cache.enabled`). Single PR views now advertise the diff entry point via a `Diff: pr://<owner>/<repo>/<N>/diff` note. Cache schema bumped to `user_version = 3`; older rows are dropped on first open to add credential-scoped keys and relax the `kind` CHECK constraint.
-- Added `issue://` / `pr://` internal-URL schemes that share a SQLite-backed cache with the rest of the `github` tool. Single-item reads (`issue://<N>`, `issue://<owner>/<repo>/<N>`) return rendered markdown and within `github.cache.softTtlSec` (default 5 minutes) skip the `gh` round-trip entirely; within `github.cache.hardTtlSec` (default 7 days) the cached row is returned and a background refresh is scheduled. Root and repo-scoped reads (`issue://`, `pr://owner/repo`) issue a live `gh issue list` / `gh pr list` for browsing, supporting `?state=open|closed|all` for issues, `?state=open|closed|merged|all` for PRs, and `?limit=`, `?author=`, `?label=` query params. Rendered output lands in `~/.omp/cache/github-cache.db` (override via `OMP_GITHUB_CACHE_DB`); disable the cache entirely with `github.cache.enabled = false`. Cwd→default-repo lookups (`gh repo view`) are memoized per-process.
+- Added `issue://` / `pr://` internal-URL schemes that share a SQLite-backed cache with the rest of the `github` tool. Single-item reads (`issue://<N>`, `issue://<owner>/<repo>/<N>`) return rendered markdown and within `github.cache.softTtlSec` (default 5 minutes) skip the `gh` round-trip entirely; within `github.cache.hardTtlSec` (default 7 days) the cached row is returned and a background refresh is scheduled. Root and repo-scoped reads (`issue://`, `pr://owner/repo`) issue a live `gh issue list` / `gh pr list` for browsing, supporting `?state=open|closed|all` for issues, `?state=open|closed|merged|all` for PRs, and `?limit=`, `?author=`, `?label=` query params. Rendered output lands in `~/.eros/cache/github-cache.db` (override via `OMP_GITHUB_CACHE_DB`); disable the cache entirely with `github.cache.enabled = false`. Cwd→default-repo lookups (`gh repo view`) are memoized per-process.
 - Added new `Approve and compact context` choice to the ExitPlanMode approval selector. Sits between `Approve and execute` (purge session) and `Approve and keep context` (full transcript) — runs `/compact` on the plan-mode transcript with a planning-specific summarization hint, then dispatches the plan-approved execution turn so it lands on a fresh cache anchor with the summarized rationale carried over. Cancelling the compaction (Esc or any other abort source) defers the execution dispatch and surfaces a warning so the operator can resubmit manually; non-abort failures proceed best-effort.
 - Added `CompactionCancelledError` typed sentinel and `CompactionOutcome` (`"ok" | "cancelled" | "failed"`) return type to `@oh-my-pi/pi-coding-agent/session/compaction`. `CommandController.executeCompaction` and `handleCompactCommand` now return the outcome instead of `void` so callers can discriminate user-driven aborts from generic failures without inspecting error messages.
 - Added a `credential_disabled` extension event so extensions can subscribe via `pi.on("credential_disabled", handler)` and react when `AuthStorage` automatically soft-disables a credential (e.g. OAuth `invalid_grant`). Replaces the current `agent_end` errorMessage regex pattern downstream extensions have to match against. Handler payload is `{ type, provider, disabledCause }`. `createAgentSession()` subscribes the per-session extension runner to the shared `AuthStorage` via `authStorage.onCredentialDisabled(...)` at the very top of session creation — before any startup model probes run — so events fire on every disable regardless of whether the embedder also has a constructor `onCredentialDisabled` handler attached. The SDK forwards through `ExtensionRunner.emitCredentialDisabled(event)`, which buffers events until `runner.initialize(...)` runs in the mode controller and then flushes them through `emit()` so extension handlers see populated UI/runtime context (rather than the constructor's no-op default with `hasUI=false`, an unset model, and no-op runtime actions). On `session.dispose()` the subscription is unsubscribed; the embedder's constructor-attached listener keeps firing through its own permanent subscription. The outer `createAgentSession()` catch also releases the subscription if startup throws before the dispose-wrap is wired, so repeated retries don't accumulate dead listeners.
@@ -6103,7 +6103,7 @@
 
 ### Breaking Changes
 
-- Reworked autoresearch storage and protocol. State now lives in `~/.omp/autoresearch/<project>.db` (SQLite) and per-run logs in `~/.omp/autoresearch/<project>/runs/<id>/benchmark.log`. The repo-side artifacts `autoresearch.md`, `autoresearch.sh`, `autoresearch.checks.sh`, `autoresearch.program.md`, `autoresearch.ideas.md`, `autoresearch.jsonl`, `.autoresearch/`, and `autoresearch.config.json` are no longer read or written; they are deleted by `/autoresearch clear`. Any existing data is not migrated.
+- Reworked autoresearch storage and protocol. State now lives in `~/.eros/autoresearch/<project>.db` (SQLite) and per-run logs in `~/.eros/autoresearch/<project>/runs/<id>/benchmark.log`. The repo-side artifacts `autoresearch.md`, `autoresearch.sh`, `autoresearch.checks.sh`, `autoresearch.program.md`, `autoresearch.ideas.md`, `autoresearch.jsonl`, `.autoresearch/`, and `autoresearch.config.json` are no longer read or written; they are deleted by `/autoresearch clear`. Any existing data is not migrated.
 - Removed the autoresearch edit guard. `write`/`edit`/`ast_edit` are no longer blocked based on scope. Scope/off-limits are now post-hoc accountability fields on `log_experiment`.
 - Replaced rigid `init_experiment` contract validation with a simpler schema: `name`, `goal`, `primary_metric`, `metric_unit`, `direction`, `secondary_metrics`, `scope_paths`, `off_limits`, `constraints`, `max_iterations`, `new_segment`. Removed `from_autoresearch_md`, `abandon_unlogged_runs`, `force`, and `preferred_command` flags — the harness `./autoresearch.sh` is the canonical workload, edit it and bump segment when you need to change it.
 - `run_experiment` no longer accepts a `command` parameter. The tool always runs `bash autoresearch.sh`. To change the workload, edit the harness and call `init_experiment new_segment: true`. Removed `force`, `checks_timeout_seconds`, and the legacy `autoresearch.checks.sh` auto-execution; run validation through the regular `bash` tool.
@@ -6227,7 +6227,7 @@
 
 ### Breaking Changes
 
-- Removed the `worktree` parameter from `github` `pr_checkout`. Worktrees are now always written to `~/.omp/wt/<encoded-primary-repo>/pr-<number>/`, derived from the primary repository path
+- Removed the `worktree` parameter from `github` `pr_checkout`. Worktrees are now always written to `~/.eros/wt/<encoded-primary-repo>/pr-<number>/`, derived from the primary repository path
 - Stopped reading the `branch` parameter for `github` `pr_checkout`. The local branch is now always `pr-<number>`; the `branch` schema field is still accepted by `pr_push`, `repo_view`, and `run_watch`
 
 ### Added
@@ -7620,7 +7620,7 @@
 
 ### Fixed
 
-- Fixed SDK-created default sessions to honor the configured `agentDir` for session storage, preventing tests from writing stray session directories into the real `~/.omp/agent/sessions` root
+- Fixed SDK-created default sessions to honor the configured `agentDir` for session storage, preventing tests from writing stray session directories into the real `~/.eros/agent/sessions` root
 - Fixed session directory resolution to correctly handle symlink-equivalent paths, ensuring aliased home and temp directories resolve to the same session storage location as their real targets
 
 ## [13.12.7] - 2026-03-16
@@ -7732,7 +7732,7 @@
 - Added support for `supportsUsageInStreaming`, `requiresToolResultName`, `requiresAssistantAfterToolResult`, `requiresThinkingAsText`, `thinkingFormat`, and `supportsStrictMode` OpenAI compatibility options
 - Added support for provider-configurable `OpenAICompat.extraBody` to inject request-body fields for custom gateway/proxy routing
 - Added `close()` method to SessionManager for properly closing persistent writers after flushing pending data
-- Added `omp config init-xdg` command to initialize XDG Base Directory structure on Linux
+- Added `eros config init-xdg` command to initialize XDG Base Directory structure on Linux
 - Added `getHistoryDbPath()`, `getModelDbPath()`, `getMemoriesDir()`, `getTerminalSessionsDir()` path helpers
 
 ### Changed
@@ -8221,7 +8221,7 @@
 
 ### Changed
 
-- Updated OAuth client name from 'oh-my-pi MCP' to 'Codex' for dynamic client registration
+- Updated OAuth client name from 'LYCORPEROS MCP' to 'Codex' for dynamic client registration
 
 ### Fixed
 
@@ -8241,7 +8241,7 @@
 - Added `extractMcpAuthServerUrl()` function to parse and validate `Mcp-Auth-Server` URLs from error messages
 - Added support for `/.well-known/oauth-protected-resource` discovery endpoint to resolve authorization servers
 - Added recursive auth server discovery to follow `authorization_servers` references when discovering OAuth endpoints
-- Added `omp agents unpack` CLI subcommand to export bundled subagent definitions to `~/.omp/agent/agents` by default, with `--project` support for `./.omp/agents`
+- Added `omp agents unpack` CLI subcommand to export bundled subagent definitions to `~/.eros/agent/agents` by default, with `--project` support for `./.omp/agents`
 
 ### Changed
 
@@ -8875,7 +8875,7 @@
 
 ### Changed
 
-- System prompt now identifies agent as operating inside Oh My Pi harness and instructs reading docs:// URLs for omp/pi topics
+- System prompt now identifies agent as operating inside the EROS harness and instructs reading docs:// URLs for product topics
 - Tool discovery now accepts executable script extensions (.ts, .js, .sh, .bash, .py) in addition to .json and .md files
 - Updated bash and read tool documentation to reference `docs://` URL support
 - Hashline format separator changed from pipe (`|`) to colon (`:`) for improved readability (e.g., `LINE#ID:content` instead of `LINE#ID|content`)
@@ -8906,7 +8906,7 @@
 
 - Added `ssh` command for managing SSH host configurations (add, list, remove)
 - Added `/ssh` slash command in interactive mode to manage SSH hosts with subcommands
-- Added support for SSH host configuration at project and user scopes (.omp/ssh.json and ~/.omp/agent/ssh.json)
+- Added support for SSH host configuration at project and user scopes (.omp/ssh.json and ~/.eros/agent/ssh.json)
 - Added `--host`, `--user`, `--port`, `--key`, `--desc`, `--compat`, and `--scope` flags for SSH host configuration
 - Added discovery of SSH hosts from project configuration files alongside manually configured hosts
 - Added NanoGPT as a login provider (`/login nanogpt`) with API key prompt flow linking to `https://nano-gpt.com/api` ([#111](https://github.com/can1357/oh-my-pi/issues/111))
@@ -8919,7 +8919,7 @@
 - Updated handlebars helpers: renamed `hashline` to `hlineref` and added `hlinefull` for formatted line output
 - Improved insert operation to support `before`, `after`, and `between` (both anchors) positioning modes
 - Made autocorrect heuristics (boundary echo stripping, indent restoration) conditional on `PI_HL_AUTOCORRECT` environment variable
-- Updated SSH host discovery to load from managed omp config paths (.omp/ssh.json and ~/.omp/agent/ssh.json) in addition to legacy root-level ssh.json and .ssh.json files
+- Updated SSH host discovery to load from managed omp config paths (.omp/ssh.json and ~/.eros/agent/ssh.json) in addition to legacy root-level ssh.json and .ssh.json files
 - Improved terminal output handling in interactive bash sessions to ensure all queued writes complete before returning results
 
 ### Fixed
@@ -9263,7 +9263,7 @@
 - Updated imports throughout codebase to use centralized directory path functions from `@oh-my-pi/pi-utils/dirs`
 - Updated interactive bash terminal UI label from 'InteractiveTerm' to 'Console' for clarity
 - Enhanced bash execution environment with comprehensive non-interactive defaults for pagers, editors, and package managers to prevent command blocking and interactive prompts
-- Updated custom models configuration to use `~/.omp/agent/models.yml` (YAML format) while maintaining backward compatibility with legacy `models.json`
+- Updated custom models configuration to use `~/.eros/agent/models.yml` (YAML format) while maintaining backward compatibility with legacy `models.json`
 
 ## [12.0.0] - 2026-02-12
 
@@ -10232,7 +10232,7 @@
 - Migrated bash command execution from ptree-based persistent sessions to native shell bindings with streaming support
 - Simplified bash executor to use brush-core native API instead of managing long-lived shell processes
 - Routed clipboard copy and image paste through native arboard bindings instead of shell commands
-- Embedded native addon payload for compiled binaries and extract to `~/.omp/natives/<version>` on first run
+- Embedded native addon payload for compiled binaries and extract to `~/.eros/natives/<version>` on first run
 
 ### Removed
 
@@ -11569,7 +11569,7 @@
 - Added automatic Nerd Fonts detection for terminals like iTerm, WezTerm, Kitty, Ghostty, and Alacritty to set appropriate symbol preset
 - Added `NERD_FONTS` environment variable override (`1` or `0`) to manually control Nerd Fonts symbol preset
 - Added Handlebars templating engine for prompt template rendering with `{{arg}}` helper for positional arguments
-- Added support for custom share scripts at ~/.omp/agent/share.ts to replace default GitHub Gist sharing
+- Added support for custom share scripts at ~/.eros/agent/share.ts to replace default GitHub Gist sharing
 
 ### Changed
 
@@ -11653,7 +11653,7 @@
 - `dequeue` keybinding (`Alt+Up`) to restore queued steering/follow-up messages back into the editor
 - Pluggable operations for built-in tools enabling remote execution via SSH or other transports (`ReadOperations`, `WriteOperations`, `EditOperations`, `BashOperations`, `LsOperations`, `GrepOperations`, `FindOperations`)
 - `/model <search>` pre-filters the model selector or auto-selects on exact match; use `provider/model` syntax to disambiguate
-- Managed binaries directory (`~/.omp/bin/`) for fd and rg tools
+- Managed binaries directory (`~/.eros/bin/`) for fd and rg tools
 - `FooterDataProvider` for custom footers with `getGitBranch()`, `getExtensionStatuses()`, and `onBranchChange()`
 - `ctx.ui.custom()` accepts `{ overlay: true }` option for floating modal components
 - `ctx.ui.getAllThemes()`, `ctx.ui.getTheme(name)`, `ctx.ui.setTheme(name | Theme)` for theme management

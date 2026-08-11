@@ -59,13 +59,13 @@ Only after a confirmed local repro:
 ```bash
 MAIN="$(git rev-parse --show-toplevel)"
 ENC="$(printf '%s' "$MAIN" | sed 's|[/\\:]|-|g')"
-WT="$HOME/.omp/wt/${ENC}/fix-issue-<N>"
+WT="$HOME/.eros/wt/${ENC}/fix-issue-<N>"
 
 git -C "$MAIN" fetch origin main
 git -C "$MAIN" worktree add -B "fix/issue-<N>" "$WT" origin/main
 ```
 
-Branch naming: `fix/issue-<N>` (or `fix/issue-<N>-<slug>` if you'll open multiple). Path under `~/.omp/wt/<encoded-main-path>/...` matches the convention `pr_checkout` uses.
+Branch naming: `fix/issue-<N>` (or `fix/issue-<N>-<slug>` if you'll open multiple). Path under `~/.eros/wt/<encoded-main-path>/...` matches the convention `pr_checkout` uses.
 
 #### d. Symlink build artifacts
 
@@ -118,7 +118,7 @@ Each subagent returns a short structured report:
 Issue #<N>  <title>
 Status:    fixed | unreproduced | not-a-bug | existing-pr (#<M>)
 Repro:     <test path inside worktree>            (if applicable)
-Worktree:  ~/.omp/wt/.../fix-issue-<N>            (if created)
+Worktree:  ~/.eros/wt/.../fix-issue-<N>            (if created)
 Branch:    fix/issue-<N>                          (if created)
 Commits:   <shas + one-liners>                    (if any)
 Notes:     <root cause in one sentence; or what info is missing>

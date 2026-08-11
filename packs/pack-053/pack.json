@@ -1,0 +1,23 @@
+{
+  "id": "pack-053",
+  "name": "Intro 053 \u2014 2people:1.2 full body wide sho",
+  "file": "scifi-pass032/sci-0001-09-fles.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, monochrome ink wash style, high contrast, clean lineart, bold ink lines, (blood red spot color:1.3), (red blood accent:1.3), masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.3), selective color, blood red accent, 2people:1.2 full body wide shot pilot seat interior cockpit dominated by curved instruments screens and control yokes subject riding atop mechanical linkage arms moving rhythmically beneath her shell-shocked pleasure expression eyes wide glassy unblinking staring ahead past horizon line split lip bleeding slowly down jawline fresh crimson drip contrasting white fluid mixture surrounding neck shoulders spreading outward copiously (blood mixed with fluids:1.3) creates viscous glaze texture covering upper torso clearly visible distinct anatomy exposed nipples hard prominent labia parted slightly revealing wet inner surfaces wide environmental shot places small figure center frame surrounded vast machinery details sharp lines metallic textures provide stark backdrop atmosphere charged electrical charge arcs sparks flying from panels edges blurred depth effect isolates primary interaction scene composition balanced symmetrical yet dynamic movement implied through blur streaks lighting dramatic high contrast monochrome base vibrant accent colors pop vividly rating_explicit",
+  "sequence_files": [
+    "scifi-pass001/sci-0010-00-inqu.png",
+    "final-pass007/fin-0031-00-fles.png",
+    "v4-pass001/dmg-0009-05.png",
+    "scifi-pass032/sci-0001-09-fles.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

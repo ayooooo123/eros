@@ -10,7 +10,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { $env, $which, APP_NAME, compareVersions, isEnoent, VERSION } from "@oh-my-pi/pi-utils";
+import { $env, $which, APP_COMMAND_NAME, APP_NAME, compareVersions, isEnoent, VERSION } from "@oh-my-pi/pi-utils";
 import chalk from "@oh-my-pi/pi-utils/chalk";
 import { $ } from "bun";
 import { theme } from "../modes/theme/theme";
@@ -465,7 +465,7 @@ async function resolveUpdateTarget(): Promise<UpdateTarget> {
 
 	if (bunBinDir) return { method: "bun" };
 
-	throw new Error(`Could not resolve ${APP_NAME} binary path in PATH`);
+	throw new Error(`Could not resolve ${APP_COMMAND_NAME} binary path in PATH`);
 }
 
 /**
@@ -812,7 +812,7 @@ function printVerifiedVersion(expectedVersion: string): void {
 
 function formatVerificationFailure(result: InstalledVersionVerification, expectedVersion: string): string {
 	if (result.actual) {
-		return `${APP_NAME} at ${result.path} still reports ${result.actual} (expected ${expectedVersion})`;
+		return `${APP_COMMAND_NAME} at ${result.path} still reports ${result.actual} (expected ${expectedVersion})`;
 	}
 	return `could not verify updated version${result.path ? ` at ${result.path}` : ""}`;
 }
@@ -903,7 +903,7 @@ export async function replaceBinaryForUpdate(options: BinaryReplacementOptions):
 		const verification = await options.verifyInstalledVersion(options.expectedVersion);
 		if (!verification.ok) {
 			throw new Error(
-				`${formatVerificationFailure(verification, options.expectedVersion)}; restored previous ${APP_NAME} binary`,
+				`${formatVerificationFailure(verification, options.expectedVersion)}; restored previous ${APP_COMMAND_NAME} binary`,
 			);
 		}
 
@@ -1105,7 +1105,7 @@ export async function updateViaBinaryAt(
 	// Reclaim backups from earlier updates whose owning process has since exited.
 	await sweepStaleBackups(targetPath);
 	printVerifiedVersion(expectedVersion);
-	console.log(chalk.dim(`Restart ${APP_NAME} to use the new version`));
+	console.log(chalk.dim(`Restart ${APP_COMMAND_NAME} to use the new version`));
 }
 
 /**
@@ -1165,10 +1165,10 @@ export async function runUpdateCommand(opts: { force: boolean; check: boolean })
  * Print update command help.
  */
 export function printUpdateHelp(): void {
-	console.log(`${chalk.bold(`${APP_NAME} update`)} - Check for and install updates
+	console.log(`${chalk.bold(`${APP_COMMAND_NAME} update`)} - Check for and install updates
 
 ${chalk.bold("Usage:")}
-  ${APP_NAME} update [options]
+  ${APP_COMMAND_NAME} update [options]
 
 ${chalk.bold("Options:")}
   -c, --check     Check for updates without installing
@@ -1176,9 +1176,9 @@ ${chalk.bold("Options:")}
   -l, --plugins   Update installed plugins
 
 ${chalk.bold("Examples:")}
-  ${APP_NAME} update              Update to latest version
-  ${APP_NAME} update --check      Check if updates are available
-  ${APP_NAME} update --force      Force reinstall
-  ${APP_NAME} update -l           Update installed plugins
+  ${APP_COMMAND_NAME} update              Update to latest version
+  ${APP_COMMAND_NAME} update --check      Check if updates are available
+  ${APP_COMMAND_NAME} update --force      Force reinstall
+  ${APP_COMMAND_NAME} update -l           Update installed plugins
 `);
 }

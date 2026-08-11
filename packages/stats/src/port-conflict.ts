@@ -235,7 +235,7 @@ async function reclaimStatsPort(port: number): Promise<"retry"> {
 		/(?:^|\/)omp(?:\.exe)?["'\s]+stats(?:["'\s]|$)/.test(normalizedCommand);
 	if (!STATS_RUNTIME_IMAGES[normalizedImage] || !hasStatsIdentity) {
 		throw new Error(
-			`Port ${port} is in use by ${holder.image} (PID ${holder.pid}), which is not identifiable as an omp stats dashboard; refusing to stop it.`,
+			`Port ${port} is in use by ${holder.image} (PID ${holder.pid}), which is not identifiable as an EROS stats dashboard; refusing to stop it.`,
 		);
 	}
 

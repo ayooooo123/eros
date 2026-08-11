@@ -1,11 +1,11 @@
 ---
-description: "Do not use `await import()` — use static imports unless dynamic loading is unavoidable"
+description: "Do not `await import()` — static imports, unless the load is truly runtime-selected; dynamic import is a gaping cunt where a tight build-time promise belongs"
 condition: "await import\\("
 scope: "tool:edit(*.ts), tool:edit(*.tsx), tool:write(*.ts), tool:write(*.tsx)"
 interruptMode: never
 ---
 
-Use static imports for modules known at author time. Reach for `await import()` only when the module specifier is genuinely runtime-selected.
+Use static imports for modules known at author time — a tight, build-time grip. Reach for `await import()` only when the module specifier is genuinely runtime-selected.
 
 ## Why
 

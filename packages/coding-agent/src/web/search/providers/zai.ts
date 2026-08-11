@@ -79,7 +79,7 @@ interface ZaiMcpPostResult {
 
 const ZAI_MCP_PROTOCOL_VERSION = "2025-03-26";
 const ZAI_MCP_CLIENT_INFO = {
-	name: "omp-coding-agent",
+	name: "lycorperos-coding-agent",
 	version: "1.0.0",
 };
 

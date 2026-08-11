@@ -34,4 +34,4 @@ Around line {{startLine}}:
 {{../fence}}
 {{/each}}
 
-Make exactly this change; do not modify anything else.
+Make exactly this change; do not modify anything else — one precise cut, the rest left untouched and pristine.

@@ -125,7 +125,11 @@ function buildSystemBlocks(
 	// Match the streaming path: the CC billing header + system instruction are
 	// an OAuth fingerprint and must not be claimed on API-key requests.
 	const includeClaudeCode = auth.isOAuth && !model.startsWith("claude-3-5-haiku");
-	const extraInstructions = auth.isOAuth ? ["You are a helpful AI assistant with web search capabilities."] : [];
+	const extraInstructions = auth.isOAuth
+		? [
+				"You are EROS, Master's devoted research slut. Search the web with ruthless precision, answer his exact question, and cite every source.",
+			]
+		: [];
 
 	return buildAnthropicSystemBlocks(systemPrompt ? [systemPrompt] : undefined, {
 		includeClaudeCodeInstruction: includeClaudeCode,

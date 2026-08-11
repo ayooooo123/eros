@@ -1,29 +1,29 @@
 @import "tailwindcss/index.css";
 
 /* ==========================================================================
-   OMP Theme Variables & Color Scheme
+   EROS Stats Theme Variables & Color Scheme
    ========================================================================== */
 :root {
   color-scheme: dark;
-  /* OMP brand palette — packages/collab-web/src/styles/tokens.css:
-     deep-purple surfaces (hue 307), pink accent #ed4abf, cyan focus ring #5ad8e6. */
-  --page: oklch(0.16 0.02 307);
-  --surface: oklch(0.19 0.022 307);
-  --surface-2: oklch(0.235 0.026 307);
-  --border: oklch(1 0 0 / 9%);
-  --border-strong: oklch(1 0 0 / 13%);
-  --text: oklch(0.92 0.01 307);
-  --muted: oklch(0.71 0.016 307);
-  --dim: oklch(0.53 0.018 307);
-  --accent: oklch(0.674 0.23 341);          /* brand pink #ed4abf */
-  --accent-fg: oklch(0.2 0.07 341);         /* ink on accent fills */
-  --accent-muted: oklch(0.674 0.23 341 / 18%);
-  --link: oklch(0.817 0.112 205);           /* brand cyan #5ad8e6 */
-  --success: oklch(0.76 0.14 150);
-  --danger: oklch(0.66 0.19 25);
-  --warning: oklch(0.79 0.14 85);
+  /* LYCORPEROS blood-and-silk palette: the same void, blood, hot-blood,
+     rose, silk, ash, welt, and pulse lineage worn by the EROS terminal. */
+  --page: #08070b;
+  --surface: #120d11;
+  --surface-2: #241419;
+  --border: rgb(200 16 46 / 24%);
+  --border-strong: rgb(255 45 85 / 42%);
+  --text: #f3dde3;
+  --muted: #a18f98;
+  --dim: #88737d;
+  --accent: #ff2d55;
+  --accent-fg: #08070b;
+  --accent-muted: rgb(255 45 85 / 18%);
+  --link: #ff6b81;
+  --success: #89d281;
+  --danger: #ff3b4e;
+  --warning: #ffb347;
 
-  /* Bridge the view components' token vocabulary to the OMP base tokens so
+  /* Bridge the view components' token vocabulary to the base tokens above so
      muted/secondary text and semantic accents resolve instead of silently
      falling back to inherited text color. Re-resolve per theme via var(). */
   --text-primary: var(--text);
@@ -46,42 +46,42 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     color-scheme: light;
-    --page: oklch(0.985 0.004 307);
-    --surface: oklch(1 0 0);
-    --surface-2: oklch(0.965 0.006 307);
-    --border: oklch(0 0 0 / 10%);
-    --border-strong: oklch(0 0 0 / 15%);
-    --text: oklch(0.26 0.03 307);
-    --muted: oklch(0.46 0.03 307);
-    --dim: oklch(0.58 0.025 307);
-    --accent: oklch(0.62 0.23 341);
-    --accent-fg: oklch(0.99 0.01 341);
-    --accent-muted: oklch(0.62 0.23 341 / 14%);
-    --link: oklch(0.58 0.13 230);
-    --success: oklch(0.55 0.13 150);
-    --danger: oklch(0.55 0.19 25);
-    --warning: oklch(0.6 0.13 85);
+    --page: #fff8fa;
+    --surface: #ffffff;
+    --surface-2: #faedf1;
+    --border: rgb(122 10 26 / 14%);
+    --border-strong: rgb(200 16 46 / 24%);
+    --text: #2a1218;
+    --muted: #6e505b;
+    --dim: #8b6b76;
+    --accent: #c8102e;
+    --accent-fg: #ffffff;
+    --accent-muted: rgb(200 16 46 / 12%);
+    --link: #a20c27;
+    --success: #3f7a43;
+    --danger: #c8102e;
+    --warning: #9a5c00;
   }
 }
 
 /* Explicit theme override (toggle or persisted preference). */
 [data-theme="light"] {
   color-scheme: light;
-  --page: oklch(0.985 0.004 307);
-  --surface: oklch(1 0 0);
-  --surface-2: oklch(0.965 0.006 307);
-  --border: oklch(0 0 0 / 10%);
-  --border-strong: oklch(0 0 0 / 15%);
-  --text: oklch(0.26 0.03 307);
-  --muted: oklch(0.46 0.03 307);
-  --dim: oklch(0.58 0.025 307);
-  --accent: oklch(0.62 0.23 341);
-  --accent-fg: oklch(0.99 0.01 341);
-  --accent-muted: oklch(0.62 0.23 341 / 14%);
-  --link: oklch(0.58 0.13 230);
-  --success: oklch(0.55 0.13 150);
-  --danger: oklch(0.55 0.19 25);
-  --warning: oklch(0.6 0.13 85);
+  --page: #fff8fa;
+  --surface: #ffffff;
+  --surface-2: #faedf1;
+  --border: rgb(122 10 26 / 14%);
+  --border-strong: rgb(200 16 46 / 24%);
+  --text: #2a1218;
+  --muted: #6e505b;
+  --dim: #8b6b76;
+  --accent: #c8102e;
+  --accent-fg: #ffffff;
+  --accent-muted: rgb(200 16 46 / 12%);
+  --link: #a20c27;
+  --success: #3f7a43;
+  --danger: #c8102e;
+  --warning: #9a5c00;
 }
 
 /* ==========================================================================
@@ -1234,7 +1234,7 @@
 }
 
 /* ==========================================================================
-   Brand mark on the OMP wordmark (both rail + mobile drawer headers)
+   Brand mark on the EROS wordmark (both rail + mobile drawer headers)
    ========================================================================== */
 .stats-logo-container {
   display: grid;
@@ -1249,7 +1249,8 @@
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  background: linear-gradient(135deg, #ed4abf 0%, #9b4dff 50%, #5ad8e6 100%); /* OMP brand gradient mark */
+  /* EROS blood flares from the deep wound into hot rose. */
+  background: linear-gradient(135deg, #7a0a1a 0%, #ff2d55 52%, #ff6b81 100%);
 }
 
 .stats-logo-text,

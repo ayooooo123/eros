@@ -7,7 +7,7 @@
  */
 import { describe, expect, it, vi } from "bun:test";
 import type { HostFrame, SessionEntry } from "@oh-my-pi/pi-wire";
-import { GuestClient } from "../src/lib/client";
+import { GatewayClient } from "../src/lib/client";
 import { encodeBase64Url } from "../src/lib/link";
 import { decideTranscriptPoll } from "../src/lib/transcript-poll";
 
@@ -27,9 +27,9 @@ function messageEntry(id: string, content: string, timestamp: number): SessionEn
 	};
 }
 
-describe("GuestClient.fetchTranscript", () => {
+describe("GatewayClient.fetchTranscript", () => {
 	it("surfaces a frame-level error as a typed terminal result, not null", async () => {
-		const client = new GuestClient(LINK, "tester");
+		const client = new GatewayClient(LINK, "tester");
 		const promise = client.fetchTranscript("agent-1", 128);
 		client.applyFrameForTest(transcriptFrame(1, "", 128, "transcript entry exceeds transcript fetch cap"));
 		const result = await promise;
@@ -37,7 +37,7 @@ describe("GuestClient.fetchTranscript", () => {
 	});
 
 	it("resolves rows for a successful reply", async () => {
-		const client = new GuestClient(LINK, "tester");
+		const client = new GatewayClient(LINK, "tester");
 		const promise = client.fetchTranscript("agent-1", 0);
 		client.applyFrameForTest(transcriptFrame(1, '{"type":"message"}\n', 19));
 		const result = await promise;
@@ -47,7 +47,7 @@ describe("GuestClient.fetchTranscript", () => {
 	it("resolves null (transient) on timeout — distinct from a terminal error", async () => {
 		vi.useFakeTimers();
 		try {
-			const client = new GuestClient(LINK, "tester");
+			const client = new GatewayClient(LINK, "tester");
 			const promise = client.fetchTranscript("agent-1", 0);
 			vi.advanceTimersByTime(10_000);
 			expect(await promise).toBeNull();
@@ -57,7 +57,7 @@ describe("GuestClient.fetchTranscript", () => {
 	});
 
 	it("resolves null (transient) when the session ends mid-fetch", async () => {
-		const client = new GuestClient(LINK, "tester");
+		const client = new GatewayClient(LINK, "tester");
 		const promise = client.fetchTranscript("agent-1", 0);
 		client.applyFrameForTest({ t: "bye", reason: "host left" });
 		expect(await promise).toBeNull();
@@ -66,7 +66,7 @@ describe("GuestClient.fetchTranscript", () => {
 	it("keeps late replies from resolving a timed-out request with stale data", async () => {
 		vi.useFakeTimers();
 		try {
-			const client = new GuestClient(LINK, "tester");
+			const client = new GatewayClient(LINK, "tester");
 			const first = client.fetchTranscript("agent-1", 0);
 			vi.advanceTimersByTime(10_000);
 			expect(await first).toBeNull();

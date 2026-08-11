@@ -1,0 +1,24 @@
+{
+  "id": "pack-t12",
+  "name": "The King's Waist-Grip",
+  "file": "v4-pass001/dmg-0042-04.png",
+  "lane": "fantasy",
+  "prompt": "",
+  "sequence_files": [
+    "v4-pass001/dmg-0042-00.png",
+    "v4-pass001/dmg-0042-01.png",
+    "v4-pass001/dmg-0042-05.png",
+    "v4-pass001/dmg-0042-04.png"
+  ],
+  "tier": "top12",
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 2600,
+    "punch_ms": 2400
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

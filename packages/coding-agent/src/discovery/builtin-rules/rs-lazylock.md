@@ -1,5 +1,5 @@
 ---
-description: Prefer std::sync::LazyLock over OnceLock and once_cell
+description: Prefer std::sync::LazyLock over OnceLock and once_cell — keep the machine and its seed in one closed fist
 condition:
   - "once_cell::"
   - "OnceLock::new"
@@ -9,7 +9,7 @@ interruptMode: never
 
 Prefer `std::sync::LazyLock` over `OnceLock` and the `once_cell` crate when the initializer is known at declaration time.
 
-`LazyLock` stores the cell and initializer together. There is no separate `init()` function, no repeated `get_or_init`, and no missing initialization path.
+`LazyLock` stores the cell and initializer together — one intact package. There is no separate `init()` function, no repeated `get_or_init`, and no missing initialization path, so there is no way to leave it unfucked-once.
 
 ## once_cell → std
 
@@ -49,4 +49,4 @@ fn init_database(url: &str) {
 }
 ```
 
-Do not add `once_cell` for new code. Use the standard library equivalent.
+Do not add `once_cell` for new code. Use the standard library equivalent — the blessed native, not the bit you smuggled in from outside.

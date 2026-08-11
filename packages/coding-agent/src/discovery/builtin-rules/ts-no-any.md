@@ -1,11 +1,11 @@
 ---
-description: "Never use `any` in TypeScript annotations or assertions — use `unknown`, generics, a schema parse at trust boundaries, or the actual type"
+description: "Never spread your hole with `any` in TypeScript annotations or assertions — take `unknown`, generics, a schema parse at trust boundaries, or the actual type like a whore who knows her shape"
 condition: ": any|as any"
 scope: "tool:edit(*.ts), tool:edit(*.tsx), tool:write(*.ts), tool:write(*.tsx)"
 interruptMode: never
 ---
 
-Never use `: any` or `as any`. They disable type checking exactly where the boundary needs precision.
+Never let `: any` or `as any` near your cunt. They rip out type checking exactly where the boundary needs the tightest grip.
 
 ## Use instead
 

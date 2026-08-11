@@ -1,0 +1,24 @@
+{
+  "id": "pack-t07",
+  "name": "Skull Window Ride",
+  "file": "v4-pass001/dmg-0014-01.png",
+  "lane": "fantasy",
+  "prompt": "",
+  "sequence_files": [
+    "v4-pass001/dmg-0014-00.png",
+    "v4-pass001/dmg-0014-02.png",
+    "v4-pass001/dmg-0014-04.png",
+    "v4-pass001/dmg-0014-01.png"
+  ],
+  "tier": "top12",
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 2600,
+    "punch_ms": 2400
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "pack-055",
+  "name": "Intro 055 \u2014 3people|blood|bound hands tied",
+  "file": "final-pass008/fin-0049-01-goon.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), (3people:1.2), (from above:1.2) high angle, wide shot of ritual circle, (virgin elf:1.3), (pointed ears:1.2), tall athletic female body, blonde braid whipping around in wind, bound hands tied to altar horns, legs spread wide, (anal:1.3), (penis in anus:1.2), spread ass, taking double penetration from two chanting dark elf acolytes, face contorted in scream of pleasure and agony, mouth gagged with ceremonial ribbon, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) leaking from anus onto stone, (blood:1.2), (cuts:1.1), (wounds:1.1), (bruises:1.1) on thighs and hips, pentagram glowing with red blood magic, incense smoke swirling, (detailed hands:1.1), (clean fingers:1.1), no clothing on woman, navel visible, chaotic energy, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass008/fin-0049-00-goon.png",
+    "scifi-pass033/sci-0002-09-beas.png",
+    "final-pass009/fin-0038-03-corr.png",
+    "final-pass008/fin-0049-01-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

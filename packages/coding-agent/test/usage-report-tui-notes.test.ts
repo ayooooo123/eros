@@ -49,7 +49,7 @@ function report(provider: string, email: string, limits: UsageReport["limits"], 
 
 describe("renderUsageReports (#3268 TUI aggregate)", () => {
 	it("renders provider-wide UsageReport.notes exactly once for multiple accounts", () => {
-		const disclaimer = "OMP-observed spend only; OpenCode usage outside OMP is not included.";
+		const disclaimer = "EROS-observed spend only; OpenCode usage outside EROS is not included.";
 		const reports: UsageReport[] = [
 			report(
 				"opencode-go",

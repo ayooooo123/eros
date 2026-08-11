@@ -34,7 +34,7 @@ describe("mcp/startup-events — connection-status cross-module contract", () =>
 				connectedServers: ["alpha", "beta"],
 				failedServers: [],
 			}),
-		).toBe("Connected to MCP servers: alpha, beta.");
+		).toBe("Forge auxiliaries leashed: alpha, beta.");
 	});
 
 	it("formats failures with server names and errors", () => {
@@ -58,7 +58,7 @@ describe("mcp/startup-events — connection-status cross-module contract", () =>
 		expect(message).not.toContain(os.homedir());
 		expect(message).not.toContain("\n");
 		expect(message).not.toContain("\t");
-		expect(message).toContain("broken: failed at   ~/.omp/mcp.log");
+		expect(message).toContain("broken: failed at   ~/.eros/mcp.log");
 	});
 
 	it("sanitizes server names before rendering them in status text", () => {
@@ -72,9 +72,9 @@ describe("mcp/startup-events — connection-status cross-module contract", () =>
 		expect(message).not.toContain(os.homedir());
 		expect(message).not.toContain("\n");
 		expect(message).not.toContain("\t");
-		expect(message).toContain("Connected: ~/.omp/connected   server.");
-		expect(message).toContain("Failed: ~/.omp/broken server: missing command.");
-		expect(message).toContain("Still connecting: ~/.omp/pending");
+		expect(message).toContain("Connected: ~/.eros/connected   server.");
+		expect(message).toContain("Failed: ~/.eros/broken server: missing command.");
+		expect(message).toContain("Still connecting: ~/.eros/pending");
 	});
 
 	it("keeps pending servers visible while other servers settle", () => {

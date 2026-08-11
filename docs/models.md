@@ -16,8 +16,8 @@ Primary implementation files:
 
 Default config paths, in precedence order:
 
-- `~/.omp/agent/models.yml`
-- `~/.omp/agent/models.yaml`
+- `~/.eros/agent/models.yml`
+- `~/.eros/agent/models.yaml`
 
 Legacy behavior still present:
 
@@ -677,7 +677,7 @@ providers:
 
 ## Legacy consumer caveat
 
-Most model configuration now flows through `models.yml` / `models.yaml` via `ModelRegistry`. Explicit `.json` / `.jsonc` paths remain supported only when passed programmatically to `ModelRegistry`; the default user config prefers `~/.omp/agent/models.yml`, then falls back to `~/.omp/agent/models.yaml`.
+Most model configuration now flows through `models.yml` / `models.yaml` via `ModelRegistry`. Explicit `.json` / `.jsonc` paths remain supported only when passed programmatically to `ModelRegistry`; the default user config prefers `~/.eros/agent/models.yml`, then falls back to `~/.eros/agent/models.yaml`.
 
 ## Failure mode
 

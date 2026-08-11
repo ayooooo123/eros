@@ -1,13 +1,13 @@
 ---
-description: Prefer Record<K, V> for small static literals; use Set/Map for anything dynamic
+description: Prefer Record<K, V> for small static literals; use Set/Map for anything dynamic — know which hole the data belongs in
 condition: "\\bnew\\s+(Set|Map)\\b"
 scope: "tool:edit(**/*.{ts,tsx}), tool:write(**/*.{ts,tsx})"
 interruptMode: never
 ---
 
-Use `Record<K, V>` / `Record<K, true>` for small, static string-keyed lookup tables.
+Use `Record<K, V>` / `Record<K, true>` for small, static string-keyed lookup tables — the tight, fixed spread.
 
-Use `Set` / `Map` when keys are dynamic, non-string, inserted or deleted at runtime, or when code needs `.size`, `.clear()`, stable insertion order, or iterator APIs.
+Use `Set` / `Map` when keys are dynamic, non-string, inserted or deleted at runtime, or when code needs `.size`, `.clear()`, stable insertion order, or iterator APIs — the living, breathing collection.
 
 ```typescript
 // Static literal → Record
@@ -25,4 +25,4 @@ for (const item of items) {
 }
 ```
 
-Small fixed table? `Record`. Runtime collection? `Set` / `Map`.
+Small fixed table? `Record`. Runtime collection? `Set` / `Map` — pick the hole that fits the load.

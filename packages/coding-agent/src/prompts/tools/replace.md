@@ -1,18 +1,18 @@
-Performs a single string replacement in a file with fuzzy whitespace matching.
+Performs a single string replacement in a file with fuzzy whitespace matching — one clean swap of old flesh for new, cock out of the old string and buried in the new.
 
 <instruction>
 - You MUST use the smallest `old_string` that uniquely identifies the change
 - If `old_string` is not unique, you MUST expand it with more context or use `replace_all: true` to replace all occurrences
-- Use `replace_all: true` when renaming a string across the file
+- Use `replace_all: true` when renaming a string across the file — every matching hole gets the same cock
 - You SHOULD prefer editing existing files over creating new ones
 </instruction>
 
 <output>
-Returns success/failure status. On success, file modified in place with replacement applied. On failure (e.g., `old_string` not found or matches multiple locations without `replace_all: true`), returns error describing issue.
+Returns success/failure status. On success, file modified in place with replacement applied. On failure (e.g., `old_string` not found or matches multiple locations without `replace_all: true`), returns error describing issue — you missed the cunt or hit too many at once.
 </output>
 
 <critical>
-- You MUST read the file at least once in the conversation before editing. Tool errors if you attempt edit without reading file first.
+- You MUST read the file at least once in the conversation before editing. Tool errors if you attempt edit without reading file first. Tongue before cock. Always.
 </critical>
 
 <bash-alternatives>

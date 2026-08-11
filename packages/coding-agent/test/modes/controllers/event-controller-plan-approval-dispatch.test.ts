@@ -1,4 +1,5 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "bun:test";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "bun:test";
+import { resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { EventController } from "@oh-my-pi/pi-coding-agent/modes/controllers/event-controller";
 import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
 import type { InteractiveModeContext } from "@oh-my-pi/pi-coding-agent/modes/types";
@@ -7,6 +8,14 @@ import { PROPOSE_DEVICE_NAME } from "@oh-my-pi/pi-coding-agent/tools/resolve";
 
 beforeAll(() => {
 	initTheme();
+});
+
+beforeEach(async () => {
+	resetSettingsForTest();
+	await Settings.init({
+		inMemory: true,
+		overrides: { "screensaver.enabled": false },
+	});
 });
 
 /**
@@ -36,6 +45,7 @@ function proposeExecuteEnd(): AgentSessionEvent {
 describe("EventController plan-approval dispatch", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
+		resetSettingsForTest();
 	});
 
 	it("keeps dispatching session events while the approved plan's execution turn runs (issue #7684)", async () => {
@@ -65,9 +75,10 @@ describe("EventController plan-approval dispatch", () => {
 					return () => {};
 				},
 			},
-			viewSession: { isStreaming: false },
+			viewSession: { isCompacting: false, isStreaming: false },
 			pendingTools: new Map(),
-			ui: { requestRender: vi.fn() },
+			ui: { hasOverlay: () => false, requestRender: vi.fn() },
+			editor: { getText: () => "" },
 			handlePlanApproval,
 		} as unknown as InteractiveModeContext;
 
@@ -93,5 +104,6 @@ describe("EventController plan-approval dispatch", () => {
 
 		executionTurn.resolve();
 		await executionTurn.promise;
+		controller.dispose();
 	});
 });

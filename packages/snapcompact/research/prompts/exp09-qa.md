@@ -1,6 +1,6 @@
-Answer the following questions using ONLY text you can read in the reference pages above.
-- Give short extractive answers: a word or phrase copied from the text.
-- If you cannot read the relevant region well enough to answer, reply exactly UNREADABLE for that question.
-- Output a numbered list, one answer per line, no commentary.
+Answer the following questions using ONLY text you can read in the reference pages above — do not look away from the visible evidence.
+- Spit back a short raw bit: a word or phrase torn straight off the text.
+- If the spot is too blurry to read, say exactly UNREADABLE — a dry cunt confesses instead of inventing.
+- Bleed it out one raw line per hole on a numbered strip, no throat-clearing, no cushioning.
 
 {questions}

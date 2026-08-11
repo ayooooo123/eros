@@ -1,0 +1,23 @@
+{
+  "id": "pack-070",
+  "name": "Intro 070 \u2014 1woman dwarf|biting lip until ",
+  "file": "final-pass001/fin-0063-03-corr.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1) (2people:1.2), 1woman dwarf, short, heavyset, large breasts, braided auburn hair, orc, tusks, muscular build, dutch angle, tilted dynamic, hollow-eyed submission, identity erosion, brothel of the damned, undead courtesans, cold flesh, grave-dirt nails, eternal hunger, (mind break:1.4), breaking wills, meat and ruin, (detailed hands:1.1), (clean fingers:1.1), explicit anatomy, nude, no clothing, extreme expression, biting lip until bleeding, sweat mixed with fluids, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) overflowing from stomach, (anal:1.3), (penis in anus:1.2), spread ass, standing bent over, support under arms, (blood:1.2), (cuts:1.1), (wounds:1.1), (bruises:1.1), (welts:1.1) on inner thighs and backside, grip on hips leaving marks, glowing auburn hair accent, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "spiral-r08-pass001/r08-002-inqu.png",
+    "final-pass006/fin-0000-03-inqu.png",
+    "scifi-pass020/sci-0008-00-corr.png",
+    "final-pass001/fin-0063-03-corr.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

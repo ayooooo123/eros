@@ -1,0 +1,23 @@
+{
+  "id": "pack-019",
+  "name": "Intro 019 \u2014 1woman human|blood|bruises:1.1",
+  "file": "final-pass001/fin-0041-05-fles.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1) (2people:1.2), cowboy shot thighs up, 1woman human, red hair, emerald eyes, freckles, curvy build, mid-werewolf shift sex, kneeling on all fours, fur covering arms and legs, claws piercing floorboards, lover gripping her waist from behind, human male, pressing face into neck, (detailed hands:1.1), (clean fingers:1.1) squeezing flesh tightly, woman looking over shoulder, eyes rolled back, mouth agape in moan, ears transforming into pointed wolf ears, snout emerging from chin, (blood:1.2), drops falling from elbow tears, (cuts:1.1), jagged lines on forearms, (wounds:1.1) raw and bleeding, (bruises:1.1) concentrated on hip bones, sweat beading on freckles, (cum:1.4), (dripping cum:1.3) dripping down inner thighs, (cum pool:1.2) accumulating between knees, explicit anatomy, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "spiral-r01-pass001/r01-023-corr.png",
+    "darkx-pass001/dark2-g0161-01.png",
+    "final-pass003/fin-0043-05-corr.png",
+    "final-pass001/fin-0041-05-fles.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

@@ -30,7 +30,7 @@ import {
 	truncateToWidth,
 	visibleWidth,
 } from "@oh-my-pi/pi-tui";
-import { prompt, untilAborted } from "@oh-my-pi/pi-utils";
+import { APP_DISPLAY_NAME, prompt, untilAborted } from "@oh-my-pi/pi-utils";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { ExtensionUISelectItem } from "../extensibility/extensions";
 import { getMarkdownTheme, type Theme, theme } from "../modes/theme/theme";
@@ -837,7 +837,7 @@ export class AskTool implements AgentTool<typeof askSchema, AskToolDetails> {
 		const method = this.session.settings.get("ask.notify");
 		if (method === "off") return;
 		TERMINAL.sendNotification({
-			title: "Oh My Pi",
+			title: APP_DISPLAY_NAME,
 			body: "Waiting for input",
 			type: "ask",
 			urgency: "normal",

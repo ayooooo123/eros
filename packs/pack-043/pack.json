@@ -1,0 +1,23 @@
+{
+  "id": "pack-043",
+  "name": "Intro 043 \u2014 2people|blood|blood splatter o",
+  "file": "final-pass004/fin-0061-01-fles.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 2people:1.2, female dominant, male submissive, human woman, large man, throne of bones and steel, foot grinding chest, (red hair:1.4), wild mane, (emerald eyes:1.3), glowing gaze, freckles, curvy figure, soft flesh vs hard stone, bare skin, nude, (detailed hands:1.1), gripping hair, (clean fingers:1.1), extreme expression, manic laughter, mouth open showing teeth, looking at viewer, (from below:1.2), worm's eye view, distorted perspective, man slumped back, eyes rolled up, (blood:1.2), blood splatter on thighs, (cuts:1.1), self-inflicted cuts on arms, (wounds:1.1), weeping sores, (bruises:1.1), dark shadows under ribs, court watching in awe and terror, blurred background figures, dramatic lighting, chiaroscuro, (selective color red blood:1.3), (selective color emerald eyes:1.2), high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass007/fin-0033-01-corr.png",
+    "scifi-pass300/sci-0008-04-corr.png",
+    "spiral-r02-pass001/r02-062-corr.png",
+    "final-pass004/fin-0061-01-fles.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

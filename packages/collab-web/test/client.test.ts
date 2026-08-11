@@ -10,7 +10,7 @@ import type {
 	SubagentProgressPayload,
 	WireMessage,
 } from "@oh-my-pi/pi-wire";
-import { GuestClient } from "../src/lib/client";
+import { GatewayClient } from "../src/lib/client";
 import { COLLAB_PROTO, encodeBase64Url } from "../src/lib/link";
 import { CollabSocket } from "../src/lib/socket";
 
@@ -60,16 +60,16 @@ function snapshotChunk(entries: SessionEntry[], final = true): HostFrame {
 	return { t: "snapshot-chunk", entries, final };
 }
 
-function liveClient(entries: SessionEntry[] = []): GuestClient {
-	const client = new GuestClient(LINK, "tester");
+function liveClient(entries: SessionEntry[] = []): GatewayClient {
+	const client = new GatewayClient(LINK, "tester");
 	client.applyFrameForTest(welcomeFrame(entries.length));
 	if (entries.length > 0) client.applyFrameForTest(snapshotChunk(entries));
 	return client;
 }
 
-describe("GuestClient frame apply", () => {
+describe("GatewayClient frame apply", () => {
 	it("throws on an invalid link", () => {
-		expect(() => new GuestClient("not a link", "tester")).toThrow();
+		expect(() => new GatewayClient("not a link", "tester")).toThrow();
 	});
 
 	it("welcome populates the snapshot and goes live", () => {
@@ -87,7 +87,7 @@ describe("GuestClient frame apply", () => {
 	});
 
 	it("welcome readOnly flag lands in the snapshot", () => {
-		const client = new GuestClient(LINK, "tester");
+		const client = new GatewayClient(LINK, "tester");
 		expect(client.getSnapshot().readOnly).toBe(false);
 		client.applyFrameForTest(welcomeFrame(0, true));
 		expect(client.getSnapshot().readOnly).toBe(true);
@@ -97,7 +97,7 @@ describe("GuestClient frame apply", () => {
 		vi.useFakeTimers();
 		try {
 			const firstEntry = messageEntry("e1", { role: "user", content: "hi", timestamp: 1 });
-			const client = new GuestClient(LINK, "tester");
+			const client = new GatewayClient(LINK, "tester");
 			client.applyFrameForTest(welcomeFrame(2));
 			expect(client.getSnapshot().phase).toBe("connecting");
 
@@ -114,7 +114,7 @@ describe("GuestClient frame apply", () => {
 			expect(snap.phase).toBe("ended");
 			expect(snap.endedReason).toBe("timed out waiting for the host's session snapshot");
 
-			const completeClient = new GuestClient(LINK, "tester");
+			const completeClient = new GatewayClient(LINK, "tester");
 			completeClient.applyFrameForTest(welcomeFrame(1));
 			completeClient.applyFrameForTest(snapshotChunk([firstEntry]));
 			vi.advanceTimersByTime(30_000);
@@ -274,7 +274,7 @@ describe("GuestClient frame apply", () => {
 	});
 
 	it("a pre-welcome error (hello rejection, e.g. protocol mismatch) ends the session with the host's reason", () => {
-		const client = new GuestClient(LINK, "tester");
+		const client = new GatewayClient(LINK, "tester");
 		client.applyFrameForTest({
 			t: "error",
 			message: `protocol mismatch: host speaks v${COLLAB_PROTO}, guest sent v${COLLAB_PROTO - 1}`,

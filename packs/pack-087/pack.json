@@ -1,0 +1,23 @@
+{
+  "id": "pack-087",
+  "name": "Intro 087 \u2014 blood|cum|cum pool|dripping cu",
+  "file": "spiral-r03-pass001/r03-058-beas.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, (scarification ritual:1.3), from below low angle, shortstack human female, massive beastman, fur texture visible, knife cutting skin, (detailed hands:1.1), (clean fingers:1.1), (penis in vagina:1.2), hips thrusting, knotting process, (cum:1.4), (dripping cum:1.3), (cum pool:1.2), (blood:1.2), (cuts:1.1), (wounds:1.1), (bruises:1.1), (welts:1.1), extreme expression, head thrown back, eyes rolled, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass005/fin-0005-03-inqu.png",
+    "final-pass009/fin-0003-03-corr.png",
+    "spiral-r09-pass001/r09-050-fles.png",
+    "spiral-r03-pass001/r03-058-beas.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

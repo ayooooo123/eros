@@ -14,14 +14,14 @@ Settings are stored as plain YAML mappings. Every key, its type, default, and en
 
 | Scope             | Path                                                  | Read behavior                                                                                                                            | Write behavior                                                                                                                                                                   |
 | ----------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Global            | `~/.omp/agent/config.yml` (or existing `config.yaml`) | The main persistent settings file. `config.yml` is the canonical write target; an existing `config.yaml` is loaded and updated in place. | `/settings`, `omp config set`, and `omp config reset` write here.                                                                                                                |
-| Global legacy     | `~/.omp/agent/settings.json`                          | Migrated into `config.yml` once, only when neither main YAML filename exists.                                                            | Not written after migration; the original is renamed to `settings.json.bak`.                                                                                                     |
+| Global            | `~/.eros/agent/config.yml` (or existing `config.yaml`) | The main persistent settings file. `config.yml` is the canonical write target; an existing `config.yaml` is loaded and updated in place. | `/settings`, `omp config set`, and `omp config reset` write here.                                                                                                                |
+| Global legacy     | `~/.eros/agent/settings.json`                          | Migrated into `config.yml` once, only when neither main YAML filename exists.                                                            | Not written after migration; the original is renamed to `settings.json.bak`.                                                                                                     |
 | Project           | `<cwd>/.omp/config.yml` (plus `.omp/settings.json`)   | Loaded when the process working directory has a non-empty `.omp/`.                                                                       | Settings commands do not write arbitrary project keys. With `modelRoleStorage: project`, model-selector role assignments update only `modelRoles` here; edit other keys by hand. |
 | Project legacy    | `<cwd>/.omp/settings.json`                            | Still read; project `config.yml` is merged on top of it.                                                                                 | Not written by settings commands.                                                                                                                                                |
 | CLI overlay       | Any file passed with `--config <file>`                | Loaded after global and project settings, for that one process. Repeatable.                                                              | Never persisted.                                                                                                                                                                 |
 | Runtime overrides | In-memory only                                        | Set by dedicated CLI flags (`--model`, `--approval-mode`, …) and feature env vars.                                                       | Never persisted.                                                                                                                                                                 |
 
-`PI_CODING_AGENT_DIR` relocates the `~/.omp/agent` base directory. When it is set, the global `config.yml`, the auth store (`agent.db`), and everything else under the agent directory move with it. Use `omp config path` to print the active agent directory.
+`PI_CODING_AGENT_DIR` relocates the `~/.eros/agent` base directory. When it is set, the global `config.yml`, the auth store (`agent.db`), and everything else under the agent directory move with it. Use `omp config path` to print the active agent directory.
 
 Native project settings are intentionally scoped to the process working directory's `.omp/` folder — settings discovery does **not** walk ancestor directories looking for the nearest `.omp/`. Other discovery providers (Claude, Codex, Gemini, Cursor, OpenCode) can also contribute project-level settings from their own files; those are read-only from `omp` settings commands and can be turned off by provider id (see [Provider and source disabling](#provider-and-source-disabling)).
 
@@ -65,7 +65,7 @@ This only controls the startup splash animation. It does not rerun setup or chan
 | `omp config set <key> <value>` | Parse `<value>` against the key's schema type and write it to the global main YAML file.                                                                                                                                                                                                          |
 | `omp config reset <key>`       | Write the key's schema **default** back to the global config (this persists the default, it does not delete the key).                                                                                                                                                                             |
 | `omp config path`              | Print the active agent directory (honors `PI_CODING_AGENT_DIR`).                                                                                                                                                                                                                                  |
-| `omp config init-xdg`          | On Linux and macOS, create the `omp` directories under the effective XDG data, state, and cache homes. It does not move existing files or set the XDG environment variables. Other platforms exit non-zero.                                                                                       |
+| `eros config init-xdg`          | On Linux and macOS, create the `omp` directories under the effective XDG data, state, and cache homes. It does not move existing files or set the XDG environment variables. Other platforms exit non-zero.                                                                                       |
 
 `omp config` with no subcommand, `--help`, or `-h` lists settings. The `--json` flag is accepted by `list`, `get`, `set`, and `reset`.
 
@@ -101,7 +101,7 @@ From highest to lowest:
 1. **Runtime overrides** — dedicated CLI flags and feature env vars applied in memory for the current process: `--model`, `--smol`, `--slow`, `--plan`, `--approval-mode`, `--auto-approve`/`--yolo`, `--hide-thinking`, `--advisor`, `--no-pty`, `--api-key`, and protocol-mode defaults. Never persisted.
 2. **CLI config overlays** — each `--config <file>`; later overlay files override earlier ones.
 3. **Project settings** — `<cwd>/.omp/settings.json` then `<cwd>/.omp/config.yml` (and contributions from other discovery providers at project level).
-4. **Global settings** — `~/.omp/agent/config.yml`.
+4. **Global settings** — `~/.eros/agent/config.yml`.
 5. **Built-in defaults** — from the settings schema.
 
 A key that is unset at every layer resolves to its schema default at read time.
@@ -190,7 +190,7 @@ The named replacement tool must be available in the current session or the inter
 ### Worked example: global vs. project
 
 ```yaml
-# ~/.omp/agent/config.yml
+# ~/.eros/agent/config.yml
 tools:
   approvalMode: write
   approval:
@@ -310,7 +310,7 @@ Most provider-control use cases list model provider ids. Disabling the `claude` 
 Because arrays replace rather than append, a project that sets `disabledProviders` must list the complete desired set:
 
 ```yaml
-# ~/.omp/agent/config.yml
+# ~/.eros/agent/config.yml
 disabledProviders:
   - anthropic
   - openai
@@ -632,7 +632,7 @@ memory:
 | `compaction.remoteEnabled`    | boolean | `true`        | Allow remote compaction service.                                                                                                                                                                                                          |
 | `compaction.autoContinue`     | boolean | `true`        | Continue automatically after compaction.                                                                                                                                                                                                  |
 | `memory.backend`              | enum    | `off`         | `off`, `local`, `hindsight`, `mnemopi`. Each backend has its own `hindsight.*` / `mnemopi.*` / `memories.*` tuning keys.                                                                                                                  |
-| `autolearn.enabled`           | boolean | `false`       | Experimental: after the agent stops, nudge it to capture lessons to memory and create/enhance isolated managed skills under `~/.omp/agent/managed-skills`. Enables the `manage_skill` tool (and `learn` when a memory backend is active). |
+| `autolearn.enabled`           | boolean | `false`       | Experimental: after the agent stops, nudge it to capture lessons to memory and create/enhance isolated managed skills under `~/.eros/agent/managed-skills`. Enables the `manage_skill` tool (and `learn` when a memory backend is active). |
 | `autolearn.autoContinue`      | boolean | `false`       | When `autolearn.enabled`, auto-run one capture turn at stop (uses extra tokens). Off = a passive reminder rides your next turn.                                                                                                           |
 | `autolearn.minToolCalls`      | number  | `5`           | Only nudge after a turn that used at least this many tools.                                                                                                                                                                               |
 
@@ -761,9 +761,9 @@ Provider credentials and custom model definitions are configured separately — 
 
 ### Startup migration to `config.yml`
 
-When neither `~/.omp/agent/config.yml` nor the compatible `config.yaml` exists, startup builds canonical `config.yml` once from legacy sources, then writes the result:
+When neither `~/.eros/agent/config.yml` nor the compatible `config.yaml` exists, startup builds canonical `config.yml` once from legacy sources, then writes the result:
 
-1. `~/.omp/agent/settings.json` (renamed to `settings.json.bak` after a successful parse).
+1. `~/.eros/agent/settings.json` (renamed to `settings.json.bak` after a successful parse).
 2. Settings persisted in `agent.db`.
 
 After either main YAML file exists, these legacy sources are no longer consulted. The generic config loader also performs `.json` -> `.yml` migration for other config files when only the `.json` form is present.
@@ -810,7 +810,7 @@ Arrays replace; they do not append. If a project sets `disabledProviders`, `enab
 
 ### `omp config reset` did not remove my key
 
-`reset` writes the schema **default** value into the global config — it persists the default rather than deleting the key. To stop overriding a project value from global config, delete the key from `~/.omp/agent/config.yml` by hand.
+`reset` writes the schema **default** value into the global config — it persists the default rather than deleting the key. To stop overriding a project value from global config, delete the key from `~/.eros/agent/config.yml` by hand.
 
 ### A `--config` overlay fails at startup
 

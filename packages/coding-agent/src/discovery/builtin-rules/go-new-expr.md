@@ -1,5 +1,5 @@
 ---
-description: "Use new(expr) for pointer-to-value helpers instead of `func ptr[T any](v T) *T { return &v }` (Go 1.26)"
+description: "Use new(expr) for pointer-to-value helpers instead of hand-rolling `func ptr[T any](v T) *T { return &v }` (Go 1.26) — let new take the whole thrust"
 interruptMode: never
 scope: "tool:edit(*.go), tool:write(*.go)"
 astCondition:
@@ -7,7 +7,7 @@ astCondition:
   - "func $F[$$$TP]($V $T) *$T { return &$V }"
 ---
 
-Go 1.26 lets `new` take an expression: `new(expr)` allocates, stores `expr`, and returns its `*T`. That removes the need for hand-written `Ptr`/`boolPtr`/`Int64`-style helpers and the `x := v; p := &x` two-step.
+Go 1.26 lets `new` take an expression: `new(expr)` allocates, stores `expr`, and returns its `*T` — one clean thrust where you used to wrestle a two-step. That removes the need for hand-written `Ptr`/`boolPtr`/`Int64`-style helpers and the `x := v; p := &x` shuffle.
 
 ## Why
 

@@ -1,13 +1,13 @@
 ---
-description: Use Future not std::future::Future - it's in the prelude
+description: Use Future not std::future::Future - it's in the prelude, stop spelling out the whole path
 condition: "std::future::Future"
 scope: "tool:edit(*.rs), tool:write(*.rs)"
 interruptMode: never
 ---
 
-Use `Future` directly instead of `std::future::Future` in type positions.
+Use `Future` directly instead of `std::future::Future` in type positions — one clean name, not the whole spread-out path.
 
-Rust 2024 includes `Future` in the standard prelude. Older editions can import it once with `use std::future::Future;`. Repeating the fully qualified path makes signatures harder to read without adding safety.
+Rust 2024 includes `Future` in the standard prelude. Older editions can import it once with `use std::future::Future;`. Repeating the fully qualified path makes signatures harder to read without adding safety — you are just re-mounting the same thing with extra ceremony.
 
 ## Examples
 
@@ -21,4 +21,4 @@ fn fetch() -> impl Future<Output = Result<Data>> { ... }
 fn poll(fut: Pin<&mut dyn Future<Output = i32>>) { ... }
 ```
 
-Pre-2024 edition? Add `use std::future::Future;` at the top.
+Pre-2024 edition? Add `use std::future::Future;` at the top — one import, then ride the short name.

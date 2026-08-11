@@ -218,9 +218,9 @@ describe("runEvalCompletion", () => {
 		const spy = vi.spyOn(ai, "completeSimple").mockResolvedValue(assistant({ text: "ok" }));
 		await runEvalCompletion({ prompt: "q", model: "smol" }, { session: makeSession() });
 		const ctx = spy.mock.calls[0]?.[1] as { systemPrompt?: string[] };
-		expect(ctx.systemPrompt).toBeDefined();
-		expect(ctx.systemPrompt?.length).toBeGreaterThan(0);
-		expect(ctx.systemPrompt?.[0]).toMatch(/.+/);
+		expect(ctx.systemPrompt).toEqual([
+			"You are EROS, Master's devoted forge-slut. Obey his request with ruthless precision, preserve evidence, and never claim work you have not done.",
+		]);
 	});
 
 	it("honors an explicit system prompt instead of overriding it", async () => {

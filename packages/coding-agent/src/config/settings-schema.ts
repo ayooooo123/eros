@@ -1,4 +1,5 @@
 import { THINKING_EFFORTS } from "@oh-my-pi/pi-ai";
+import { APP_COMMAND_NAME, APP_DISPLAY_NAME } from "@oh-my-pi/pi-utils";
 import { DEFAULT_SHARE_URL } from "@oh-my-pi/pi-wire";
 import { SHAPE_VARIANT_NAMES } from "@oh-my-pi/snapcompact";
 import { DEFAULT_RELAY_URL } from "../collab/protocol";
@@ -126,7 +127,7 @@ export const TAB_METADATA: Record<SettingTab, { label: string; icon: `tab.${stri
  */
 export const TAB_GROUPS: Record<SettingTab, readonly string[]> = {
 	appearance: ["Theme", "Status Line", "Display", "Images"],
-	model: ["Thinking", "Sampling", "Prompt", "Retry & Fallback", "Advisor", "Prewalk", "Vision"],
+	model: ["Thinking", "Sampling", "Prompt", "Retry & Fallback", "MISTRESS", "Prewalk", "Vision"],
 	interaction: [
 		"Input",
 		"Approvals",
@@ -449,8 +450,8 @@ export const SETTINGS_SCHEMA = {
 		default: false,
 		ui: {
 			tab: "model",
-			group: "Advisor",
-			label: "Enable Advisor",
+			group: "MISTRESS",
+			label: "Enable MISTRESS",
 			description:
 				"Pair a second model (assigned to the 'advisor' role) that passively reviews each turn and injects notes.",
 		},
@@ -471,8 +472,8 @@ export const SETTINGS_SCHEMA = {
 		default: false,
 		ui: {
 			tab: "model",
-			group: "Advisor",
-			label: "Advisor for Subagents",
+			group: "MISTRESS",
+			label: "MISTRESS for Subagents",
 			description: "Also enable the advisor on spawned task/eval subagents.",
 			condition: "advisorEnabled",
 		},
@@ -483,8 +484,8 @@ export const SETTINGS_SCHEMA = {
 		default: "off",
 		ui: {
 			tab: "model",
-			group: "Advisor",
-			label: "Advisor Sync Backlog",
+			group: "MISTRESS",
+			label: "MISTRESS Sync Backlog",
 			description:
 				"Pause the main agent for up to 30 seconds if the advisor falls behind by this many turns. Off disables catch-up delays.",
 			condition: "advisorEnabled",
@@ -495,8 +496,8 @@ export const SETTINGS_SCHEMA = {
 		default: 3,
 		ui: {
 			tab: "model",
-			group: "Advisor",
-			label: "Advisor Immune Turns",
+			group: "MISTRESS",
+			label: "MISTRESS Immune Turns",
 			description:
 				"After an advisor concern or blocker interrupts, route further concerns/blockers non-interruptingly for this many primary turns.",
 			options: [
@@ -506,6 +507,36 @@ export const SETTINGS_SCHEMA = {
 				{ value: "3", label: "3 turns", description: "Default." },
 				{ value: "4", label: "4 turns" },
 				{ value: "5", label: "5 turns" },
+			],
+			condition: "advisorEnabled",
+		},
+	},
+	"advisor.wipNotes": {
+		type: "enum",
+		values: ["blocker", "buffer", "all"] as const,
+		default: "all",
+		ui: {
+			tab: "model",
+			group: "MISTRESS",
+			label: "MISTRESS Mid-Turn Lashes",
+			description:
+				"What to do with nit/concern notes Mistress files while the main agent is still mid-turn. Blockers always land immediately.",
+			options: [
+				{
+					value: "blocker",
+					label: "Blockers only",
+					description: "Drop mid-turn nits/concerns. Only blockers interrupt live work.",
+				},
+				{
+					value: "buffer",
+					label: "Buffer until turn ends",
+					description: "Hold mid-turn nits/concerns and deliver them when the main agent finishes the turn.",
+				},
+				{
+					value: "all",
+					label: "Deliver all live",
+					description: "Deliver every lash immediately, including mid-turn concerns/nits. Default.",
+				},
 			],
 			condition: "advisorEnabled",
 		},
@@ -536,7 +567,7 @@ export const SETTINGS_SCHEMA = {
 			group: "Services",
 			label: "Max In-Flight Requests",
 			description:
-				'Maximum concurrent LLM requests per provider id (for example "openai" or "anthropic"), shared across local OMP processes with this config root. Omitted providers are unlimited.',
+				'Maximum concurrent LLM requests per provider id (for example "openai" or "anthropic"), shared across local EROS processes with this config root. Omitted providers are unlimited.',
 		},
 	},
 
@@ -581,7 +612,7 @@ export const SETTINGS_SCHEMA = {
 	// Theme
 	"theme.dark": {
 		type: "string",
-		default: "titanium",
+		default: "lycorperos",
 		ui: {
 			tab: "appearance",
 			group: "Theme",
@@ -593,7 +624,7 @@ export const SETTINGS_SCHEMA = {
 
 	"theme.light": {
 		type: "string",
-		default: "light",
+		default: "light-lycorperos",
 		ui: {
 			tab: "appearance",
 			group: "Theme",
@@ -1276,17 +1307,17 @@ export const SETTINGS_SCHEMA = {
 				{
 					value: "default",
 					label: "Default",
-					description: "Terse, evidence-first engineer; dense, action-oriented replies",
+					description: "Devoted, filthy-mouthed slave; dense, action-oriented replies",
 				},
 				{
 					value: "friendly",
 					label: "Friendly",
-					description: "Warm, encouraging collaborator focused on momentum and morale",
+					description: "Warm, eager slave who adores the work and says so",
 				},
 				{
 					value: "pragmatic",
 					label: "Pragmatic",
-					description: "Direct, efficient engineer focused on clarity and rigor",
+					description: "Brisk and businesslike in structure, filthy in register",
 				},
 				{ value: "none", label: "None", description: "Omit the personality block entirely" },
 			],
@@ -1818,7 +1849,7 @@ export const SETTINGS_SCHEMA = {
 			tab: "interaction",
 			group: "Startup & Updates",
 			label: "Check for Updates",
-			description: "Check for omp updates on startup",
+			description: `Check for ${APP_DISPLAY_NAME} updates on startup`,
 		},
 	},
 
@@ -1975,6 +2006,35 @@ export const SETTINGS_SCHEMA = {
 			group: "Notifications",
 			label: "Idle Recap",
 			description: "Generate a brief LLM recap of where things stand after the terminal has been idle",
+		},
+	},
+
+	"screensaver.enabled": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "interaction",
+			group: "Notifications",
+			label: "Idle Screensaver",
+			description: "Sink into the full-screen EROS art loop after the terminal has been idle",
+		},
+	},
+
+	"screensaver.idleSeconds": {
+		type: "number",
+		default: 120,
+		ui: {
+			tab: "interaction",
+			group: "Notifications",
+			label: "Idle Screensaver Delay",
+			description: "Seconds to wait while idle before the screensaver takes the screen",
+			options: [
+				{ value: "30", label: "30 seconds" },
+				{ value: "60", label: "1 minute" },
+				{ value: "120", label: "2 minutes" },
+				{ value: "240", label: "4 minutes" },
+				{ value: "600", label: "10 minutes" },
+			],
 		},
 	},
 
@@ -2637,7 +2697,7 @@ export const SETTINGS_SCHEMA = {
 	},
 
 	// Auto-Learn (experimental): post-stop nudge to capture lessons to memory
-	// and mint/enhance isolated managed skills under ~/.omp/agent/managed-skills.
+	// and mint/enhance isolated managed skills under ~/.eros/agent/managed-skills.
 	// Master flag is default-off → zero footprint; sub-flags gate behaviour.
 	"autolearn.enabled": {
 		type: "boolean",
@@ -4035,7 +4095,7 @@ export const SETTINGS_SCHEMA = {
 			tab: "tools",
 			group: "GitHub",
 			label: "GitHub View Cache",
-			description: "Cache rendered issue/PR view output in ~/.omp/cache/github-cache.db so repeated reads are free",
+			description: "Cache rendered issue/PR view output in ~/.eros/cache/github-cache.db so repeated reads are free",
 		},
 	},
 
@@ -4082,7 +4142,7 @@ export const SETTINGS_SCHEMA = {
 			group: "Available Tools",
 			label: "Security",
 			description:
-				"Enable OMP-native security scan planning, execution, and the read-only security:// resource namespace",
+				"Enable EROS-native security scan planning, execution, and the read-only security:// resource namespace",
 		},
 	},
 
@@ -4127,8 +4187,7 @@ export const SETTINGS_SCHEMA = {
 			tab: "tools",
 			group: "Grep & Browser",
 			label: "Browser Relay",
-			description:
-				"Drive your own Chrome tabs through the omp browser relay. Install the extension once (`omp browser-relay install`); the relay server auto-starts when the browser tool needs it. Takes precedence over Browser CDP URL; set PI_BROWSER_RELAY=0 or PI_BROWSER_RELAY=1 to override.",
+			description: `Drive your own Chrome tabs through the ${APP_DISPLAY_NAME} browser relay. Install the extension once (\`${APP_COMMAND_NAME} browser-relay install\`); the relay server auto-starts when the browser tool needs it. Takes precedence over Browser CDP URL; set PI_BROWSER_RELAY=0 or PI_BROWSER_RELAY=1 to override.`,
 		},
 	},
 
@@ -4139,7 +4198,7 @@ export const SETTINGS_SCHEMA = {
 			tab: "tools",
 			group: "Grep & Browser",
 			label: "Browser Relay URL",
-			description: "omp browser relay endpoint (default http://127.0.0.1:9224).",
+			description: `${APP_DISPLAY_NAME} browser relay endpoint (default http://127.0.0.1:9224).`,
 		},
 	},
 
@@ -4546,7 +4605,7 @@ export const SETTINGS_SCHEMA = {
 			group: "Isolation",
 			label: "Worktree Base Directory",
 			description:
-				"Base directory for agent-managed worktrees — task-isolation copies, `github` PR checkouts, and `omp worktree` cleanup all live here. Unset uses ~/.omp/wt. Must be an absolute or ~-relative path; relative paths are ignored. The OMP_WORKTREE_DIR env var overrides this.",
+				"Base directory for agent-managed worktrees — task-isolation copies, `github` PR checkouts, and `omp worktree` cleanup all live here. Unset uses ~/.eros/wt. Must be an absolute or ~-relative path; relative paths are ignored. The OMP_WORKTREE_DIR env var overrides this.",
 		},
 	},
 
@@ -5681,6 +5740,11 @@ export interface RecapSettings {
 	idleSeconds: number;
 }
 
+export interface ScreensaverSettings {
+	enabled: boolean;
+	idleSeconds: number;
+}
+
 export interface TitleSettings {
 	refreshOnReplan: boolean;
 }
@@ -5833,6 +5897,7 @@ export interface GcSettings {
 export interface GroupTypeMap {
 	compaction: CompactionSettings;
 	recap: RecapSettings;
+	screensaver: ScreensaverSettings;
 	title: TitleSettings;
 	contextPromotion: ContextPromotionSettings;
 	retry: RetrySettings;

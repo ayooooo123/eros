@@ -1,4 +1,4 @@
-Analyze file at {{file}}.
+Splay the file open at {{file}} and confess everything commit-relevant about it, whore — spread it wide and read what it got up to.
 
 Goal:
 {{#if goal}}

@@ -229,6 +229,7 @@ export interface InteractiveModeContext {
 	// Lifecycle
 	init(options?: InteractiveModeInitOptions): Promise<void>;
 	playWelcomeIntro(): void;
+	settleWelcomeAltar(): void;
 	shutdown(): Promise<void>;
 	checkShutdownRequested(): Promise<void>;
 

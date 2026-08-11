@@ -1,0 +1,23 @@
+{
+  "id": "pack-072",
+  "name": "Intro 072 \u2014 beastman|blood dripping down a",
+  "file": "final-pass006/fin-0080-04-inqu.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 1boy, (minotaur:1.3), bull horns, massive size, muscular build, fur, beastman, side profile three quarter view, leaning against tree trunk, head tilted up, eyes glowing brightly, ecstatic laugh expression, mouth open showing teeth, tongue out, vines spiraling around torso and hips, thorns piercing bicep and thigh muscles, blood dripping down arms, pollen floating in shafts of light, dramatic lighting, (POV:1.2) eye level with subject's chest, massive scale emphasized by low angle, wide stance, feet rooted in earth, roots emerging from soles, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) pooling on forest floor around feet and crotch, messy coating on genitals, fur matted with fluids, (blood red:1.2) accent on blood drops and inner ear, (bright orange:1.1) accent in glowing eyes and sunlight rays, sweat beads detailed, (detailed hands:1.1), (clean fingers:1.1), high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass007/fin-0061-03-fles.png",
+    "final-pass009/fin-0054-05-goon.png",
+    "scifi-pass145/sci-0008-02-corr.png",
+    "final-pass006/fin-0080-04-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

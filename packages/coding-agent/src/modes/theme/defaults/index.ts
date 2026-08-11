@@ -66,6 +66,7 @@ import light_haze from "./light-haze.json" with { type: "json" };
 import light_honeycomb from "./light-honeycomb.json" with { type: "json" };
 import light_lagoon from "./light-lagoon.json" with { type: "json" };
 import light_lavender from "./light-lavender.json" with { type: "json" };
+import light_lycorperos from "./light-lycorperos.json" with { type: "json" };
 import light_meadow from "./light-meadow.json" with { type: "json" };
 import light_mint from "./light-mint.json" with { type: "json" };
 import light_monochrome from "./light-monochrome.json" with { type: "json" };
@@ -87,6 +88,7 @@ import light_tokyo_night from "./light-tokyo-night.json" with { type: "json" };
 import light_wetland from "./light-wetland.json" with { type: "json" };
 import light_zenith from "./light-zenith.json" with { type: "json" };
 import limestone from "./limestone.json" with { type: "json" };
+import lycorperos from "./lycorperos.json" with { type: "json" };
 import mahogany from "./mahogany.json" with { type: "json" };
 import marble from "./marble.json" with { type: "json" };
 import obsidian from "./obsidian.json" with { type: "json" };
@@ -166,6 +168,7 @@ export const defaultThemes = {
 	"light-honeycomb": light_honeycomb,
 	"light-lagoon": light_lagoon,
 	"light-lavender": light_lavender,
+	"light-lycorperos": light_lycorperos,
 	"light-meadow": light_meadow,
 	"light-mint": light_mint,
 	"light-monochrome": light_monochrome,
@@ -187,6 +190,7 @@ export const defaultThemes = {
 	"light-wetland": light_wetland,
 	"light-zenith": light_zenith,
 	limestone: limestone,
+	lycorperos: lycorperos,
 	mahogany: mahogany,
 	marble: marble,
 	obsidian: obsidian,

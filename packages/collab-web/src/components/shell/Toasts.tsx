@@ -1,7 +1,8 @@
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Notice } from "../../lib/client";
+import { smear } from "../wall/WetLayer";
 
 const INFO_TTL_MS = 4000;
 const WARNING_TTL_MS = 8000;
@@ -11,6 +12,8 @@ export function Toasts({ notices }: { notices: readonly Notice[] }): ReactNode {
 	// Dynamic membership keyed by notice id — runtime collection.
 	const [dismissed, setDismissed] = useState<Set<number>>(() => new Set());
 
+	// Notice ids that have already dragged their mess down the glass.
+	const smeared = useRef<Set<number>>(new Set());
 	useEffect(() => {
 		const timers: number[] = [];
 		for (const n of notices) {
@@ -50,7 +53,22 @@ export function Toasts({ notices }: { notices: readonly Notice[] }): ReactNode {
 	return (
 		<div className="sh-toasts">
 			{visible.map(n => (
-				<div key={n.id} className={`sh-toast sh-toast-${n.level}`} role="status">
+				<div
+					key={n.id}
+					className={`sh-toast sh-toast-${n.level}`}
+					role="status"
+					ref={
+						n.level === "error"
+							? el => {
+									// one smear per error, the first time it is mounted
+									if (el !== null && !smeared.current.has(n.id)) {
+										smeared.current.add(n.id);
+										smear(el);
+									}
+								}
+							: undefined
+					}
+				>
 					<span className="sh-toast-msg">{n.message}</span>
 					{n.level === "error" && (
 						<button type="button" className="sh-toast-close" onClick={() => close(n.id)} title="dismiss">

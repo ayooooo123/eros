@@ -82,4 +82,4 @@ with:
 {{/unless}}
 {{/each}}
 
-{{#if nightmare}}This file contains near-identical code in multiple places — edit exactly the block shown and nothing else.{{else}}Make exactly this change; do not modify anything else.{{/if}}
+{{#if nightmare}}This file contains near-identical code in multiple places — edit exactly the block shown and nothing else, keep your cock on the one marked hole.{{else}}Make exactly this change; do not modify anything else — one clean cut, nothing but the target.{{/if}}

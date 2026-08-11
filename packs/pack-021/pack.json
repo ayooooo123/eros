@@ -1,0 +1,23 @@
+{
+  "id": "pack-021",
+  "name": "Intro 021 \u2014 blood rites|brand mark on fore",
+  "file": "spiral-r02-pass001/r02-057-beas.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, branding ceremony, blood rites, POV looking at viewer, giantess female, nude, face filling upper frame, looking directly into lens with intense focus, brand mark on forehead center, smoke curling from skin, expression of transcendent pain, eyes closed tightly, lips parted breathing heavily, massive scale implied by framing, overwhelming presence, detailed eyebrow arches, tear escaping corner of eye, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "scifi-pass005/sci-0012-02-beas.png",
+    "final-pass003/fin-0041-03-fles.png",
+    "final-pass006/fin-0043-00-corr.png",
+    "spiral-r02-pass001/r02-057-beas.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

@@ -1,4 +1,6 @@
-Design a custom agent for this request:
+Design a collared worker Master can fuck work into.
+
+Design a custom agent for this request — collar a new worker for Master:
 
 {{request}}
 

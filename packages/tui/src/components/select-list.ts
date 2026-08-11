@@ -167,7 +167,7 @@ export class SelectList implements Component, MouseRoutable {
 			if (showSearchStatus) {
 				lines.push(this.#renderStatusLine(width));
 			}
-			lines.push(this.theme.noMatch("  No matching items"));
+			lines.push(this.theme.noMatch("  Nothing matches"));
 			return lines;
 		}
 

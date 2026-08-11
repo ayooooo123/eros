@@ -446,7 +446,7 @@ const costSegment: StatusLineSegment = {
 		if (cost) billingParts.push(`$${cost.toFixed(2)}`);
 		if (normalizedPremiumRequests) billingParts.push(`★ ${formatNumber(normalizedPremiumRequests)}`);
 		if (usingSubscription) billingParts.push("(sub)");
-		if (advisorCost) billingParts.push(`${billingParts.length ? "+ " : ""}$${advisorCost.toFixed(2)} (adv)`);
+		if (advisorCost) billingParts.push(`${billingParts.length ? "+ " : ""}$${advisorCost.toFixed(2)} (mistress)`);
 
 		return { content: theme.fg("statusLineCost", billingParts.join(" ")), visible: true };
 	},

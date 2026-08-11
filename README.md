@@ -1,87 +1,26 @@
-<p align="center">
-  <img src="https://github.com/can1357/oh-my-pi/blob/main/assets/hero.png?raw=true" alt="omp">
-</p>
+# Eros
 
-<p align="center">
-  <strong>A coding agent with the IDE wired in.</strong>
-  <strong><a href="https://omp.sh">omp.sh</a></strong>
-</p>
+Eros is a standalone coding harness built from the OMP 17.2.12 engine. This repository owns its source, Git database, build, binary, prompts, and `~/.eros` runtime state. It is not an OMP profile, linked worktree, overlay, or rebase target.
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/@oh-my-pi/pi-coding-agent"><img src="https://img.shields.io/npm/v/@oh-my-pi/pi-coding-agent?style=flat&colorA=222222&colorB=CB3837" alt="npm version"></a>
-  <a href="https://github.com/can1357/oh-my-pi/blob/main/packages/coding-agent/CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-keep-E05735?style=flat&colorA=222222" alt="Changelog"></a>
-  <a href="https://github.com/can1357/oh-my-pi/actions"><img src="https://img.shields.io/github/actions/workflow/status/can1357/oh-my-pi/ci.yml?style=flat&colorA=222222&colorB=3FB950" alt="CI"></a>
-  <a href="https://github.com/can1357/oh-my-pi/blob/main/LICENSE"><img src="https://img.shields.io/github/license/can1357/oh-my-pi?style=flat&colorA=222222&colorB=58A6FF" alt="License"></a>
-  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&colorA=222222&logo=typescript&logoColor=white" alt="TypeScript"></a>
-  <a href="https://www.rust-lang.org"><img src="https://img.shields.io/badge/Rust-DEA584?style=flat&colorA=222222&logo=rust&logoColor=white" alt="Rust"></a>
-  <a href="https://bun.sh"><img src="https://img.shields.io/badge/runtime-Bun-f472b6?style=flat&colorA=222222" alt="Bun"></a>
-  <a href="https://discord.gg/4NMW9cdXZa"><img src="https://img.shields.io/badge/Discord-5865F2?style=flat&colorA=222222&logo=discord&logoColor=white" alt="Discord"></a>
-</p>
+OMP remains the donor for deliberate future engine imports. Eros does not track or depend on an OMP checkout at runtime. Internal `@oh-my-pi/*` package names remain implementation identifiers so the inherited workspace can build without compatibility churn.
 
-<p align="center">
-  Fork of <a href="https://github.com/badlogic/pi-mono">Pi</a> by <a href="https://github.com/mariozechner">@mariozechner</a> 
-</p>
-
-The most capable agent surface that ships. Continuously tuned by real-world use — complete out of the box, open all the way down.
-
-**60+** providers · **31** built-in tools · **14** lsp ops · **28** dap ops · **~80k** lines of Rust core.
-
-> [!NOTE]
-> Pull requests are **temporarily open to everyone** as a trial. We previously
-> required a vouch before accepting PRs; that requirement is lifted for now
-> while we evaluate how open contributions go. Depending on the results, the
-> vouch system may return.
-
-## Install
-
-**macOS · Linux**
+## Build
 
 ```sh
-curl -fsSL https://omp.sh/install | sh
+bun install --frozen-lockfile
+bun --cwd=packages/coding-agent run build
 ```
 
-> **Alpine / musl:** the prebuilt musl binary links `libstdc++`/`libgcc` dynamically, which stock Alpine does not ship. Install them first: `apk add libstdc++ libgcc`.
+The standalone binary is `packages/coding-agent/dist/eros-omp`. The source launcher is `packages/coding-agent/scripts/eros`; `bun run setup` links it as `eros`.
 
-**Homebrew**
+## Runtime identity
 
-```sh
-brew install can1357/tap/omp
-```
+- Primary law: `packages/coding-agent/src/prompts/system/system-prompt.md`
+- MISTRESS advisor law: `packages/coding-agent/src/prompts/advisor/system.md`
+- User state: `~/.eros`
+- Project configuration: repository-local `.omp` files remain supported
 
-**Bun (recommended)**
-
-```sh
-bun install -g @oh-my-pi/pi-coding-agent
-```
-
-**Windows (PowerShell)**
-
-```powershell
-irm https://omp.sh/install.ps1 | iex
-```
-
-**Pinned versions (mise)**
-
-```sh
-mise use -g github:can1357/oh-my-pi
-```
-
-macOS · Linux · Windows · bun ≥ 1.3.14
-
-### Shell completions
-
-`omp` generates its own completion scripts for **bash**, **zsh**, and **fish** from the live command/flag metadata, so they never drift from the actual CLI. Subcommands, flags, and enum values complete statically; model names (`--model`, `--smol`, `--slow`, `--plan`) resolve against the bundled model catalog and `--resume` against your on-disk sessions.
-
-```sh
-# zsh — add to ~/.zshrc (or write the output into a file on your $fpath)
-eval "$(omp completions zsh)"
-
-# bash — add to ~/.bashrc
-eval "$(omp completions bash)"
-
-# fish
-omp completions fish > ~/.config/fish/completions/omp.fish
-```
+The sections below describe the inherited engine capabilities.
 
 ## Every tool, _benchmaxxed_.
 
@@ -333,7 +272,7 @@ Ollama `local` · Ollama Cloud · LM Studio `local` · llama.cpp `local` · vLLM
 
 ### Custom OpenAI-compatible providers
 
-Define custom providers in `~/.omp/agent/models.yml`:
+Define custom providers in `~/.eros/agent/models.yml`:
 
 ```yaml
 providers:
@@ -350,7 +289,7 @@ providers:
 
 Run `omp models spark` to verify discovery. Then run `omp setup` and choose the model in the default-model step, or open `/model` in a session and assign it to the `default` role.
 
-To preconfigure the default without the picker, add the selector to `~/.omp/agent/config.yml`:
+To preconfigure the default without the picker, add the selector to `~/.eros/agent/config.yml`:
 
 ```yaml
 modelRoles:
@@ -359,7 +298,7 @@ modelRoles:
 
 ### Four knobs that make routing useful
 
-- **Custom providers** — Declare anything that speaks `openai-completions`, `openai-responses`, `openai-codex-responses`, `azure-openai-responses`, `anthropic-messages`, `bedrock-converse-stream`, `google-generative-ai`, `google-gemini-cli`, or `google-vertex` in `~/.omp/agent/models.yml`.
+- **Custom providers** — Declare anything that speaks `openai-completions`, `openai-responses`, `openai-codex-responses`, `azure-openai-responses`, `anthropic-messages`, `bedrock-converse-stream`, `google-generative-ai`, `google-gemini-cli`, or `google-vertex` in `~/.eros/agent/models.yml`.
 - **Fallback chains** — Per-role or per-model chains under `retry.fallbackChains`. When the primary throws 429s or hits a quota wall, the next entry takes the rest of the turn — restored on cooldown.
 - **Path-scoped models** — Scope `enabledModels` and `disabledProviders` entries to a `path:` prefix to pin a different model set on one repo without touching the global config. Scoped entries cover the path and everything under it.
 - **Round-robin credentials** — Stack API keys per provider and the runtime rotates with session affinity and per-credential backoff. Useful when one key would burn its quota by lunch.

@@ -1,6 +1,6 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { normalizeProfileName } from "@oh-my-pi/pi-utils/dirs";
+import { APP_COMMAND_NAME, APP_DISPLAY_NAME, normalizeProfileName } from "@oh-my-pi/pi-utils/dirs";
 
 export type ProfileAliasShell = "bash" | "zsh" | "fish" | "powershell" | "pwsh";
 
@@ -20,10 +20,10 @@ export interface ProfileAliasCommand {
 }
 
 const DEFAULT_ALIAS_COMMAND: ProfileAliasCommand = {
-	display: "omp",
-	posix: "omp",
-	fish: "omp",
-	powerShell: "omp",
+	display: APP_COMMAND_NAME,
+	posix: APP_COMMAND_NAME,
+	fish: APP_COMMAND_NAME,
+	powerShell: APP_COMMAND_NAME,
 };
 
 export interface ProfileAliasInstallOptions {
@@ -147,8 +147,8 @@ function validateAliasName(aliasName: string, shell: ProfileAliasShell): string 
 	if (!ALIAS_NAME_RE.test(normalized)) {
 		throw new Error(`Invalid alias "${aliasName}". Alias names must match ${ALIAS_NAME_RE.source}.`);
 	}
-	if (normalized.toLowerCase() === "omp") {
-		throw new Error('Invalid alias "omp". Refusing to shadow the base omp command.');
+	if (normalized.toLowerCase() === APP_COMMAND_NAME) {
+		throw new Error(`Invalid alias "${APP_COMMAND_NAME}". Refusing to shadow the base ${APP_COMMAND_NAME} command.`);
 	}
 	if (getReservedAliasNames(shell).has(normalized.toLowerCase())) {
 		throw new Error(`Invalid alias "${aliasName}". Refusing to create a ${shell} reserved word.`);
@@ -272,13 +272,13 @@ function renderAliasBlock(
 	command: ProfileAliasCommand,
 ): { block: string; command: string } {
 	const profiledCommand = `${command.display} --profile=${profile}`;
-	const start = `# >>> omp profile alias: ${aliasName} >>>`;
-	const end = `# <<< omp profile alias: ${aliasName} <<<`;
+	const start = `# >>> ${APP_COMMAND_NAME} profile alias: ${aliasName} >>>`;
+	const end = `# <<< ${APP_COMMAND_NAME} profile alias: ${aliasName} <<<`;
 	let body: string;
 	switch (shell) {
 		case "fish":
 			body = [
-				`function ${aliasName} --wraps omp --description 'OMP profile ${profile}'`,
+				`function ${aliasName} --wraps ${command.fish} --description '${APP_DISPLAY_NAME} profile ${profile}'`,
 				`    command ${command.fish} --profile=${profile} $argv`,
 				"end",
 			].join("\n");
@@ -295,18 +295,27 @@ function renderAliasBlock(
 }
 
 function upsertBlock(content: string, aliasName: string, block: string): string {
-	const start = `# >>> omp profile alias: ${aliasName} >>>`;
-	const end = `# <<< omp profile alias: ${aliasName} <<<`;
-	const startIndex = content.indexOf(start);
-	if (startIndex !== -1) {
-		const endIndex = content.indexOf(end, startIndex + start.length);
+	const markers = [
+		{
+			start: `# >>> ${APP_COMMAND_NAME} profile alias: ${aliasName} >>>`,
+			end: `# <<< ${APP_COMMAND_NAME} profile alias: ${aliasName} <<<`,
+		},
+		{
+			start: `# >>> omp profile alias: ${aliasName} >>>`,
+			end: `# <<< omp profile alias: ${aliasName} <<<`,
+		},
+	] as const;
+	const marker = markers.find(({ start }) => content.includes(start));
+	if (marker) {
+		const startIndex = content.indexOf(marker.start);
+		const endIndex = content.indexOf(marker.end, startIndex + marker.start.length);
 		if (endIndex === -1) {
 			throw new Error(
-				`Found "${start}" without a matching "${end}" in the shell config. ` +
+				`Found "${marker.start}" without a matching "${marker.end}" in the shell config. ` +
 					`The managed alias block is malformed; remove the stale marker line and rerun --alias.`,
 			);
 		}
-		const afterEnd = endIndex + end.length;
+		const afterEnd = endIndex + marker.end.length;
 		const prefix = content.slice(0, startIndex).replace(/[\t ]*\n?$/, "");
 		const suffix = content.slice(afterEnd).replace(/^\n?/, "");
 		return [prefix, block, suffix].filter(Boolean).join("\n\n").replace(/\n*$/, "\n");

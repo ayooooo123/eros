@@ -1,0 +1,23 @@
+{
+  "id": "pack-036",
+  "name": "Intro 036 \u2014 1woman tiefling|arms stretched",
+  "file": "final-pass008/fin-0005-01-inqu.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 1woman tiefling, horns, tail, full body wide shot, vertical composition, subject suspended in mid-air by tangled serpent coils around legs and waist, arms stretched upwards bound by vine-like tendrils, head thrown back exposing throat, black tongue lashing out to catch droplets, intense eye contact with viewer through glowing golden eyes (vibrant accent colors:1.1), pupils dilated from oxygen deprivation, skin flushing slightly under ink wash despite greyscale rule via selective color overlay on lips and genitals, deep anal penetration by thick tail tip, (anal:1.3), (penis in anus:1.2), spread ass, cheeks blushing red (blood:1.2) from internal impact, (wounds:1.1) visible as faint indentations on hips from coil pressure, (bruises:1.1) forming on inner thighs, tail tip twitching inside, anal sphincter dilated wide, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) running down perineum onto inner thighs, pooling in buttock cleft, serous fluid from vaginal walls mixing, (detailed hands:1.1), (clean fingers:1.1) clawing at empty air above head, nails digging into palms creating small puncture wounds with beads of blood, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "scifi-pass026/eros-1785903674-72978.png",
+    "final-pass008/fin-0020-01-inqu.png",
+    "final-pass003/fin-0079-01-goon.png",
+    "final-pass008/fin-0005-01-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

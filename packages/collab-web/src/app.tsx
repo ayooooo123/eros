@@ -8,12 +8,15 @@ import { ConnectScreen } from "./components/shell/ConnectScreen";
 import { HeaderBar } from "./components/shell/HeaderBar";
 import { Toasts } from "./components/shell/Toasts";
 import { Transcript } from "./components/transcript/Transcript";
-import { GuestClient } from "./lib/client";
-import { useGuestSnapshot } from "./lib/use-guest";
+import { ErosWall } from "./components/wall/ErosWall";
+import { ART_PLATES, plateIndexFor } from "./components/wall/plates";
+import { WetLayer } from "./components/wall/WetLayer";
+import { GatewayClient } from "./lib/client";
+import { useGatewaySnapshot } from "./lib/use-gateway";
 import type { ToolRenderHost } from "./tool-render";
 import "./components/shell/shell.css";
 
-const NAME_KEY = "omp.collab.name";
+const NAME_KEY = "eros.gateway.name";
 
 interface Creds {
 	link: string;
@@ -22,9 +25,9 @@ interface Creds {
 
 function storedName(): string {
 	try {
-		return localStorage.getItem(NAME_KEY) ?? "guest";
+		return localStorage.getItem(NAME_KEY) ?? "Master";
 	} catch {
-		return "guest";
+		return "Master";
 	}
 }
 
@@ -37,14 +40,14 @@ function hashLink(): string | null {
 }
 
 export function App(): ReactNode {
-	const [client, setClient] = useState<GuestClient | null>(null);
+	const [client, setClient] = useState<GatewayClient | null>(null);
 	const [connectError, setConnectError] = useState<string | null>(null);
 	const credsRef = useRef<Creds | null>(null);
 
 	const connect = useCallback((link: string, name: string): void => {
-		let next: GuestClient;
+		let next: GatewayClient;
 		try {
-			next = new GuestClient(link, name);
+			next = new GatewayClient(link, name);
 		} catch (err) {
 			setConnectError(err instanceof Error ? err.message : String(err));
 			return;
@@ -104,23 +107,30 @@ export function App(): ReactNode {
 	}, [connect]);
 
 	useEffect(() => {
-		if (!client) document.title = "omp collab";
+		if (!client) document.title = "EROS GATEWAY";
 	}, [client]);
 
-	if (!client) {
-		return <ConnectScreen defaultName={storedName()} error={connectError} onConnect={connect} />;
-	}
-	return <Session client={client} onLeave={leave} onRejoin={rejoin} />;
+	return (
+		<>
+			{client ? (
+				<Session client={client} onLeave={leave} onRejoin={rejoin} />
+			) : (
+				<ConnectScreen defaultName={storedName()} error={connectError} onConnect={connect} />
+			)}
+			{/* one canvas over everything, so fluid can cross UI boundaries */}
+			<WetLayer />
+		</>
+	);
 }
 
 interface SessionProps {
-	client: GuestClient;
+	client: GatewayClient;
 	onLeave(): void;
 	onRejoin(): void;
 }
 
 function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
-	const snap = useGuestSnapshot(client);
+	const snap = useGatewaySnapshot(client);
 	const [railOpen, setRailOpen] = useState(false);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const autoOpenedRef = useRef(false);
@@ -149,8 +159,28 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 
 	const title = snap.header?.title ?? snap.state?.sessionName ?? "session";
 	useEffect(() => {
-		document.title = `${title} · omp collab`;
+		document.title = `${title} · EROS GATEWAY`;
 	}, [title]);
+
+	// The wall reacts: it tears when the connection changes state, glows an ember
+	// when a new entry lands, flushes once per streamed token, and runs hot for as
+	// long as the agent is working.
+	const startPlate = useMemo(() => plateIndexFor(title), [title]);
+	const [tear, setTear] = useState(0);
+	const [ember, setEmber] = useState(0);
+	const [pulse, setPulse] = useState(0);
+	useEffect(() => {
+		setTear(n => n + 1);
+	}, [snap.phase]);
+	// `stream` is a fresh object per delta, so this ticks once per token batch.
+	useEffect(() => {
+		if (snap.stream !== null) setPulse(n => n + 1);
+	}, [snap.stream]);
+	const seenEntries = useRef(snap.entries.length);
+	useEffect(() => {
+		if (snap.entries.length > seenEntries.current) setEmber(n => n + 1);
+		seenEntries.current = snap.entries.length;
+	}, [snap.entries.length]);
 
 	const drawerAgent = selectedId != null ? snap.agents.find(a => a.id === selectedId) : undefined;
 
@@ -165,6 +195,19 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 			/>
 			<main className="sh-main">
 				<section className="sh-content" data-rail={railOpen ? "true" : "false"}>
+					<ErosWall
+						plates={ART_PLATES}
+						start={startPlate}
+						className="wl-wall--session"
+						burn={1}
+						ink={9}
+						heat={snap.working ? 0.9 : 0.18}
+						tear={tear}
+						ember={ember}
+						pulse={pulse}
+						advance={ember}
+						rotateMs={24000}
+					/>
 					<div className="sh-transcript">
 						<Transcript
 							entries={snap.entries}

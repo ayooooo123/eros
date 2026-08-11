@@ -1,5 +1,12 @@
 import * as path from "node:path";
-import { isCompiledBinary, logger, withTimeout, workerHostEntry } from "@oh-my-pi/pi-utils";
+import {
+	APP_COMMAND_NAME,
+	APP_DISPLAY_NAME,
+	isCompiledBinary,
+	logger,
+	withTimeout,
+	workerHostEntry,
+} from "@oh-my-pi/pi-utils";
 import type { Subprocess } from "bun";
 import type { Browser, CDPSession } from "puppeteer-core";
 import { ToolAbortError, ToolError } from "../tool-errors";
@@ -232,8 +239,8 @@ async function openBrowserHandle(kind: BrowserKind, opts: AcquireBrowserOptions)
 			if (err instanceof Error && err.name === "AbortError") throw err;
 			throw new ToolError(
 				autoStarted
-					? `omp browser relay is serving at ${cdpUrl} but its extension never connected. Install it with \`omp browser-relay install\` and check the toolbar badge shows "on".`
-					: `omp browser relay is not reachable at ${cdpUrl}. Start it with \`omp browser-relay\` (or check the endpoint), and make sure the OMP Browser Relay extension is loaded in Chrome.`,
+					? `${APP_COMMAND_NAME} browser relay is serving at ${cdpUrl} but its extension never connected. Install it with \`${APP_COMMAND_NAME} browser-relay install\` and check the toolbar badge shows "on".`
+					: `${APP_COMMAND_NAME} browser relay is not reachable at ${cdpUrl}. Start it with \`${APP_COMMAND_NAME} browser-relay\` (or check the endpoint), and make sure the ${APP_DISPLAY_NAME} Browser Relay extension is loaded in Chrome.`,
 			);
 		}
 		const puppeteer = await loadPuppeteer();
@@ -411,7 +418,7 @@ async function openSharedHeadlessHandle(
 		});
 		if (!shared) {
 			throw new ToolError(
-				"Shared browser daemon unavailable (broker start or Chromium launch failed); check `hub ps` for omp.browser.* daemons and ~/.omp/logs for details",
+				"Shared browser daemon unavailable (broker start or Chromium launch failed); check `hub ps` for omp.browser.* daemons and ~/.eros/logs for details",
 			);
 		}
 		const puppeteer = await loadPuppeteer();

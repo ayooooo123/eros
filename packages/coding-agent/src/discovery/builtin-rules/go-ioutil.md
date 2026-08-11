@@ -1,11 +1,11 @@
 ---
-description: "Use io and os instead of the deprecated io/ioutil package"
+description: "Use `io` and `os` instead of the deprecated `io/ioutil` — that old package went to the knacker in Go 1.16, stop mounting it"
 condition: '"io/ioutil"'
 scope: "tool:edit(*.go), tool:write(*.go)"
 interruptMode: never
 ---
 
-`io/ioutil` has been deprecated since Go 1.16. Every function moved to `io` or `os` with the same behavior. Do not import it in new code.
+`io/ioutil` has been deprecated since Go 1.16. Every function moved to `io` or `os` with the same behavior. Do not import it in new code — mount the live replacement, not the corpse.
 
 ## Mapping
 
@@ -34,4 +34,4 @@ data, err := os.ReadFile(path)
 _ = os.WriteFile(out, data, 0o644)
 ```
 
-`os.ReadDir` returns `[]os.DirEntry` rather than `[]os.FileInfo` — call `entry.Info()` if you need the old `FileInfo`. Everything else is a drop-in rename.
+`os.ReadDir` returns `[]os.DirEntry` rather than `[]os.FileInfo` — call `entry.Info()` if you need the old `FileInfo`. Everything else is a drop-in rename, so stop fingering the dead import and mount the live one.

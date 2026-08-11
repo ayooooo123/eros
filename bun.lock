@@ -78,7 +78,7 @@
       "name": "@oh-my-pi/pi-coding-agent",
       "version": "17.2.12",
       "bin": {
-        "omp": "src/cli.ts",
+        "eros": "src/cli.ts",
       },
       "dependencies": {
         "@babel/parser": "catalog:",
@@ -117,7 +117,7 @@
       },
     },
     "packages/collab-web": {
-      "name": "@oh-my-pi/collab-web",
+      "name": "@lycorperos/eros-gateway",
       "version": "16.3.6",
       "dependencies": {
         "@oh-my-pi/pi-utils": "catalog:",
@@ -594,6 +594,8 @@
 
     "@kurkle/color": ["@kurkle/color@0.3.4", "", {}, "sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w=="],
 
+    "@lycorperos/eros-gateway": ["@lycorperos/eros-gateway@workspace:packages/collab-web"],
+
     "@napi-rs/cli": ["@napi-rs/cli@3.7.2", "", { "dependencies": { "@inquirer/prompts": "^8.5.2", "@napi-rs/cross-toolchain": "^1.0.3", "@napi-rs/wasm-tools": "^1.0.1", "@octokit/rest": "^22.0.1", "clipanion": "^4.0.0-rc.4", "colorette": "^2.0.20", "emnapi": "^1.11.1", "es-toolkit": "^1.47.0", "js-yaml": "^4.2.0", "obug": "^2.1.2", "semver": "^7.8.2", "typanion": "^3.14.0" }, "peerDependencies": { "@emnapi/runtime": "^1.7.1" }, "optionalPeers": ["@emnapi/runtime"], "bin": { "napi": "dist/cli.js", "napi-raw": "cli.mjs" } }, "sha512-shDW0Td/XZQpP04Yy+OsMt1ILMKGGkoLcy1zVAsSAK0fLfWm0Upgkmfs/NOV2ZhMQwkgpR3ZEdyHmTwgrUDQuA=="],
 
     "@napi-rs/cross-toolchain": ["@napi-rs/cross-toolchain@1.0.3", "", { "dependencies": { "@napi-rs/lzma": "^1.4.5", "@napi-rs/tar": "^1.1.0", "debug": "^4.4.1" }, "peerDependencies": { "@napi-rs/cross-toolchain-arm64-target-aarch64": "^1.0.3", "@napi-rs/cross-toolchain-arm64-target-armv7": "^1.0.3", "@napi-rs/cross-toolchain-arm64-target-ppc64le": "^1.0.3", "@napi-rs/cross-toolchain-arm64-target-s390x": "^1.0.3", "@napi-rs/cross-toolchain-arm64-target-x86_64": "^1.0.3", "@napi-rs/cross-toolchain-x64-target-aarch64": "^1.0.3", "@napi-rs/cross-toolchain-x64-target-armv7": "^1.0.3", "@napi-rs/cross-toolchain-x64-target-ppc64le": "^1.0.3", "@napi-rs/cross-toolchain-x64-target-s390x": "^1.0.3", "@napi-rs/cross-toolchain-x64-target-x86_64": "^1.0.3" }, "optionalPeers": ["@napi-rs/cross-toolchain-arm64-target-aarch64", "@napi-rs/cross-toolchain-arm64-target-armv7", "@napi-rs/cross-toolchain-arm64-target-ppc64le", "@napi-rs/cross-toolchain-arm64-target-s390x", "@napi-rs/cross-toolchain-arm64-target-x86_64", "@napi-rs/cross-toolchain-x64-target-aarch64", "@napi-rs/cross-toolchain-x64-target-armv7", "@napi-rs/cross-toolchain-x64-target-ppc64le", "@napi-rs/cross-toolchain-x64-target-s390x", "@napi-rs/cross-toolchain-x64-target-x86_64"] }, "sha512-ENPfLe4937bsKVTDA6zdABx4pq9w0tHqRrJHyaGxgaPq03a2Bd1unD5XSKjXJjebsABJ+MjAv1A2OvCgK9yehg=="],
@@ -723,8 +725,6 @@
     "@octokit/types": ["@octokit/types@17.0.0", "", { "dependencies": { "@octokit/openapi-types": "^28.0.0" } }, "sha512-ByP1v7YL5SMveFPP7+sj0/ZuWCOOg/Chs4NafOMpq6WNIM/hdGY0S7C0TCGDBWu1aGmOxmUIhMx3cO+IdwYZ1Q=="],
 
     "@oh-my-pi/browser-relay": ["@oh-my-pi/browser-relay@workspace:packages/browser-relay"],
-
-    "@oh-my-pi/collab-web": ["@oh-my-pi/collab-web@workspace:packages/collab-web"],
 
     "@oh-my-pi/hashline": ["@oh-my-pi/hashline@workspace:packages/hashline"],
 

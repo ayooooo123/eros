@@ -100,7 +100,8 @@ describe("AgentSession todo reminder self-continuation suppression", () => {
 			if (!Array.isArray(content)) return false;
 			return content.some(
 				(item): item is TextContent =>
-					item.type === "text" && item.text.includes("You stopped with 2 incomplete todo item(s):"),
+					item.type === "text" &&
+					item.text.includes("you stopped with 2 todo item(s) still spread open and unfucked:"),
 			);
 		});
 	}

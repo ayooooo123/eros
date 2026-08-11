@@ -40,7 +40,7 @@ export function buildExecutionFrame(
 		ui,
 		spinner => theme.fg(colorKey, spinner),
 		text => theme.fg("muted", text),
-		`Running… (esc to cancel)`,
+		`Thrusting… (esc to cancel)`,
 		getSymbolTheme().spinnerFrames,
 	);
 

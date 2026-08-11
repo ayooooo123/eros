@@ -1,8 +1,7 @@
 {
   "name": "hello-extension",
   "version": "1.0.0",
-  "description": "Minimal oh-my-pi extension example",
-  "homepage": "https://omp.sh",
+  "description": "Minimal EROS extension example",
   "omp": {
     "extensions": ["./index.ts"]
   }

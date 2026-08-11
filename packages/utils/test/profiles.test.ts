@@ -5,18 +5,23 @@ import * as path from "node:path";
 import * as url from "node:url";
 import {
 	__resetProfileSnapshotForTests,
+	CONFIG_DIR_NAME,
 	getActiveProfile,
 	getAgentDbPath,
 	getAgentDir,
 	getConfigAgentDirName,
+	getConfigDirName,
 	getConfigRootDir,
+	getProjectAgentDir,
 	getPythonGatewayDir,
 	getSessionsDir,
 	getStatsDbPath,
 	normalizeProfileName,
+	PROJECT_CONFIG_DIR_NAME,
 	resolveProfileEnv,
 	setAgentDir,
 	setProfile,
+	USER_CONFIG_DIR_NAME,
 } from "@oh-my-pi/pi-utils/dirs";
 import { Snowflake } from "@oh-my-pi/pi-utils/snowflake";
 
@@ -44,6 +49,7 @@ describe("profile directories", () => {
 	let originalAgentDirEnv: string | undefined;
 	let originalOmpProfileEnv: string | undefined;
 	let originalPiProfileEnv: string | undefined;
+	let originalErosConfigDir: string | undefined;
 	let originalConfigDir: string | undefined;
 	let originalXdgDataHome: string | undefined;
 	let originalXdgStateHome: string | undefined;
@@ -55,6 +61,7 @@ describe("profile directories", () => {
 		originalAgentDirEnv = process.env.PI_CODING_AGENT_DIR;
 		originalOmpProfileEnv = process.env.OMP_PROFILE;
 		originalPiProfileEnv = process.env.PI_PROFILE;
+		originalErosConfigDir = process.env.EROS_CONFIG_DIR;
 		originalConfigDir = process.env.PI_CONFIG_DIR;
 		originalXdgDataHome = process.env.XDG_DATA_HOME;
 		originalXdgStateHome = process.env.XDG_STATE_HOME;
@@ -62,6 +69,7 @@ describe("profile directories", () => {
 		tempRoot = path.join(os.tmpdir(), "pi-utils-profiles", Snowflake.next());
 		configDir = `.omp-profile-test-${Snowflake.next()}`;
 		await fs.mkdir(tempRoot, { recursive: true });
+		delete process.env.EROS_CONFIG_DIR;
 		process.env.PI_CONFIG_DIR = configDir;
 		// Other suites that run before this one (e.g. dirs-python-gateway) may have
 		// called `setAgentDir`, which permanently mutates the module-level
@@ -76,6 +84,11 @@ describe("profile directories", () => {
 
 	afterEach(async () => {
 		setProfile(undefined);
+		if (originalErosConfigDir === undefined) {
+			delete process.env.EROS_CONFIG_DIR;
+		} else {
+			process.env.EROS_CONFIG_DIR = originalErosConfigDir;
+		}
 		if (originalConfigDir === undefined) {
 			delete process.env.PI_CONFIG_DIR;
 		} else {
@@ -148,16 +161,16 @@ describe("profile directories", () => {
 		process.env.XDG_CACHE_HOME = path.join(tempRoot, "cache");
 		// Named profiles only adopt XDG when their *own* XDG path already exists,
 		// so the profile location stays stable across activations.
-		await fs.mkdir(path.join(process.env.XDG_DATA_HOME, "omp", "profiles", "work"), { recursive: true });
-		await fs.mkdir(path.join(process.env.XDG_STATE_HOME, "omp", "profiles", "work"), { recursive: true });
-		await fs.mkdir(path.join(process.env.XDG_CACHE_HOME, "omp", "profiles", "work"), { recursive: true });
+		await fs.mkdir(path.join(process.env.XDG_DATA_HOME, "eros", "profiles", "work"), { recursive: true });
+		await fs.mkdir(path.join(process.env.XDG_STATE_HOME, "eros", "profiles", "work"), { recursive: true });
+		await fs.mkdir(path.join(process.env.XDG_CACHE_HOME, "eros", "profiles", "work"), { recursive: true });
 
 		setProfile("work");
 
-		expect(getAgentDbPath()).toBe(path.join(process.env.XDG_DATA_HOME, "omp", "profiles", "work", "agent.db"));
-		expect(getSessionsDir()).toBe(path.join(process.env.XDG_DATA_HOME, "omp", "profiles", "work", "sessions"));
+		expect(getAgentDbPath()).toBe(path.join(process.env.XDG_DATA_HOME, "eros", "profiles", "work", "agent.db"));
+		expect(getSessionsDir()).toBe(path.join(process.env.XDG_DATA_HOME, "eros", "profiles", "work", "sessions"));
 		expect(getPythonGatewayDir()).toBe(
-			path.join(process.env.XDG_STATE_HOME, "omp", "profiles", "work", "python-gateway"),
+			path.join(process.env.XDG_STATE_HOME, "eros", "profiles", "work", "python-gateway"),
 		);
 	});
 
@@ -168,19 +181,19 @@ describe("profile directories", () => {
 		process.env.XDG_STATE_HOME = path.join(tempRoot, "state");
 		process.env.XDG_CACHE_HOME = path.join(tempRoot, "cache");
 
-		// Fresh install: XDG vars are set (typical Linux) but no $XDG/omp exists yet.
+		// Fresh install: XDG vars are set (typical Linux) but no $XDG/eros exists yet.
 		// First activation must land in ~/<config-dir>/profiles/work because
 		// the profile-specific XDG path does not exist.
 		setProfile("work");
 		const firstAgentDir = getAgentDir();
 		expect(firstAgentDir).toBe(path.join(os.homedir(), configDir, "profiles", "work", "agent"));
 
-		// Later, the base XDG app dir materializes (e.g. via `omp config init-xdg`
+		// Later, the base XDG app dir materializes (e.g. via `eros config init-xdg`
 		// migrating only the default-profile data). The named profile must stay
 		// in its original location until the user explicitly migrates it.
-		await fs.mkdir(path.join(process.env.XDG_DATA_HOME, "omp"), { recursive: true });
-		await fs.mkdir(path.join(process.env.XDG_STATE_HOME, "omp"), { recursive: true });
-		await fs.mkdir(path.join(process.env.XDG_CACHE_HOME, "omp"), { recursive: true });
+		await fs.mkdir(path.join(process.env.XDG_DATA_HOME, "eros"), { recursive: true });
+		await fs.mkdir(path.join(process.env.XDG_STATE_HOME, "eros"), { recursive: true });
+		await fs.mkdir(path.join(process.env.XDG_CACHE_HOME, "eros"), { recursive: true });
 
 		setProfile(undefined);
 		setProfile("work");
@@ -188,8 +201,8 @@ describe("profile directories", () => {
 	});
 
 	it("rejects path-like profile names", () => {
-		expect(() => setProfile("../work")).toThrow("Invalid OMP profile");
-		expect(() => setProfile("work/team")).toThrow("Invalid OMP profile");
+		expect(() => setProfile("../work")).toThrow("Invalid EROS profile");
+		expect(() => setProfile("work/team")).toThrow("Invalid EROS profile");
 	});
 
 	it("rejects trailing-dot profile names to avoid Windows path collisions", () => {
@@ -252,6 +265,36 @@ describe("profile directories", () => {
 	});
 });
 
+describe("Eros namespace defaults", () => {
+	it("separates Eros-owned user state from compatible project configuration", () => {
+		expect(USER_CONFIG_DIR_NAME).toBe(".eros");
+		expect(PROJECT_CONFIG_DIR_NAME).toBe(".omp");
+		expect(CONFIG_DIR_NAME).toBe(PROJECT_CONFIG_DIR_NAME);
+		expect(getProjectAgentDir("/repo")).toBe(path.join("/repo", ".omp"));
+	});
+
+	it("prefers EROS_CONFIG_DIR and retains PI_CONFIG_DIR as a fallback", () => {
+		const originalEros = process.env.EROS_CONFIG_DIR;
+		const originalPi = process.env.PI_CONFIG_DIR;
+		try {
+			delete process.env.EROS_CONFIG_DIR;
+			delete process.env.PI_CONFIG_DIR;
+			expect(getConfigDirName()).toBe(USER_CONFIG_DIR_NAME);
+
+			process.env.PI_CONFIG_DIR = ".legacy-user-root";
+			expect(getConfigDirName()).toBe(".legacy-user-root");
+
+			process.env.EROS_CONFIG_DIR = ".native-user-root";
+			expect(getConfigDirName()).toBe(".native-user-root");
+		} finally {
+			if (originalEros === undefined) delete process.env.EROS_CONFIG_DIR;
+			else process.env.EROS_CONFIG_DIR = originalEros;
+			if (originalPi === undefined) delete process.env.PI_CONFIG_DIR;
+			else process.env.PI_CONFIG_DIR = originalPi;
+		}
+	});
+});
+
 describe("profile env + name validation", () => {
 	it("honors OMP_PROFILE precedence and treats empty/default as the default profile", () => {
 		// OMP_PROFILE is canonical and wins over the legacy PI_PROFILE fallback.
@@ -269,8 +312,8 @@ describe("profile env + name validation", () => {
 	it("rejects uppercase profile names so isolation is filesystem-independent", () => {
 		// `work` and `WORK` would collide on case-insensitive macOS/Windows but
 		// differ on Linux; reject uppercase to keep profile identity stable.
-		expect(() => normalizeProfileName("WORK")).toThrow("Invalid OMP profile");
-		expect(() => normalizeProfileName("Work")).toThrow("Invalid OMP profile");
+		expect(() => normalizeProfileName("WORK")).toThrow("Invalid EROS profile");
+		expect(() => normalizeProfileName("Work")).toThrow("Invalid EROS profile");
 		expect(normalizeProfileName("work")).toBe("work");
 		expect(normalizeProfileName("work-2.0_a")).toBe("work-2.0_a");
 	});
@@ -431,7 +474,7 @@ describe("dirs module import behavior", () => {
 			// import time — the exact ordering refreshDirsFromEnv() guards.
 			await Bun.write(path.join(agentDir, ".env"), `XDG_STATE_HOME=${xdgStateRoot}\n`);
 			// Named profiles only adopt XDG when their own XDG path already exists.
-			const xdgProfileRoot = path.join(xdgStateRoot, "omp", "profiles", "work");
+			const xdgProfileRoot = path.join(xdgStateRoot, "eros", "profiles", "work");
 			await fs.mkdir(xdgProfileRoot, { recursive: true });
 
 			const probePath = path.join(root, "probe.ts");

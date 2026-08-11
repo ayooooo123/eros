@@ -1,0 +1,23 @@
+{
+  "id": "pack-023",
+  "name": "Intro 023 \u2014 1woman|arms flung above head i",
+  "file": "final-pass009/fin-0010-04-inqu.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 1woman, orc, tusks, muscular build, black mohawk, full body wide shot, lying supine on wet stone, arms flung above head in surrender, belly domed high with visible outline of twin eggs pressing against skin, veins throbbing visibly, (viscous fluid pooling around hips:1.2), (cum:1.4), (dripping cum:1.3), (cum pool:1.2) spreading across floor cracks, (wounds:1.1) weeping clear fluid from sides, expression of catatonic shock, eyes unfocused staring at ceiling, mouth slightly open with tongue resting on lower lip, spot color blood red accent on stone cracks filled with liquid, spot color pale cyan light from window highlighting wet skin contours, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "scifi-pass004/sci-0008-02-corr.png",
+    "scifi-pass034/sci-0020-15-inqu.png",
+    "final-pass006/fin-0041-01-fles.png",
+    "final-pass009/fin-0010-04-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

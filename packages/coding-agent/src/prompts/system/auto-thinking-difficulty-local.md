@@ -1,4 +1,8 @@
-Classify the difficulty of the coding request below into one bucket, by how much reasoning it needs.
+How hard will this request fuck the turn's brain? One bucket.
+
+Classify how hard Master's request will fuck this turn's brain. One bucket. No prose.
+
+Classify the difficulty of the request below into one bucket, by how much reasoning it needs.
 
 Buckets:
 

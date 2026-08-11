@@ -21,7 +21,7 @@ import { TempDir } from "@oh-my-pi/pi-utils";
 // the delegate-via-tasks / phased-todo guidance. The post-compaction auto-continuation
 // turn must carry the gated reminders again (reminder-only — never a forced tool_choice).
 
-const CONTINUE_MARKER = "Resume work on the user's most recent intent";
+const CONTINUE_MARKER = "Resume work on Master's most recent desire";
 
 type ObservedPromptCall = {
 	toolChoice: string | undefined;

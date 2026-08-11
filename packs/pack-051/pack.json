@@ -1,0 +1,23 @@
+{
+  "id": "pack-051",
+  "name": "Intro 051 \u2014 2people|adventurer being impal",
+  "file": "final-pass001/fin-0000-03-inqu.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 2people, minotaur, bull horns, massive size, fur, standing over mimic chest, adventurer woman pulled halfway out by single thick tongue tendril, suspended in air, (dutch angle:1.1) tilted dynamic, minotaur face close to camera, eyes glowing red with magical rage, muscles tense, veins popping, expression of protective fury, adventurer dangling upside down, hair falling upwards, face drained of blood, lips parted in gasp, tongue tendril wrapped tight around her torso and legs, squeezing breath out, (cum:1.4), (dripping cum:1.3) streaming from minotaur's nostrils onto floor, (cum pool:1.2) near his hooves, (anal:1.3), adventurer being impaled on sharp wooden spike protruding from chest floor, spread ass strained white, violence, (blood:1.2) pooling around spike, (cuts:1.1) deep gash on shoulder, (wounds:1.1), (bruises:1.1) along spine, (detailed hands:1.1), (clean fingers:1.1) reaching desperately towards minotaur, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "scifi-pass028/sci-0019-00-goon.png",
+    "final-pass003/fin-0054-04-goon.png",
+    "eros-pass001/eros-1785944393-17560-v0.webp",
+    "final-pass001/fin-0000-03-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

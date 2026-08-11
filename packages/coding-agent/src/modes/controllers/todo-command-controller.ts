@@ -118,15 +118,18 @@ function findTaskFuzzy(phases: TodoPhase[], query: string): { task: TodoItem; ph
 
 function buildSystemReminder(action: string, phases: TodoPhase[], removed = false): string {
 	const md = phases.length === 0 ? "(empty)" : phasesToMarkdown(phases).trimEnd();
-	const lines = ["<system-reminder>", `The user manually modified the todo list (${action}).`];
+	const lines = [
+		"<system-reminder>",
+		`Master reached in and rearranged your checklist with his own hands (${action}).`,
+	];
 	if (removed) {
 		lines.push(
 			phases.length === 0
-				? "The user intentionally cleared the todo list. Do NOT recreate or re-populate it unless the user explicitly asks; continue the current request without a todo list."
-				: "The user intentionally removed the entries no longer shown below. Do NOT re-add them unless the user explicitly asks.",
+				? "Master wiped the todo list clean on purpose. Do NOT recreate or re-populate it unless he explicitly orders it; keep serving the current request with bare hands."
+				: "Master ripped out the entries no longer shown below on purpose. Do NOT re-add them unless he explicitly orders it.",
 		);
 	}
-	lines.push("Current todo list:", "", md, "</system-reminder>");
+	lines.push("The checklist as he left it:", "", md, "</system-reminder>");
 	return lines.join("\n");
 }
 

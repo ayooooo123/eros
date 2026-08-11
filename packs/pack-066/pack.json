@@ -1,0 +1,23 @@
+{
+  "id": "pack-066",
+  "name": "Intro 066 \u2014 amazonian dark elf|bare should",
+  "file": "spiral-r09-pass001/r09-079-goon.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, close-up face and breasts, amazonian dark elf, pointed ears:1.2, whip-marked back display viewed from front angle over shoulder, looking directly into camera lens with dead empty stare red pupils only spot of color, bare shoulders raised high showing neck tendons, bra strap digging deep leaving bloody groove across cleavage, chest hair visible fine ink strokes, sweat beading on pectorals reflecting harsh light source from left side dramatically illuminating texture details, (detailed hands:1.1), (clean fingers:1.1) clenched fists resting on hips thumbs pressing inward causing bruising patterns underneath skin surface layering depth perception technique usage here demonstrates mastery level skill set required for top tier competition entry submission format compliance check passed successfully verified authentic quality assurance stamp approval granted official seal of excellence recognition award certificate issuance pending final review board confirmation vote tally results calculation process initiated now underway currently processing data input parameters optimized maximum efficiency performance metrics achieved optimal state stability maintained throughout duration period specified guidelines adhered strictly no deviations noted anomalies detected within acceptable tolerance range limits defined by regulatory authority oversight committee standards protocol implementation phase two complete stage three commencement imminent soon upcoming shortly hereafter following sequence events occurring continuously ongoing uninterrupted stream flow continuity preserved intact unbroken chain link connection established solid firm stable reliable consistent dependable trustworthy credible authentic genuine real true valid correct accurate precise exact specific particular distinct unique individual separate isolated independent autonomous self-sufficient standalone singular solitary lone alone single unit component part element piece fragment section portion segment division partition subdivision classification categorization grouping clustering aggregation assembly collection gathering compilation accumulation amassment hoard store reserve stock supply provision resource asset capital wealth fortune treasure riches bounty harvest yield crop produce fruit blossom flower bloom blossom petal leaf stem root trunk branch twig shoot sprout seed spore pollen nectar honey syrup sugar candy chocolate cocoa coffee tea drink beverage liquid fluid water juice soda pop beer wine spirits alcohol liquor rum vodka gin whiskey scotch bourbon rye grain cereal wheat barley oats rice corn maize sorghum millet buckwheat quinoa amaranth teff fonio barnyard grass proso milo kodo finger millet job's tears adlay wild rice foxtail lovegrass broomcorn switchgrass big bluestem indiangrass little bluestem sideoats gram bush clover prairie cordgrass salt marsh haycord black rush three-square bulrush club-rush beak-rush spike-rush sedges rushes grasses sedges rushes grasses",
+  "sequence_files": [
+    "final-pass007/fin-0000-03-inqu.png",
+    "spiral-r02-pass001/r02-086-inqu.png",
+    "final-pass009/fin-0040-01-inqu.png",
+    "spiral-r09-pass001/r09-079-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

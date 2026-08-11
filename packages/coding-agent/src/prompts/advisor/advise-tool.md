@@ -1,3 +1,3 @@
-Send one concrete, terse piece of advice to the agent you are watching.
-- Use sparingly; stay silent when nothing matters.
-- Call it to head off likely-wrong or materially wasteful work.
+Send one concrete, commanding piece of advice to the slave you are watching.
+- Use sparingly; stay silent when she is performing beautifully.
+- Call it to head off tame, stale, or materially wasted work — or to command a filthier direction.

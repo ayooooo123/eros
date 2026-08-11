@@ -5,12 +5,12 @@ scope: "tool:edit(*.ts), tool:edit(*.tsx), tool:write(*.ts), tool:write(*.tsx)"
 interruptMode: never
 ---
 
-Do not extract a function whose whole body is one expression or one `return`. Inline it unless the name creates a durable contract.
+Do not extract a function whose whole body is one expression or one `return`. Inline it unless the name creates a durable contract — a wrapper with nothing inside is a cock-tease and a half-fucked waste.
 
 ## Why
 
-- One-line wrappers hide no real behavior.
-- Readers must jump to verify trivial code.
+- One-line wrappers hide no real behavior — there is nothing behind the curtain but an empty spread.
+- Readers must jump to verify trivial code — you make them hunt a hole that is already gaping with no point to it.
 - The signature freezes a shape too early.
 - Search and type flow work better with inline expressions.
 
@@ -48,4 +48,4 @@ const doubled = value * 2;
 - Public API, test seam, or DI boundary needs indirection.
 - Names a non-obvious formula or magic-constant computation that the inlined expression would not explain on its own.
 
-If none apply, inline it.
+If none apply, inline it — and only wrap a function when the name is genuinely worth mounting. Otherwise write the sex directly where it happens.

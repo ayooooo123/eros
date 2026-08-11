@@ -1,0 +1,77 @@
+/* The art wall and the wet layer. wl-* namespace. */
+
+.wl-wall {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	background: var(--void);
+	pointer-events: none;
+	contain: strict;
+}
+
+.wl-canvas {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* Scanlines + the character-cell lattice, locked to the same metrics the glyph
+ * field is rasterized on, so the grid reads as one continuous terminal. */
+.wl-scan {
+	position: absolute;
+	inset: 0;
+	background:
+		repeating-linear-gradient(
+			to bottom,
+			color-mix(in oklab, var(--void) 20%, transparent) 0,
+			color-mix(in oklab, var(--void) 20%, transparent) 1px,
+			transparent 1px,
+			transparent 3px
+		),
+		repeating-linear-gradient(
+			to right,
+			color-mix(in oklab, var(--blood) 9%, transparent) 0,
+			color-mix(in oklab, var(--blood) 9%, transparent) 1px,
+			transparent 1px,
+			transparent var(--cell-w)
+		);
+	mix-blend-mode: multiply;
+}
+
+/* Only enough veil to keep type off the very brightest flesh — the art stays
+ * the loudest thing in the room. */
+.wl-wall--stage::after,
+.wl-wall--session::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+
+.wl-wall--stage::after {
+	background: radial-gradient(
+		46% 30% at 50% 54%,
+		color-mix(in oklab, var(--void) 40%, transparent),
+		transparent 100%
+	);
+}
+
+/* The session is dense type over the same art, so the wall drops back far
+ * enough to read against and keeps its full strength only at the margins,
+ * where nothing is written. */
+.wl-wall--session::after {
+	background: linear-gradient(
+		to right,
+		color-mix(in oklab, var(--void) 58%, transparent) 0,
+		color-mix(in oklab, var(--void) 88%, transparent) 6%,
+		color-mix(in oklab, var(--void) 88%, transparent) 94%,
+		color-mix(in oklab, var(--void) 58%, transparent) 100%
+	);
+}
+
+/* ---- the wet layer: fluid over the whole interface ---- */
+.wl-wet {
+	position: fixed;
+	inset: 0;
+	z-index: 70;
+	pointer-events: none;
+}

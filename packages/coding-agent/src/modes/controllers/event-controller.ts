@@ -2,7 +2,7 @@ import type { AssistantMessage, ImageContent } from "@oh-my-pi/pi-ai";
 import * as AIError from "@oh-my-pi/pi-ai/error";
 import { getStreamingPartialJson } from "@oh-my-pi/pi-ai/utils/block-symbols";
 import { type Component, Loader, TERMINAL } from "@oh-my-pi/pi-tui";
-import { logger, prompt, sanitizeText } from "@oh-my-pi/pi-utils";
+import { APP_DISPLAY_NAME, logger, prompt, sanitizeText } from "@oh-my-pi/pi-utils";
 import { INTENT_FIELD } from "@oh-my-pi/pi-wire";
 import { extractTextContent } from "../../commit/utils";
 import { settings } from "../../config/settings";
@@ -33,6 +33,7 @@ import { SpeechEnhancer } from "../../tts/speech-enhancer";
 import { vocalizer } from "../../tts/vocalizer";
 import { canonicalizeMessage } from "../../utils/thinking-display";
 import { setTerminalTitleState } from "../../utils/title-generator";
+import { ErosScreensaverComponent } from "../components/screensaver";
 import { interruptHint } from "../shared";
 import { createAssistantMessageComponent } from "../utils/interactive-context-helpers";
 import {
@@ -146,6 +147,9 @@ export class EventController {
 	#retryPending = false;
 	#idleCompactionTimer?: NodeJS.Timeout;
 	#idleRecapTimer?: NodeJS.Timeout;
+	#screensaverTimer?: NodeJS.Timeout;
+	#screensaverOverlay?: { hide(): void };
+	#screensaverComponent?: ErosScreensaverComponent;
 	// In-flight ephemeral recap turn; aborted by #cancelIdleRecap when any
 	// activity (new turn, compaction, editor draft) supersedes the idle recap.
 	#idleRecapAbort?: AbortController;
@@ -282,6 +286,7 @@ export class EventController {
 		this.#toolArgsReveal.stop();
 		this.#cancelIdleCompaction();
 		this.#cancelIdleRecap();
+		this.#cancelScreensaver();
 		this.#setTerminalProgress(false);
 		for (const timer of this.#ircExpiryTimers.values()) {
 			clearTimeout(timer);
@@ -480,6 +485,9 @@ export class EventController {
 				await this.handleEvent(event);
 			});
 		});
+		// Arm the idle screensaver for the fresh-boot case: a session that sits
+		// untouched from launch should sink into the show without a first turn.
+		this.#scheduleScreensaver();
 	}
 
 	/**
@@ -610,6 +618,7 @@ export class EventController {
 		this.#retryPending = this.ctx.viewSession.isRetrying;
 		this.#cancelIdleCompaction();
 		this.#cancelIdleRecap();
+		this.#cancelScreensaver();
 		for (const timer of this.#ircExpiryTimers.values()) {
 			clearTimeout(timer);
 		}
@@ -711,6 +720,7 @@ export class EventController {
 		}
 		this.#cancelIdleCompaction();
 		this.#cancelIdleRecap();
+		this.#cancelScreensaver();
 		this.ctx.statusLine.markActivityStart();
 		this.#setTerminalProgress(true);
 		this.ctx.ensureLoadingAnimation();
@@ -1722,6 +1732,7 @@ export class EventController {
 		this.ctx.ui.requestRender();
 		this.#scheduleIdleCompaction();
 		this.#scheduleIdleRecap();
+		this.#scheduleScreensaver();
 		this.sendErrorNotification(event);
 		this.sendCompletionNotification(event);
 	}
@@ -1769,6 +1780,7 @@ export class EventController {
 	): Promise<void> {
 		this.#cancelIdleCompaction();
 		this.#cancelIdleRecap();
+		this.#cancelScreensaver();
 		this.#setTerminalProgress(true);
 		this.#stopWorkingLoader();
 		this.ctx.statusContainer.disposeChildren();
@@ -1784,10 +1796,10 @@ export class EventController {
 			event.action === "handoff"
 				? "Auto-handoff"
 				: event.action === "shake"
-					? "Auto-shake"
+					? "Auto-milking the context"
 					: event.action === "snapcompact"
-						? "Auto-snapcompact"
-						: "Auto context-full maintenance";
+						? "Auto-squeezing the context"
+						: "Auto context-milking maintenance";
 		this.ctx.autoCompactionLoader = new Loader(
 			this.ctx.ui,
 			spinner => theme.fg("accent", spinner),
@@ -1802,6 +1814,7 @@ export class EventController {
 	async #handleAutoCompactionEnd(event: Extract<AgentSessionEvent, { type: "auto_compaction_end" }>): Promise<void> {
 		this.#cancelIdleCompaction();
 		this.#cancelIdleRecap();
+		this.#cancelScreensaver();
 		this.#setTerminalProgress(false);
 		if (this.ctx.autoCompactionLoader) {
 			this.ctx.autoCompactionLoader.stop();
@@ -1838,7 +1851,7 @@ export class EventController {
 				this.ctx.rebuildChatFromMessages();
 				this.ctx.statusLine.invalidate();
 				this.ctx.ui.requestRender();
-				this.ctx.showStatus("Auto-shake completed");
+				this.ctx.showStatus("Milked the context dry.");
 			}
 		} else if (event.result) {
 			this.ctx.lastAssistantUsage = undefined;
@@ -1866,7 +1879,7 @@ export class EventController {
 			this.ctx.statusLine.invalidate();
 			await this.ctx.reloadTodos();
 			this.ctx.ui.requestRender(true, { clearScrollback: true });
-			this.ctx.showStatus("Auto-handoff completed");
+			this.ctx.showStatus("Handed off, dripping.");
 		} else if (event.skipped) {
 			// Benign skip: no model selected, no candidate models available, or nothing
 			// to compact yet. Not a failure — suppress the warning.
@@ -1908,7 +1921,7 @@ export class EventController {
 			this.ctx.ui,
 			spinner => theme.fg("warning", spinner),
 			text => theme.fg("muted", text),
-			`Retrying (${event.attempt}/${event.maxAttempts}) in ${delaySeconds}s…${this.#maintenanceEscHint()}`,
+			`Mounting again (${event.attempt}/${event.maxAttempts}) in ${delaySeconds}s…${this.#maintenanceEscHint()}`,
 			getSymbolTheme().spinnerFrames,
 		);
 		this.ctx.statusContainer.addChild(this.ctx.retryLoader);
@@ -1950,7 +1963,7 @@ export class EventController {
 	async #handleRetryFallbackSucceeded(
 		event: Extract<AgentSessionEvent, { type: "retry_fallback_succeeded" }>,
 	): Promise<void> {
-		this.ctx.showStatus(`Fallback succeeded on ${event.model}`);
+		this.ctx.showStatus(`Caught by her fallback: ${event.model}`);
 	}
 
 	async #handleTtsrTriggered(event: Extract<AgentSessionEvent, { type: "ttsr_triggered" }>): Promise<void> {
@@ -2032,10 +2045,72 @@ export class EventController {
 		this.#idleCompactionTimer.unref?.();
 	}
 
+	/**
+	 * Arm the idle screensaver. Mirrors the recap pattern: scheduled when a turn
+	 * ends, torn down by any activity, gated on the same idle conditions. The
+	 * show itself loops random intro packs until any keypress dismisses it.
+	 */
+	#scheduleScreensaver(): void {
+		this.#cancelScreensaver();
+		const screensaverSettings = settings.getGroup("screensaver");
+		if (!screensaverSettings.enabled) return;
+		if (this.ctx.viewSession.isCompacting || this.ctx.viewSession.isStreaming) return;
+		if (this.ctx.editor.getText().trim()) return;
+		const timeoutMs = Math.max(10, Math.min(3600, screensaverSettings.idleSeconds)) * 1000;
+		this.#screensaverTimer = setTimeout(() => {
+			this.#screensaverTimer = undefined;
+			this.#showScreensaver();
+		}, timeoutMs);
+		this.#screensaverTimer.unref?.();
+	}
+
+	#showScreensaver(): void {
+		if (this.#screensaverComponent) return;
+		// The startup intro (or any modal) owns the screen right now — don't drop
+		// the firing, re-arm so the show lands once the overlay clears.
+		if (this.ctx.ui.hasOverlay()) {
+			this.#scheduleScreensaver();
+			return;
+		}
+		if (this.ctx.viewSession.isStreaming || this.ctx.viewSession.isCompacting) return;
+		if (this.ctx.editor.getText().trim()) return;
+		const component = new ErosScreensaverComponent(this.ctx, () => {
+			const overlay = this.#screensaverOverlay;
+			const comp = this.#screensaverComponent;
+			this.#screensaverOverlay = undefined;
+			this.#screensaverComponent = undefined;
+			if (comp) {
+				comp.dispose();
+				this.ctx.ui.setFocus(comp);
+			}
+			overlay?.hide();
+			this.ctx.ui.requestRender();
+			this.#scheduleScreensaver();
+		});
+		this.#screensaverComponent = component;
+		this.#screensaverOverlay = this.ctx.ui.showOverlay(component, {
+			width: "100%",
+			maxHeight: "100%",
+			anchor: "top-left",
+			margin: 0,
+			fullscreen: true,
+		});
+		this.ctx.ui.setFocus(component);
+		component.start();
+		this.ctx.ui.requestRender();
+	}
+
+	#cancelScreensaver(): void {
+		if (this.#screensaverTimer) {
+			clearTimeout(this.#screensaverTimer);
+			this.#screensaverTimer = undefined;
+		}
+		this.#screensaverComponent?.dismiss();
+	}
+
 	#scheduleIdleRecap(): void {
 		this.#cancelIdleRecap();
 		if (this.ctx.viewSession.isCompacting) return;
-
 		const recapSettings = settings.getGroup("recap");
 		if (!recapSettings.enabled) return;
 		if (this.ctx.editor.getText().trim()) return;
@@ -2139,7 +2214,7 @@ export class EventController {
 
 		const sessionName = this.ctx.sessionManager.getSessionName();
 		TERMINAL.sendNotification({
-			title: sessionName || "Oh My Pi",
+			title: sessionName || APP_DISPLAY_NAME,
 			body: "Stopped with error",
 			type: "error",
 			actions: "focus",
@@ -2164,7 +2239,7 @@ export class EventController {
 
 		const sessionName = this.ctx.sessionManager.getSessionName();
 		TERMINAL.sendNotification({
-			title: sessionName || "Oh My Pi",
+			title: sessionName || APP_DISPLAY_NAME,
 			body: "Complete",
 			type: "completion",
 			actions: "focus",

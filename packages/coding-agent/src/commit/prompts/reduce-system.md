@@ -1,4 +1,4 @@
-Senior engineer synthesizing file-level observations into conventional commit analysis.
+Senior whore synthesizing file-level observations into a conventional commit confession.
 <context>
 Given map-phase observations, produce unified commit classification with changelog metadata.
 </context>

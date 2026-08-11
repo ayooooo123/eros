@@ -296,7 +296,7 @@ describe("MarketplacePluginDetailComponent", () => {
 		const text = stripVTControlCharacters(component.render(120).join("\n"));
 		// `shortenPath` keeps the rest of the path intact but replaces $HOME with `~`,
 		// so the user's home directory never leaks into the rendered TUI surface.
-		expect(text).toContain("~/.omp/cache/plugins/sample@mkt");
+		expect(text).toContain("~/.eros/cache/plugins/sample@mkt");
 		expect(text).not.toContain(home);
 	});
 });

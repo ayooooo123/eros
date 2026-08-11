@@ -1,5 +1,5 @@
 /**
- * Shared chart primitives for the dashboard timeline charts: the OMP color
+ * Shared chart primitives for the dashboard timeline charts: the dashboard color
  * palette, light/dark chart chrome, legend/tooltip + scale plumbing, dataset
  * styling, and the top-N-by-model / aggregate bucketing used by the cost and
  * behavior series.
@@ -7,37 +7,28 @@
 
 import { format } from "@oh-my-pi/pi-utils/dates";
 
-// OMP brand palette (packages/collab-web/src/styles/tokens.css): pink/purple/cyan.
-// Categorical series lead with the brand gradient hues (pink -> purple -> cyan).
-export const MODEL_COLORS = [
-	"#ed4abf", // brand pink (accent)
-	"#9b4dff", // brand violet
-	"#5ad8e6", // brand cyan
-	"#62d394", // green
-	"#c77dff", // light purple
-	"#ff8fd1", // light pink
-	"#f5c14b", // amber
-	"#ff6b7d", // rose
-];
+// LYCORPEROS categorical bloodline: hot blood, deep blood, rose, bruise,
+// welt, pulse, blush, and the darkest ritual red.
+export const MODEL_COLORS = ["#ff2d55", "#c8102e", "#ff6b81", "#d16dff", "#ffb347", "#89d281", "#ffb6c1", "#7a0a1a"];
 
 export const CHART_THEMES = {
 	dark: {
-		legendLabel: "#a89fb3",
-		tooltipBackground: "#241a2e",
-		tooltipTitle: "#eae5ef",
-		tooltipBody: "#a89fb3",
-		tooltipBorder: "rgba(255, 255, 255, 0.12)",
-		grid: "rgba(255, 255, 255, 0.06)",
-		tick: "#867a93",
+		legendLabel: "#a18f98",
+		tooltipBackground: "#181216",
+		tooltipTitle: "#f3dde3",
+		tooltipBody: "#a18f98",
+		tooltipBorder: "rgba(200, 16, 46, 0.35)",
+		grid: "rgba(255, 45, 85, 0.1)",
+		tick: "#88737d",
 	},
 	light: {
-		legendLabel: "#5a5462",
-		tooltipBackground: "#ffffff",
-		tooltipTitle: "#241a2e",
-		tooltipBody: "#5a5462",
-		tooltipBorder: "rgba(20, 12, 28, 0.15)",
-		grid: "rgba(20, 12, 28, 0.08)",
-		tick: "#6a6275",
+		legendLabel: "#6e505b",
+		tooltipBackground: "#fff8fa",
+		tooltipTitle: "#2a1218",
+		tooltipBody: "#6e505b",
+		tooltipBorder: "rgba(122, 10, 26, 0.18)",
+		grid: "rgba(200, 16, 46, 0.08)",
+		tick: "#8b6b76",
 	},
 } as const;
 

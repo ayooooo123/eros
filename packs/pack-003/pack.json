@@ -1,0 +1,23 @@
+{
+  "id": "pack-003",
+  "name": "Intro 003 \u2014 1man|1woman|2people|blood|bloo",
+  "file": "v4-pass001/dmg-0079-05.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, (red blood:1.3), blood red accent, (2people:1.2), full body wide shot, 1man, 1woman, tiefling, dark red skin, curved horns, (detailed face:1.1), apparition of death outside shattered window, crumbling abandoned church room, desperate feverish rutting, completely nude, (anal:1.2), (penis in anus:1.1), (erection:1.2), testicles, pussy, labia, clitoris, nipples, heavy breasts, (cum:1.3), (excessive cum:1.2), (cum string:1.1), (cum pool:1.1), (blood:1.2), (blood splatter:1.1), (cuts:1.1), (wounds:1.1), (scars:1.1), (bruises:1.1), (welts:1.1), necrotic skin patches, bleeding pores, deep gouges, shackle marks, wrists hogtied, pinned under body weight, (ahegao:1.2), (tears streaming:1.1), wide open bloodshot eyes, gasping, sweat slicked skin, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "v4-pass001/dmg-0030-01.png",
+    "darkx-pass001/dark2-g0175-04.png",
+    "v4-pass001/dmg-0046-05.png",
+    "v4-pass001/dmg-0079-05.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

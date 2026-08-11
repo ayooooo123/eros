@@ -155,7 +155,7 @@ export function parseCollabLink(link: string): ParsedCollabLink | { error: strin
 	try {
 		url = new URL(text);
 	} catch {
-		return { error: `Invalid collab link: ${link}` };
+		return { error: `Invalid invitation: ${link}` };
 	}
 	if ((url.protocol === "http:" || url.protocol === "https:") && url.hash) {
 		const inner = url.hash.startsWith("#") ? url.hash.slice(1) : url.hash;
@@ -171,18 +171,18 @@ export function parseCollabLink(link: string): ParsedCollabLink | { error: strin
 		// fall through to direct relay validation instead of double-recursing.
 		const inner = url.hash.startsWith("#") ? url.hash.slice(1) : url.hash;
 		if (inner && url.protocol !== "http:" && url.protocol !== "https:") return parseCollabLink(inner);
-		return { error: "Collab link must contain a /r/<roomId> path" };
+		return { error: "Invitation must contain a /r/<roomId> path" };
 	}
 	const roomId = match[1] as string;
 	// Key rides dot-joined in the path (`/r/<roomId>.<key>`); legacy links
 	// carry it in the fragment (`/r/<roomId>#<key>`).
 	const fragment = match[2] ?? (url.hash.startsWith("#") ? url.hash.slice(1) : url.hash);
 	if (!fragment) {
-		return { error: "Collab link is missing the <key> part" };
+		return { error: "Invitation is missing the <key> part" };
 	}
 	const secret = decodeBase64Url(fragment);
 	if (!secret || (secret.byteLength !== ROOM_KEY_BYTES && secret.byteLength !== ROOM_KEY_BYTES + WRITE_TOKEN_BYTES)) {
-		return { error: "Collab link key must be 32 (view) or 48 (full) base64url bytes" };
+		return { error: "Invitation key must be 32 (view) or 48 (full) base64url bytes" };
 	}
 	const key = secret.subarray(0, ROOM_KEY_BYTES);
 	const writeToken = secret.byteLength > ROOM_KEY_BYTES ? secret.subarray(ROOM_KEY_BYTES) : undefined;

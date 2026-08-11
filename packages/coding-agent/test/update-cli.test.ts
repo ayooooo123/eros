@@ -199,10 +199,10 @@ describe("update-cli install target detection", () => {
 
 	it("uses mise update when prioritized omp is in an active mise bin path", () => {
 		const method = resolveUpdateMethodForTest(
-			"/Users/test/.local/share/mise/installs/github-can1357-oh-my-pi/latest/bin/omp",
+			"/Users/test/.local/share/mise/installs/github-example-eros/latest/bin/eros",
 			undefined,
 			{
-				miseBinDirs: ["/Users/test/.local/share/mise/installs/github-can1357-oh-my-pi/latest/bin"],
+				miseBinDirs: ["/Users/test/.local/share/mise/installs/github-example-eros/latest/bin"],
 			},
 		);
 
@@ -633,7 +633,7 @@ describe("update-cli release binary integrity", () => {
 describe("update-cli binary replacement", () => {
 	it("restores the previous binary when the replacement fails verification", async () => {
 		const dir = await makeTempDir();
-		const targetPath = path.join(dir, "omp");
+		const targetPath = path.join(dir, "eros");
 		const tempPath = `${targetPath}.new`;
 		const backupPath = `${targetPath}.bak`;
 		await Bun.write(targetPath, "old binary");
@@ -647,7 +647,7 @@ describe("update-cli binary replacement", () => {
 				expectedVersion: "15.1.8",
 				verifyInstalledVersion: async () => ({ ok: false, path: targetPath }),
 			}),
-		).rejects.toThrow("restored previous omp binary");
+		).rejects.toThrow("restored previous eros binary");
 
 		expect(await Bun.file(targetPath).text()).toBe("old binary");
 		expect(await Bun.file(tempPath).exists()).toBe(false);
@@ -656,7 +656,7 @@ describe("update-cli binary replacement", () => {
 
 	it("keeps the replacement only after it reports the expected version", async () => {
 		const dir = await makeTempDir();
-		const targetPath = path.join(dir, "omp");
+		const targetPath = path.join(dir, "eros");
 		const tempPath = `${targetPath}.new`;
 		const backupPath = `${targetPath}.bak`;
 		await Bun.write(targetPath, "old binary");

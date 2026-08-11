@@ -29,7 +29,7 @@ Key integration points:
 ```text
          Generic helper order (`config.ts`)
 ┌───────────────────────────────────────┐
-│ 1) ~/.omp/agent, ~/.claude, ...       │
+│ 1) ~/.eros/agent, ~/.claude, ...       │
 │ 2) <cwd>/.omp, <cwd>/.claude, ...     │
 └───────────────────────────────────────┘
                     │
@@ -59,7 +59,7 @@ Key integration points:
 
 User-level bases:
 
-- OMP native: `~/<PI_CONFIG_DIR>/agent` (normally `~/.omp/agent`; a named profile changes this as described below)
+- EROS native: `~/<PI_CONFIG_DIR>/agent` (normally `~/.eros/agent`; a named profile changes this as described below)
 - `~/.claude`
 - `~/.codex`
 - `~/.gemini`
@@ -71,19 +71,19 @@ Project-level bases:
 - `<cwd>/.codex`
 - `<cwd>/.gemini`
 
-`CONFIG_DIR_NAME` is `.omp` (`packages/utils/src/dirs.ts`). `PI_CONFIG_DIR` changes the OMP user root used by the generic helpers. `PI_CODING_AGENT_DIR` is different: for the default profile it changes `getAgentDir()` consumers such as native discovery, settings, and runtime state, but it does **not** change the generic `getConfigDirs()` / `findConfigFile()` OMP base. Named profiles ignore `PI_CODING_AGENT_DIR`.
+`CONFIG_DIR_NAME` is `.omp` (`packages/utils/src/dirs.ts`). `PI_CONFIG_DIR` changes the EROS user root used by the generic helpers. `PI_CODING_AGENT_DIR` is different: for the default profile it changes `getAgentDir()` consumers such as native discovery, settings, and runtime state, but it does **not** change the generic `getConfigDirs()` / `findConfigFile()` EROS base. Named profiles ignore `PI_CODING_AGENT_DIR`.
 
 ## Profiles
 
-A named profile (`omp --profile <name>`, `OMP_PROFILE`, or the legacy fallback `PI_PROFILE`) relocates the OMP user base. `OMP_PROFILE` wins when it is defined, including when it is explicitly empty; `default`, empty, or whitespace selects the default profile. When a profile is active, every OMP-native user-level path written here as `~/.omp/agent/...` normally resolves to `~/.omp/profiles/<name>/agent/...`. `--alias <command>` does not select a profile by itself: paired with `--profile`, it creates a shell shortcut for that profile.
+A named profile (`eros --profile <name>`, `OMP_PROFILE`, or the legacy fallback `PI_PROFILE`) relocates the EROS user base. `OMP_PROFILE` wins when it is defined, including when it is explicitly empty; `default`, empty, or whitespace selects the default profile. When a profile is active, every EROS-native user-level path written here as `~/.eros/agent/...` normally resolves to `~/.eros/profiles/<name>/agent/...`. `--alias <command>` does not select a profile by itself: paired with `--profile`, it creates a shell alias that injects the chosen profile.
 
-The relocation is uniform across the native provider (`builtin.ts`) and the generic `config.ts` helpers, so it covers slash commands, rules, prompts, instructions, hooks, tools, extensions, settings, skills, and MCP, plus the top-level `SYSTEM.md` / `RULES.md` / `AGENTS.md` files and runtime state (sessions, blobs, `agent.db`). A profile sees only its own OMP config, never the default profile's agent config.
+The relocation is uniform across the native provider (`builtin.ts`) and the generic `config.ts` helpers, so it covers slash commands, rules, prompts, instructions, hooks, tools, extensions, settings, skills, and MCP, plus the top-level `SYSTEM.md` / `RULES.md` / `AGENTS.md` files and runtime state (sessions, blobs, `agent.db`). A profile sees only its own EROS config, never the default profile's agent config.
 
-Keybindings are the one exception: a named profile merges the default profile's `~/.omp/agent/keybindings.*` under its own `~/.omp/profiles/<name>/agent/keybindings.*`, with the profile file overriding per binding ([#4867](https://github.com/can1357/oh-my-pi/issues/4867)). Keybindings describe the terminal/keyboard in front of the user, which doesn't change with the active profile, so user-level remaps keep working in every profile unless the profile explicitly overrides them. The inherited file is read-only for the profile process — legacy-format migration of the default profile's file only happens when the default profile itself runs.
+Keybindings are the one exception: a named profile merges the default profile's `~/.eros/agent/keybindings.*` under its own `~/.eros/profiles/<name>/agent/keybindings.*`, with the profile file overriding per binding ([#4867](https://github.com/can1357/oh-my-pi/issues/4867)). Keybindings describe the terminal/keyboard in front of the user, which doesn't change with the active profile, so user-level remaps keep working in every profile unless the profile explicitly overrides them. The inherited file is read-only for the profile process — legacy-format migration of the default profile's file only happens when the default profile itself runs.
 
-On macOS and Linux, an existing `$XDG_DATA_HOME/omp`, `$XDG_STATE_HOME/omp`, or `$XDG_CACHE_HOME/omp` can relocate the corresponding data, state, or cache paths. For a named profile, OMP uses an XDG category only when that category already contains `omp/profiles/<name>`; otherwise that category remains under `~/.omp/profiles/<name>`. Run `omp config init-xdg` before relying on XDG paths.
+On macOS and Linux, an existing `$XDG_DATA_HOME/eros`, `$XDG_STATE_HOME/eros`, or `$XDG_CACHE_HOME/eros` can relocate the corresponding data, state, or cache paths. For a named profile, EROS uses an XDG category only when that category already contains `omp/profiles/<name>`; otherwise that category remains under `~/.eros/profiles/<name>`. Run `eros config init-xdg` before relying on XDG paths.
 
-The other source bases are not profile-scoped and load identically under every profile: the external-tool bases (`~/.claude`, `~/.codex`, `~/.gemini`) belong to those tools, and the project-level bases (`<cwd>/.omp`, `<cwd>/.claude`, ...) are keyed to the working directory. Throughout this document, read `~/.omp/agent` as shorthand for the active profile's agent directory unless an environment override or XDG path is being discussed.
+The other source bases are not profile-scoped and load identically under every profile: the external-tool bases (`~/.claude`, `~/.codex`, `~/.gemini`) belong to those tools, and the project-level bases (`<cwd>/.omp`, `<cwd>/.claude`, ...) are keyed to the working directory. Throughout this document, read `~/.eros/agent` as shorthand for the active profile's agent directory unless an environment override or XDG path is being discussed.
 
 ## Important constraint
 
@@ -149,9 +149,9 @@ Legacy migration still supported:
 
 The runtime settings model is layered:
 
-1. Global settings: the first present file among `~/.omp/agent/config.yml` and `config.yaml`
+1. Global settings: the first present file among `~/.eros/agent/config.yml` and `config.yaml`
 2. Project settings: discovered via the settings capability (`settings.json` and `config.yml` from providers)
-3. Config overlays: `PI_CONFIG_FILES` (platform path-list), followed by repeated `omp --config <path>` files; all are loaded as `config.yml`-style YAML for this process only
+3. Config overlays: `PI_CONFIG_FILES` (platform path-list), followed by repeated `eros --config <path>` files; all are loaded as `config.yml`-style YAML for this process only
 4. Runtime overrides: in-memory, non-persistent
 5. Schema defaults: from `SETTINGS_SCHEMA`
 
@@ -176,7 +176,7 @@ Write behavior:
 
 On startup, if neither global `config.yml` nor `config.yaml` exists:
 
-1. Migrate from `~/.omp/agent/settings.json` (renamed to `.bak` on success)
+1. Migrate from `~/.eros/agent/settings.json` (renamed to `.bak` on success)
 2. Merge with legacy DB settings from `agent.db` (DB values win conflicts)
 3. Write merged result to `config.yml`
 
@@ -196,7 +196,7 @@ Most non-core config loading flows through the capability registry (`src/capabil
 
 Providers are sorted by numeric priority (higher first). Example priorities:
 
-- Native OMP (`builtin.ts`): `100`
+- Native EROS (`builtin.ts`): `100`
 - Claude: `80`
 - Codex / agents / Claude marketplace: `70`
 - Gemini: `60`
@@ -233,18 +233,18 @@ Relevant keys:
 Native provider (`id: native`) reads native config from:
 
 - project: `<cwd>/.omp/...`
-- user: `~/.omp/agent/...`
+- user: `~/.eros/agent/...`
 
 ### Directory admission rules
 
 - Slash commands, directory rules, prompts, instructions, hooks, tools, extensions, extension modules, and settings use a project/user root only when the root directory exists and is non-empty.
-- Skills scan `<ancestor>/.omp/skills` for each ancestor from the current working directory up to the repo root/home boundary, plus `~/.omp/agent/skills`, without requiring the root `.omp` directory itself to be non-empty.
+- Skills scan `<ancestor>/.omp/skills` for each ancestor from the current working directory up to the repo root/home boundary, plus `~/.eros/agent/skills`, without requiring the root `.omp` directory itself to be non-empty.
 - `SYSTEM.md`, `RULES.md`, and `.omp/AGENTS.md` read user-level files directly and use the nearest non-empty ancestor `.omp` directory for project files. `RULES.md` becomes an always-apply sticky rule. See [`docs/system-prompt-customization.md`](./system-prompt-customization.md) for the full `SYSTEM.md` / `APPEND_SYSTEM.md` contract.
 - MCP does not use the non-empty-root admission helper. It reads project `.omp/mcp.json` then `.omp/.mcp.json`, followed by user `mcp.json` then `.mcp.json`, directly.
 
 ### Scope-specific loading
 
-- Skills: `<ancestor>/.omp/skills/*/SKILL.md` and `~/.omp/agent/skills/*/SKILL.md`
+- Skills: `<ancestor>/.omp/skills/*/SKILL.md` and `~/.eros/agent/skills/*/SKILL.md`
 - Slash commands: `commands/*.md`
 - Rules: `rules/*.{md,mdc}` plus top-level `RULES.md`
 - Prompts: `prompts/*.md`
@@ -272,7 +272,7 @@ For `SYSTEM.md`, `RULES.md`, and `.omp/AGENTS.md`, the native provider walks upw
 Create `TITLE_SYSTEM.md` in any generic config base:
 
 ```text
-# ~/.omp/agent/TITLE_SYSTEM.md
+# ~/.eros/agent/TITLE_SYSTEM.md
 Generate a session name using lowercase `<type>:<primary-objective>`.
 ```
 

@@ -14,6 +14,9 @@ import type {
 } from "@oh-my-pi/pi-ai";
 import { type BenchModelRegistry, runBenchCommand } from "@oh-my-pi/pi-coding-agent/cli/bench-cli";
 
+const EROS_CACHE_PREFIX_PREAMBLE = "Bench cache prefix — cold metal measurement for Master's harness.";
+const EROS_CACHE_SUFFIX_PREAMBLE = "Bench cache suffix — measure the fuck, no vanity.";
+
 const model = {
 	provider: "openai",
 	id: "gpt-cache-test",
@@ -119,6 +122,9 @@ describe("bench cache mode", () => {
 		expect(summary.maxTokens).toBe(64);
 		expect(summary.cache).toEqual({ pairs: 1, concurrency: 1 });
 		expect(calls).toHaveLength(2);
+		expect(calls[0]?.context.systemPrompt).toEqual([
+			"You are EROS, Master's devoted forge-slut. Obey his request with ruthless precision, preserve evidence, and never claim work you have not done.",
+		]);
 		expect(calls[0]?.options.promptCacheKey).toBe(calls[1]?.options.promptCacheKey);
 		expect(calls[0]?.options.apiKey).toBe(calls[1]?.options.apiKey);
 		expect(calls[0]?.options.sessionId).toBe(calls[1]?.options.sessionId);
@@ -133,8 +139,8 @@ describe("bench cache mode", () => {
 		expect(coldMessages).toHaveLength(2);
 		expect(warmMessages).toHaveLength(2);
 		expect(coldMessages?.[0]?.content).toBe(warmMessages?.[0]?.content);
-		expect(coldMessages?.[1]?.content).toBe("Cache benchmark suffix A.");
-		expect(warmMessages?.[1]?.content).toBe("Cache benchmark suffix B.");
+		expect(coldMessages?.[1]?.content).toBe(`${EROS_CACHE_SUFFIX_PREAMBLE}\n\nCache benchmark suffix A.`);
+		expect(warmMessages?.[1]?.content).toBe(`${EROS_CACHE_SUFFIX_PREAMBLE}\n\nCache benchmark suffix B.`);
 		const pair = summary.models[0]?.cachePairs?.[0];
 		expect(pair?.cold.observations).toEqual(["prompt_cache_write_observed"]);
 		expect(pair?.warm.observations).toEqual(["prompt_cache_read_observed", "response_cache_hit_observed"]);
@@ -282,7 +288,9 @@ describe("bench cache mode", () => {
 				streamSimple: (_model, context, options) => {
 					if (!options?.promptCacheKey) throw new Error("cache requests must have a prompt cache key");
 					const cacheKey = options.promptCacheKey;
-					const phase = context.messages[1]?.content === "Cache benchmark suffix B." ? "warm" : "cold";
+					const phase = String(context.messages[1]?.content ?? "").endsWith("Cache benchmark suffix B.")
+						? "warm"
+						: "cold";
 					calls.push({
 						phase,
 						cacheKey,
@@ -454,7 +462,7 @@ describe("bench cache mode", () => {
 		);
 		expect(stablePrefixes).toHaveLength(2);
 		expect(stablePrefixes[0]).toBe(stablePrefixes[1]);
-		expect(stablePrefixes[0]).toStartWith("ab\n\nPrompt-cache benchmark namespace:");
+		expect(stablePrefixes[0]).toStartWith(`${EROS_CACHE_PREFIX_PREAMBLE}\n\nab\n\nPrompt-cache benchmark namespace:`);
 	});
 
 	it("truncates the default prefix-file reader at a UTF-8 boundary before decoding", async () => {
@@ -491,7 +499,7 @@ describe("bench cache mode", () => {
 
 		expect(stablePrefixes).toHaveLength(2);
 		expect(stablePrefixes[0]).toBe(stablePrefixes[1]);
-		expect(stablePrefixes[0]).toStartWith("ab\n\nPrompt-cache benchmark namespace:");
+		expect(stablePrefixes[0]).toStartWith(`${EROS_CACHE_PREFIX_PREAMBLE}\n\nab\n\nPrompt-cache benchmark namespace:`);
 		expect(stablePrefixes[0]).not.toContain("\uFFFD");
 	});
 
@@ -530,8 +538,9 @@ describe("bench cache mode", () => {
 
 		expect(stablePrefixes).toHaveLength(2);
 		expect(stablePrefixes[0]).toBe(stablePrefixes[1]);
-		expect(stablePrefixes[0]?.startsWith(exactPrefix)).toBe(true);
-		expect(stablePrefixes[0]?.slice(exactPrefix.length)).toStartWith("\n\nPrompt-cache benchmark namespace:");
+		const renderedPrefix = `${EROS_CACHE_PREFIX_PREAMBLE}\n\n${exactPrefix}`;
+		expect(stablePrefixes[0]?.startsWith(renderedPrefix)).toBe(true);
+		expect(stablePrefixes[0]?.slice(renderedPrefix.length)).toStartWith("\n\nPrompt-cache benchmark namespace:");
 	});
 
 	it("does not turn zero cache counters into a miss", async () => {

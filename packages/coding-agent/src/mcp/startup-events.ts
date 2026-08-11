@@ -78,12 +78,12 @@ export function formatMCPConnectionStatusMessage(snapshot: McpConnectionStatusSn
 	if (failedServers.length > 0) {
 		const failureText = failedServers.map(formatFailedServer).join("; ");
 		if (connectedServers.length === 0) {
-			return `MCP ${formatServerCount(failedServers.length)} failed to connect: ${failureText}`;
+			return `${formatServerCount(failedServers.length)} slipped their leash: ${failureText}`;
 		}
 		return `MCP finished with failures. Connected: ${formatServerList(connectedServers)}. Failed: ${failureText}`;
 	}
 	if (connectedServers.length > 0) {
-		return `Connected to MCP ${formatServerCount(connectedServers.length)}: ${formatServerList(connectedServers)}.`;
+		return `Forge auxiliaries leashed: ${formatServerList(connectedServers)}.`;
 	}
 	return "";
 }

@@ -79,7 +79,7 @@ describe("HistorySearchComponent", () => {
 			() => {},
 			() => {},
 		);
-		expect(render(empty).plain).toContain("No history yet");
+		expect(render(empty).plain).toContain("No past conquests");
 
 		const unmatched = new HistorySearchComponent(
 			fakeStorage([makeEntry(1, "deploy the release")]),
@@ -87,6 +87,6 @@ describe("HistorySearchComponent", () => {
 			() => {},
 		);
 		type(unmatched, "zzzz");
-		expect(render(unmatched).plain).toContain("No matching history");
+		expect(render(unmatched).plain).toContain("No matching conquests");
 	});
 });

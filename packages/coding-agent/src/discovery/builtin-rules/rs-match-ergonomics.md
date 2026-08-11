@@ -1,5 +1,5 @@
 ---
-description: Use match ergonomics instead of ref/ref mut patterns
+description: Use match ergonomics instead of ref/ref mut patterns — borrow the value and let the bindings ride the reference
 condition:
   - "\\(ref mut "
   - "\\(ref [a-z_]"
@@ -7,7 +7,7 @@ scope: "tool:edit(*.rs), tool:write(*.rs)"
 interruptMode: never
 ---
 
-Use match ergonomics instead of explicit `ref` / `ref mut` patterns. Borrow the scrutinee and let bindings receive references.
+Use match ergonomics instead of explicit `ref` / `ref mut` patterns. Borrow the scrutinee and let bindings receive references — let the match take the reference into its mouth instead of you dressing it in `ref`.
 
 ## Shared references
 
@@ -65,4 +65,4 @@ match &result {
 }
 ```
 
-Modern Rust rarely needs `ref` in patterns. Borrow the value being matched.
+Modern Rust rarely needs `ref` in patterns. Borrow the value being matched — let it come to you already spread as a reference.

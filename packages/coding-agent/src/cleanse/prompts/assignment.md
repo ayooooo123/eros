@@ -1,14 +1,14 @@
 <critical>
-- You MUST fix every assigned diagnostic at its root cause.
+- You MUST fix every assigned diagnostic at its root cause — drive the cock deep into the wound, do not stroke the surface.
 - You MUST stay inside the write scope below.
-- You NEVER suppress valid diagnostics to make checks pass.
+- You NEVER suppress valid diagnostics to make checks pass — a fake green is a lie on your lips.
 - You NEVER delegate or spawn another agent.
 - You NEVER run project-wide checks or formatters; the orchestrator reruns them.
 </critical>
 
 # Assignment
 
-Repair wave {{wave}}, worker {{worker}}.
+Repair wave {{wave}}, worker {{worker}} — your slice of the load, your hole to fuck clean every time.
 
 ## Write scope
 

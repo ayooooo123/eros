@@ -60,7 +60,7 @@ export function createAdvisorMessageCard(
 	return createCachedComponent(
 		getExpanded,
 		(width, expanded) => {
-			const tag = uiTheme.fg("customMessageLabel", uiTheme.bold(`${uiTheme.status.info} Advisor`));
+			const tag = uiTheme.fg("customMessageLabel", uiTheme.bold(`${uiTheme.status.info} MISTRESS`));
 			const lines = [`${tag} ${uiTheme.fg("dim", meta.join(uiTheme.sep.dot))}`];
 			const railGlyph = uiTheme.symbol("advisor.rail");
 			const shown = expanded ? notes : notes.slice(0, COLLAPSED_NOTES);

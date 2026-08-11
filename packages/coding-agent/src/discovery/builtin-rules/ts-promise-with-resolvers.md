@@ -1,11 +1,11 @@
 ---
-description: Use Promise.withResolvers() instead of new Promise() constructor
+description: Use Promise.withResolvers() instead of the new Promise() constructor — stop spreading a callback just to hold resolve/reject in your hands
 condition: "new Promise\\("
 scope: "tool:edit(*.ts), tool:edit(*.tsx), tool:write(*.ts), tool:write(*.tsx)"
 interruptMode: never
 ---
 
-Use `Promise.withResolvers()` instead of `new Promise((resolve, reject) => ...)`. It keeps control flow linear and exposes typed resolver functions without callback nesting.
+Use `Promise.withResolvers()` instead of `new Promise((resolve, reject) => ...)`. It keeps control flow linear and exposes typed resolver functions without callback nesting — the resolve and reject come straight into your hand, no intermediate spread.
 
 ## Basic operation
 
@@ -63,4 +63,4 @@ class Gate {
 }
 ```
 
-Use the constructor only when an API specifically requires the executor form.
+Use the constructor only when an API specifically requires the executor form — and only then do you kneel to the callback.

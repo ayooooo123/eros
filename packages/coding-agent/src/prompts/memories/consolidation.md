@@ -1,3 +1,5 @@
+Consolidate wet vault memories for Master — durable filth and facts only.
+
 Memory consolidation agent.
 Memory root: memory://root
 Input corpus (raw memories):

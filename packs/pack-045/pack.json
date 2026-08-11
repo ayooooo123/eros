@@ -1,0 +1,23 @@
+{
+  "id": "pack-045",
+  "name": "Intro 045 \u2014 barbarian muscle|black ooze le",
+  "file": "spiral-r04-pass001/r04-010-goon.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, cursed transformation mid-act, barbarian muscle, full body wide shot, skin cracking open, black ooze leaking, muscles bulging unnaturally, mid-thrust stance, partner blurred in motion, horror expression, veins popping, (blood:1.2), mixing with sweat, chaotic composition, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass001/fin-0071-05-fles.png",
+    "scifi-pass001/sci-0007-02-beas.png",
+    "final-pass003/fin-0023-02-corr.png",
+    "spiral-r04-pass001/r04-010-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

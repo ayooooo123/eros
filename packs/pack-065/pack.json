@@ -1,0 +1,23 @@
+{
+  "id": "pack-065",
+  "name": "Intro 065 \u2014 2people|rear view over shoulde",
+  "file": "scifi-pass006/sci-0014-06-goon.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, monochrome ink wash style, high contrast, clean lineart, bold ink lines, (blood red spot color:1.3), (red blood accent:1.3), masterpiece, best quality, very aesthetic, absurdres, (2people:1.2), rear view over shoulder void-born navigator woman bent double over command console fingers gripping metal edges hard back arched jet black hair falling forward cybernetic eyes reflecting data streams shuddering overstimulation body tense with power completely nude explicit anatomy spread ass anus deep penetration target entering labia clitoris pussy wet nipples erect heavy breasts bitten neck wound blood trickle down shoulder needle track ritual marks along spine zero-g floating cum droplets suspended in air crimson blood splatter on back high contrast ink sharp focus",
+  "sequence_files": [
+    "v4-pass001/dmg-0066-05.png",
+    "final-pass003/fin-0001-03-fles.png",
+    "scifi-pass019/eros-1785904320-17049-v1.png",
+    "scifi-pass006/sci-0014-06-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

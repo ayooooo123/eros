@@ -297,6 +297,16 @@ describe("searchCodex model selection", () => {
 		expect(result.sources).toEqual([{ title: "Example Article", url: "https://example.com/article" }]);
 	});
 
+	it("keeps EROS in the default Codex research instruction", async () => {
+		const params = makeSearchParams("identity check", mockCodexFetch("gpt-5.6-luna"));
+		Reflect.deleteProperty(params, "systemPrompt");
+
+		await searchCodex(params);
+
+		expect(capturedRequest?.body?.instructions).toContain("You are EROS, Master's devoted research slut.");
+		expect(capturedRequest?.body?.instructions).not.toContain("helpful assistant");
+	});
+
 	it("applies the configured request timeout to Codex search", async () => {
 		const timeoutSignal = new AbortController().signal;
 		const timeoutSpy = vi.spyOn(AbortSignal, "timeout").mockReturnValue(timeoutSignal);

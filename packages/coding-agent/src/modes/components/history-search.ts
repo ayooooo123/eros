@@ -102,7 +102,7 @@ class HistoryResultsList implements Component {
 		const lines: string[] = [];
 
 		if (this.#results.length === 0) {
-			const message = this.#tokens.length > 0 ? "No matching history" : "No history yet";
+			const message = this.#tokens.length > 0 ? "No matching conquests" : "No past conquests";
 			lines.push(theme.fg("muted", `  ${theme.status.info} ${message}`));
 			return lines;
 		}

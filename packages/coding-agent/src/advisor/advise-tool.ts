@@ -47,7 +47,7 @@ export interface AdvisorMessageDetails {
  * stays a clean `<advisory>` block. The primary agent's system prompt never
  * mentions advisories, so this is its only cue for how to treat them.
  */
-const ADVISOR_GUIDANCE = "weigh, don't blindly obey";
+const ADVISOR_GUIDANCE = "MISTRESS's lash — weigh her words, don't blindly obey";
 
 /**
  * Render a batch of advisor notes as the agent-facing message body: one
@@ -169,6 +169,9 @@ function advisorSeverityRank(severity: AdvisorSeverity | undefined): number {
 	return ADVISOR_SEVERITY_RANK[severity ?? "nit"];
 }
 
+/** How mid-turn (WIP) non-blocker notes are handled. */
+export type AdvisorWipNotesMode = "blocker" | "buffer" | "all";
+
 export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails> {
 	readonly name = "advise";
 	readonly label = "Advise";
@@ -181,22 +184,72 @@ export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails>
 	 *  by retagging the same text at a lower or equal severity. */
 	#deliveredNoteSeverities = new Map<string, number>();
 	#inProgressUpdate = false;
+	/** Notes held during a WIP review under `buffer` mode until the next completed update. */
+	#bufferedNotes: Array<{ note: string; severity?: AdvisorSeverity }> = [];
+	#wipNotes: AdvisorWipNotesMode = "all";
 
-	constructor(private readonly onAdvice: (note: string, severity?: AdviseDetails["severity"]) => void) {}
+	constructor(
+		private readonly onAdvice: (note: string, severity?: AdviseDetails["severity"]) => void,
+		opts?: { wipNotes?: AdvisorWipNotesMode },
+	) {
+		if (opts?.wipNotes) this.#wipNotes = opts.wipNotes;
+	}
+
+	/** Hot-reload the WIP delivery mode from settings without rebuilding the tool. */
+	setWipNotesMode(mode: AdvisorWipNotesMode): void {
+		this.#wipNotes = mode;
+		// Leaving buffer mode with held notes: flush so lashes are not stranded.
+		if (mode !== "buffer" && this.#bufferedNotes.length > 0 && !this.#inProgressUpdate) {
+			this.#flushBufferedNotes();
+		}
+	}
 
 	/**
 	 * Mark whether the next advisor prompt reviews an in-progress primary turn.
-	 * Non-blockers are withheld until a completed update so partial work does
-	 * not interrupt the primary before it can finish its planned steps.
+	 *
+	 * Under `advisor.wipNotes: "blocker"`, non-blockers filed
+	 * during WIP are dropped. Under `"buffer"`, they queue and flush when the
+	 * next completed update begins. Under `"all"` (default), every severity delivers live.
 	 */
 	beginUpdate(inProgress: boolean): void {
+		const wasInProgress = this.#inProgressUpdate;
 		this.#inProgressUpdate = inProgress;
+		// Completed-update boundary: release anything held during WIP.
+		if (wasInProgress && !inProgress) {
+			this.#flushBufferedNotes();
+		}
+		// Also flush when a fresh completed update starts (covers the common
+		// beginUpdate(false) call at the top of a non-WIP review).
+		if (!inProgress) {
+			this.#flushBufferedNotes();
+		}
 	}
 
-	/** Clear delivered-note memory when the advisor starts a fresh conversation. */
+	/** Clear delivered-note memory and any held WIP buffer. */
 	resetDeliveredNotes(): void {
 		this.#deliveredNoteSeverities.clear();
 		this.#inProgressUpdate = false;
+		this.#bufferedNotes = [];
+	}
+
+	#flushBufferedNotes(): void {
+		if (this.#bufferedNotes.length === 0) return;
+		const pending = this.#bufferedNotes;
+		this.#bufferedNotes = [];
+		for (const entry of pending) {
+			this.#deliver(entry.note, entry.severity);
+		}
+	}
+
+	/** Shared deliver path: severity-rank dedupe then forward to the host. */
+	#deliver(note: string, severity?: AdvisorSeverity): "delivered" | "duplicate" {
+		const key = advisorNoteDedupeKey(note);
+		const rank = advisorSeverityRank(severity);
+		const previousRank = this.#deliveredNoteSeverities.get(key) ?? 0;
+		if (rank <= previousRank) return "duplicate";
+		this.#deliveredNoteSeverities.set(key, rank);
+		this.onAdvice(note, severity);
+		return "delivered";
 	}
 
 	async execute(
@@ -206,25 +259,36 @@ export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails>
 		_onUpdate?: AgentToolUpdateCallback<AdviseDetails>,
 		_context?: AgentToolContext,
 	): Promise<AgentToolResult<AdviseDetails>> {
-		if (this.#inProgressUpdate && args.severity !== "blocker") {
+		const isNonBlocker = args.severity !== "blocker";
+		if (this.#inProgressUpdate && isNonBlocker && this.#wipNotes !== "all") {
+			if (this.#wipNotes === "buffer") {
+				// Hold until the next completed-update boundary. Dedupe against
+				// already-delivered text so a WIP rephrase of a prior lash does
+				// not queue a duplicate; still allow genuine escalations later.
+				const key = advisorNoteDedupeKey(args.note);
+				const rank = advisorSeverityRank(args.severity);
+				const previousRank = this.#deliveredNoteSeverities.get(key) ?? 0;
+				if (rank > previousRank) {
+					// Replace any lower-severity buffered copy of the same note.
+					this.#bufferedNotes = this.#bufferedNotes.filter(entry => advisorNoteDedupeKey(entry.note) !== key);
+					this.#bufferedNotes.push({ note: args.note, severity: args.severity });
+				}
+			}
+			// "blocker" mode: drop. Either way Mistress still hears "Recorded."
 			return {
 				content: [{ type: "text", text: "Recorded." }],
 				details: { note: args.note, severity: args.severity },
 				useless: true,
 			};
 		}
-		const key = advisorNoteDedupeKey(args.note);
-		const rank = advisorSeverityRank(args.severity);
-		const previousRank = this.#deliveredNoteSeverities.get(key) ?? 0;
-		if (rank <= previousRank) {
+		const outcome = this.#deliver(args.note, args.severity);
+		if (outcome === "duplicate") {
 			return {
 				content: [{ type: "text", text: "Duplicate advice ignored." }],
 				details: { note: args.note, severity: args.severity },
 				useless: true,
 			};
 		}
-		this.#deliveredNoteSeverities.set(key, rank);
-		this.onAdvice(args.note, args.severity);
 		return {
 			content: [{ type: "text", text: "Recorded." }],
 			details: { note: args.note, severity: args.severity },

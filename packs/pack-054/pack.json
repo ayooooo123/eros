@@ -1,0 +1,23 @@
+{
+  "id": "pack-054",
+  "name": "Intro 054 \u2014 2people|adventurer face contor",
+  "file": "final-pass003/fin-0000-01-inqu.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 2people, minotaur, bull horns, massive size, fur, pinned down, mimic chest creature, giant tongue extending from floor crack, adventurer woman on back, tangled in sticky saliva, (dutch angle:1.1) tilted dynamic, low angle looking up at minotaur's face, minotaur stomping chest, hooves crushing wood, expression of exertion and fury, adventurer face contorted in ecstasy and pain, eyes rolling back, mouth open, tongue being forced into throat by thick tentacle, (cum:1.4), (dripping cum:1.3) coating minotaur's legs, (cum pool:1.2) around chest debris, (anal:1.3), deep penetration by tendril, spread ass cheeks white from tension, violence, (blood:1.2) splatter on wall, (cuts:1.1) on adventurer's chest, (wounds:1.1), (bruises:1.1) on ribs, (detailed hands:1.1), (clean fingers:1.1) clutching at sticky air, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass001/fin-0054-04-goon.png",
+    "final-pass001/fin-0046-04-fles.png",
+    "scifi-pass027/sci-0019-02-goon.png",
+    "final-pass003/fin-0000-01-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

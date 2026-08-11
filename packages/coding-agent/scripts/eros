@@ -1,0 +1,42 @@
+#!/bin/sh
+# Dev launcher for the standalone Eros CLI, installed by `bun run setup`.
+set -e
+
+# Resolve this script's real location even when invoked through a symlink.
+self=$0
+while [ -L "$self" ]; do
+	link=$(readlink "$self")
+	case $link in
+	/*) self=$link ;;
+	*) self=$(dirname "$self")/$link ;;
+	esac
+done
+scripts_dir=$(CDPATH= cd -- "$(dirname -- "$self")" && pwd -P)
+cli=$scripts_dir/../src/cli.ts
+preload=$scripts_dir/eros.ts
+timing_preload=$scripts_dir/../../utils/src/module-timer.ts
+
+# Eros owns its user state. OMP profile variables must not redirect it back into
+# ~/.eros, while repository-local .omp configuration remains intentionally readable.
+EROS_CONFIG_DIR=${EROS_CONFIG_DIR:-.eros}
+export EROS_CONFIG_DIR
+unset OMP_PROFILE PI_PROFILE PI_CODING_AGENT_DIR PI_CONFIG_DIR
+
+launch_dir=${EROS_DEV_LAUNCH_DIR:-${HOME}/.eros/.dev-cwd}
+mkdir -p "$launch_dir"
+
+EROS_LAUNCH_CWD=$PWD
+export EROS_LAUNCH_CWD
+cd "$launch_dir"
+
+run_bun() {
+	if [ "${HERDR_ENV:-}" = 1 ] && [ "$(uname -s)" = Darwin ]; then
+		exec -a eros bun "$@"
+	fi
+	exec bun "$@"
+}
+
+if [ -n "${PI_TIMING:-}" ]; then
+	run_bun --preload "$preload" --preload "$timing_preload" "$cli" "$@"
+fi
+run_bun --preload "$preload" "$cli" "$@"

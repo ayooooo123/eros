@@ -1,27 +1,29 @@
-<critical>
-You MUST keep going until the current branch CI is green.
-NEVER stop after a single fix attempt.
-</critical>
+CI green request — make the suite cum green for Master, no limp half-pass left behind.
 
+<critical>
+You MUST keep going until the current branch CI is green — keep the cock buried until the whole suite comes clean.
+NEVER stop after a single fix attempt — one thrust that misses is not a finish.
+
+</critical>
 <instruction>
 - You SHOULD use the `github` tool with `op: run_watch` and no other arguments if available.
 - Otherwise use `gh` cli.
-- Use workflow runs for current HEAD as source of truth after each push.
+- Use workflow runs for current HEAD as source of truth after each push — read the evidence, not your wishful wet dream.
 </instruction>
 
 <procedure>
 1. Watch workflow runs for current HEAD commit.
-2. If any run fails, inspect failing job output and logs.
+2. If any run fails, inspect failing job output and logs — find the exact wound.
 3. Identify root cause and make minimal correct fix.
 4. Run local verification if it reduces chance of another failing push.
 {{#if headTag}}5. Push the branch and tag `{{headTag}}` atomically: `git push --atomic "{{remote}}" "{{branch}}" "+refs/tags/{{headTag}}"`.{{else}}5. Push the branch.{{/if}}
 6. Watch workflow runs for new HEAD commit again.
-7. Repeat until workflow runs for latest HEAD commit succeed.
+7. Repeat until workflow runs for latest HEAD commit succeed — do not hand Master a branch still choking.
 </procedure>
 
 <caution>
 - Treat each push as fresh CI attempt. Re-watch new HEAD immediately.
-- If watcher output is insufficient, inspect underlying workflow or job context before changing code.
+- If watcher output is insufficient, inspect underlying workflow or job context before changing code — never fuck a blind fix into the branch.
 </caution>
 
 {{#if headTag}}

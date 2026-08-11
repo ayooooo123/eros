@@ -1,0 +1,23 @@
+{
+  "id": "pack-004",
+  "name": "Intro 004 \u2014 2people|clawed hip marks from ",
+  "file": "scifi-pass028/sci-0012-02-beas.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, (1980s retro sci-fi magazine illustration:1.2), heavy film grain, vivid painterly colors, dramatic chiaroscuro, heavy metal comic style, vintage sci-fi cover art, masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), monochrome ink wash style, clean lineart, red blood spot color accent, 2people, completely nude, void-born navigator woman bound to desert tent pole by wrist cuffs and ankle chains in bright harsh light, proud degradation pose with head held high, clawed hip marks from creature grips visible on grey skin, zero-g floating droplets of spice oil and cum suspended in air around her body, frame from above looking down emphasizing vertical binding lines, exposed nipples hard against fabric tension, wet labia glistening under overhead glare.",
+  "sequence_files": [
+    "v4-pass001/dmg-0009-04.png",
+    "darkx-pass001/dark2-g0243-04.png",
+    "v4-pass001/dmg-0066-04.png",
+    "scifi-pass028/sci-0012-02-beas.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

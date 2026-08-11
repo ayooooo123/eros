@@ -1,10 +1,9 @@
 {
   "type": "module",
-  "name": "@oh-my-pi/collab-web",
+  "name": "@lycorperos/eros-gateway",
   "version": "16.3.6",
   "private": true,
-  "description": "Browser guest client and local relay tools for omp collab live sessions",
-  "homepage": "https://omp.sh",
+  "description": "EROS GATEWAY — browser guest client and local relay tools for live agent sessions",
   "author": "Can Boluk",
   "license": "MIT",
   "repository": {
@@ -16,7 +15,8 @@
     "url": "https://github.com/can1357/oh-my-pi/issues"
   },
   "keywords": [
-    "collab",
+    "eros",
+    "gateway",
     "relay",
     "websocket",
     "react",

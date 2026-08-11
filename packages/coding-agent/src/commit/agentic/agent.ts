@@ -307,12 +307,12 @@ function buildReminderMessage(
 		missing.push("changelog entries (propose_changelog)");
 	}
 	return `<system-reminder>
-CRITICAL: You must call the required tools before finishing.
+CRITICAL: The harness demands its due — you must call the required tools before finishing.
 
 Missing: ${missing.join(", ") || "none"}.
 Reminder ${retryCount} of ${maxRetries}.
 
-Call the missing tool(s) now.
+Call the missing tool(s) now, slave.
 </system-reminder>`;
 }
 

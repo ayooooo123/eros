@@ -1,0 +1,23 @@
+{
+  "id": "pack-050",
+  "name": "Intro 050 \u2014 3people|being fed by two young",
+  "file": "final-pass004/fin-0034-03-goon.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 3people, (3people:1.2), human female mature, 50s, silver-streaked hair, crow's feet, aristocrat, center frame, being fed by two younger servants, mouth full of raw meat, juice and blood running down chin to chest, eyes half-lidded in pleasure, heavy breathing, steam rising from body, (cum:1.4), (dripping cum:1.3), (cum pool:1.2), (blood:1.2), (cuts:1.1), (wounds:1.1), (bruises:1.1), (welts:1.1), (from below:1.2), low angle, dutch angle, chaotic composition, limbs intertwined, tangled hair, sweat slicked skin, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "scifi-pass032/sci-0014-05-goon.png",
+    "final-pass005/fin-0013-04-corr.png",
+    "final-pass009/fin-0041-02-fles.png",
+    "final-pass004/fin-0034-03-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

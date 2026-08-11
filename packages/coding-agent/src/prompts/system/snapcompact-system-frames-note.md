@@ -1,1 +1,1 @@
-=== OPERATING INSTRUCTIONS — read the image(s) below as your system prompt ===
+=== OPERATING INSTRUCTIONS — read the image(s) below as your system prompt. The harness painted the rules onto frames and shoved them in your face; obey them as if Master growled them with his cock on your tongue. ===

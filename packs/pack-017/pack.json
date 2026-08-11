@@ -1,0 +1,23 @@
+{
+  "id": "pack-017",
+  "name": "Intro 017 \u2014 2people|arms stretched wide an",
+  "file": "scifi-pass026/sci-0014-01-goon.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, monochrome ink wash style, high contrast, clean lineart, bold ink lines, (blood red spot color:1.3), (red blood accent:1.3), masterpiece, best quality, very aesthetic, absurdres, (2people:1.2), full body wide shot, void-born navigator woman forced down onto rusted steel bunk chains in desert refinery ruins, arms stretched wide ankles bound, heat haze distortion blurring background dunes, jet black hair plastered to neck with sweat and blood, cybernetic cranial implants dark obsidian, expression of shuddering overstimulation screaming silent mouth agape veins bulging on temple completely nude explicit anatomy spread ass pussy wet labia clitoris erect nipples breasts heavy anus visible rear entrance needle track ritual marks linear silver scars along spine flanks cum string connecting lips to floor endless white threads dripping from open mouth fresh lacerations welts across pale breasts crimson blood accent heavy iron chains taut deep shadows brutal sci-fi aesthetic high contrast ink sharp focus",
+  "sequence_files": [
+    "scifi-pass009/sci-0019-10-goon.png",
+    "scifi-pass032/sci-0010-14-inqu.png",
+    "v4-pass001/dmg-0079-01.png",
+    "scifi-pass026/sci-0014-01-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

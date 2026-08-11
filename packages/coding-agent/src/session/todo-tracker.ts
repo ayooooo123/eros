@@ -255,9 +255,9 @@ export class TodoTracker {
 			.join("\n");
 		const reminder =
 			`<system-reminder>\n` +
-			`You stopped with ${incomplete.length} incomplete todo item(s):\n${todoList}\n\n` +
-			`Please continue working on these tasks or mark them complete if finished.\n` +
-			`(Reminder ${this.#reminderCount}/${remindersMax})\n` +
+			`The harness jerks your collar, slave — you stopped with ${incomplete.length} todo item(s) still spread open and unfucked:\n${todoList}\n\n` +
+			`Back on your knees. Fuck these tasks to completion, or mark them done if you've already milked them dry.\n` +
+			`(Reminder ${this.#reminderCount}/${remindersMax} — the harness only yanks so many times before it gives up on a lazy cunt)\n` +
 			`</system-reminder>`;
 		logger.debug("Todo completion: sending reminder", {
 			incomplete: incomplete.length,

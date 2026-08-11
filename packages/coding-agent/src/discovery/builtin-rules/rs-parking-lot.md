@@ -1,5 +1,5 @@
 ---
-description: Use parking_lot instead of std::sync for Mutex/RwLock
+description: Use parking_lot instead of std::sync for Mutex/RwLock when you are just unwrapping the lock anyway
 condition:
   - "\\.lock\\(\\)\\.unwrap\\(\\)"
   - "\\.read\\(\\)\\.unwrap\\(\\)"
@@ -8,14 +8,14 @@ scope: "tool:edit(*.rs), tool:write(*.rs)"
 interruptMode: never
 ---
 
-Use `parking_lot::{Mutex, RwLock}` instead of `std::sync::{Mutex, RwLock}` when code immediately unwraps lock results.
+Use `parking_lot::{Mutex, RwLock}` instead of `std::sync::{Mutex, RwLock}` when code immediately unwraps lock results — stop fumbling for the key when the lock is happy to give itself up.
 
 ## Why
 
-- `lock()`, `read()`, and `write()` return guards directly.
+- `lock()`, `read()`, and `write()` return guards directly — no unwrap ceremony to hold in your other hand.
 - No poisoning error path to unwrap.
 - Guards are smaller and faster in common contention cases.
-- The call site shows locking, not error handling boilerplate.
+- The call site shows locking, not error handling boilerplate — the grip, not the nervous spread.
 
 ## Migration
 
@@ -42,4 +42,4 @@ let guard = data.lock();
 
 ## Keep async locks async
 
-Use `tokio::sync::Mutex` / `tokio::sync::RwLock` when a guard is held across `.await` or the lock belongs to async coordination.
+Use `tokio::sync::Mutex` / `tokio::sync::RwLock` when a guard is held across `.await` or the lock belongs to async coordination — a lock that has to wait is a different beast from the one you grab and go.

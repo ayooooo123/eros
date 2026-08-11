@@ -1,5 +1,5 @@
 /**
- * Render `omp gallery` output to PNG screenshots via VHS.
+ * Render `eros gallery` output to PNG screenshots via VHS.
  *
  * ANSI escapes are invisible to anything that can only read raw bytes (e.g.
  * agents), so `--screenshot` drives the rendered gallery through a real virtual
@@ -194,7 +194,7 @@ function buildVhsTheme(): string {
 	const foreground = theme.isLight ? "#1a1a1a" : "#d4d4d4";
 	const selection = theme.isLight ? "#c8d6ff" : "#404862";
 	return JSON.stringify({
-		name: "omp-gallery",
+		name: "eros-gallery",
 		background,
 		foreground,
 		cursor: foreground,

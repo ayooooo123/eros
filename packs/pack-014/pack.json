@@ -1,0 +1,23 @@
+{
+  "id": "pack-014",
+  "name": "Intro 014 \u2014 2people horned bounty hunter k",
+  "file": "scifi-pass010/sci-0010-14-inqu.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, (1980s retro sci-fi magazine illustration:1.2), heavy film grain, vivid painterly colors, dramatic chiaroscuro, heavy metal comic style, vintage sci-fi cover art, masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), greyscale ink wash style, POV looking down at subject from elevated position woman draped horizontally across holo table translucent light projecting through her body revealing internal structures beneath surface expression serene surrender eyes closed peaceful countenance lips parted soft smile lines prominent around mouth brow furrows smoothed out completely relaxed state hands resting loosely sides fingers curled inward gently excessive cum pooling on floor surrounding base of table thick white liquid spreading outward edges uneven organic form reflecting overhead lights, 2people horned bounty hunter kneeling beside table completely nude scarred build face tattoos intricate spiral patterns broken horn jagged tip pointing skyward right hand resting edge left arm crossed chest posture attentive caring explicit anatomy anus clitoris labia majora pussy clearly defined position fluid accumulation around legs cum on breasts numerous small globules adhering to nipples wet skin glistening subtly one neon sign glow:1.2 blue hue diffusing through glass casting soft illumination high contrast ink sharp lines defining forms clear composition intimate scale effective perspective rating_explicit",
+  "sequence_files": [
+    "spiral-r06-pass001/r06-035-inqu.png",
+    "v4-pass001/dmg-0014-00.png",
+    "scifi-pass007/sci-0007-02-beas.png",
+    "scifi-pass010/sci-0010-14-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

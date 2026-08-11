@@ -5,7 +5,7 @@
  * (see `cli/completion-gen.ts`), so it never drifts from the actual CLI surface.
  */
 
-import { APP_NAME, VERSION } from "@oh-my-pi/pi-utils";
+import { APP_COMMAND_NAME, VERSION } from "@oh-my-pi/pi-utils";
 import { Args, type CliConfig, Command, type CommandCtor } from "@oh-my-pi/pi-utils/cli";
 import { completionsHelp as commandHelp } from "../cli/command-help";
 import { buildSpec, generateCompletion, type Shell } from "../cli/completion-gen";
@@ -26,15 +26,15 @@ export default class Completions extends Command {
 	};
 
 	static examples = [
-		`# zsh — eval at startup, or write to a file in $fpath\n  eval "$(${APP_NAME} completions zsh)"`,
-		`# bash\n  eval "$(${APP_NAME} completions bash)"`,
-		`# fish\n  ${APP_NAME} completions fish > ~/.config/fish/completions/${APP_NAME}.fish`,
+		`# zsh — eval at startup, or write to a file in $fpath\n  eval "$(${APP_COMMAND_NAME} completions zsh)"`,
+		`# bash\n  eval "$(${APP_COMMAND_NAME} completions bash)"`,
+		`# fish\n  ${APP_COMMAND_NAME} completions fish > ~/.config/fish/completions/${APP_COMMAND_NAME}.fish`,
 	];
 
 	async run(): Promise<void> {
 		const shell = this.argv[0];
 		if (!isShell(shell)) {
-			process.stderr.write(`Usage: ${APP_NAME} completions <${SHELLS.join("|")}>\n`);
+			process.stderr.write(`Usage: ${APP_COMMAND_NAME} completions <${SHELLS.join("|")}>\n`);
 			process.exitCode = 1;
 			return;
 		}
@@ -50,7 +50,7 @@ export default class Completions extends Command {
 			aliasMap.set(entry.name, [...merged]);
 		}
 
-		const config: CliConfig = { bin: APP_NAME, version: VERSION, commands: map };
+		const config: CliConfig = { bin: APP_COMMAND_NAME, version: VERSION, commands: map };
 		const spec = buildSpec(config, ROOT_COMMAND, aliasMap);
 		await Bun.write(Bun.stdout, generateCompletion(shell, spec));
 	}

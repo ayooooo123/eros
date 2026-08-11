@@ -1,0 +1,23 @@
+{
+  "id": "pack-073",
+  "name": "Intro 073 \u2014 1man orc|2people|blood|blood-d",
+  "file": "v4-pass001/dmg-0036-03.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, (red blood:1.3), blood red accent, (2people:1.2), (POV:1.2), looking at viewer, blood-drunk countess, seductive cannibal feast, visceral cuts, (scars:1.1), claw marks on stomach, torn rags, completely nude, bare breasts, hardened nipples, pussy lips, open anus, blood-red spot color, (blood:1.2), (wounds:1.1), red dripping from lips to breasts, mouth covered in blood, 1man orc, (green skin:1.2), tusks, massive build, (detailed face:1.1), penis in anus, (penis in anus:1.1), testicles, huge erection, defiant glare, tears, heavy breathing, wall shackle restraint, iron chains, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass002/fin-0016-05-fles.png",
+    "final-pass006/fin-0019-01-goon.png",
+    "final-pass004/fin-0016-00-fles.png",
+    "v4-pass001/dmg-0036-03.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

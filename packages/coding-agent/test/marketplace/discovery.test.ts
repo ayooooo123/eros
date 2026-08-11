@@ -70,7 +70,7 @@ function makeEntry(installPath: string, version = "1.0.0"): InstalledPluginEntry
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
 let tmpHome: string;
-/** ~/.omp/plugins/installed_plugins.json inside tmpHome */
+/** ~/.eros/plugins/installed_plugins.json inside tmpHome */
 let ompRegistryPath: string;
 
 beforeEach(() => {

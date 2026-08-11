@@ -764,7 +764,7 @@ if (import.meta.main) {
 	const manager = new ManagerServer(jobsDir);
 	host.__metaharnessServer = manager;
 	const server = manager.start(port);
-	process.stdout.write(`metaharness listening on http://localhost:${server.port} (jobs: ${jobsDir})\n`);
+	process.stdout.write(`EROS metaharness is spread open at http://localhost:${server.port} (jobs: ${jobsDir})\n`);
 	// Process-wide hooks register once; `--hot` re-evals reuse them via `host`.
 	if (!host.__metaharnessHooks) {
 		host.__metaharnessHooks = true;

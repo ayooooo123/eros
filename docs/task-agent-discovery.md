@@ -47,11 +47,11 @@ Parsing comes from frontmatter via `parseAgentFields()` (`src/discovery/helpers.
 
 ## Role-backed custom agents
 
-OMP discovers user agents from `~/.omp/agent/agents/*.md` and project agents from `.omp/agents/*.md`.
+OMP discovers user agents from `~/.eros/agent/agents/*.md` and project agents from `.omp/agents/*.md`.
 
 Give the agent a role alias in frontmatter, then dispatch it by name. For model routing, task dispatch sets only `agent`; it does not set a worker model:
 
-`~/.omp/agent/agents/reviewer.md`:
+`~/.eros/agent/agents/reviewer.md`:
 
 ```md
 ---
@@ -63,7 +63,7 @@ model: "@review"
 Review the assigned change and report concrete findings.
 ```
 
-Set the role mapping in `~/.omp/agent/config.yml`:
+Set the role mapping in `~/.eros/agent/config.yml`:
 
 ```yaml
 modelRoles:

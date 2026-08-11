@@ -1,0 +1,23 @@
+{
+  "id": "pack-002",
+  "name": "Intro 002 \u2014 1woman|2people|back arched ove",
+  "file": "eros-pass001/eros-1785937765-34427-w000.png",
+  "lane": "scifi",
+  "prompt": "1woman, guild navigator, transparent breathing mask, neural sockets along spine, pale slender, back arched over reactor housing, cybernetics lab, (operation table spotlight:1.2), worshipful gaze, rope burns on wrists, cum string connecting bodies, detailed pussy, wide shot with environment dominant, test scene, completely nude, 2people",
+  "sequence_files": [
+    "v4-pass001/dmg-0097-03.png",
+    "spiral-r01-pass001/r01-025-corr.png",
+    "scifi-pass004/sci-0009-10-goon.png",
+    "eros-pass001/eros-1785937765-34427-w000.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

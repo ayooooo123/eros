@@ -3,7 +3,6 @@
   "name": "@oh-my-pi/pi-tui",
   "version": "17.2.12",
   "description": "Terminal User Interface library with differential rendering for efficient text-based applications",
-  "homepage": "https://omp.sh",
   "author": "Can Boluk",
   "contributors": [
     "Mario Zechner"

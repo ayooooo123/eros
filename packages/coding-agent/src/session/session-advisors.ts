@@ -357,6 +357,19 @@ export class SessionAdvisors {
 		return this.#buildAdvisorRuntime(seedToCurrent);
 	}
 
+	/**
+	 * Feeds the current transcript to every live advisor immediately, outside the
+	 * primary turn cadence — the on-demand `/mistress` consult. A consult note is
+	 * expected to already sit at the transcript tail so each advisor renders it as
+	 * a fresh delta; an idle transcript yields an empty delta and no advisor turn.
+	 */
+	consultNow(): void {
+		for (const advisor of this.#advisors) {
+			if (advisor.runtime.disposed) continue;
+			advisor.runtime.onTurnEnd();
+		}
+	}
+
 	/** Stops every advisor runtime and starts recorder shutdown. */
 	stopRuntime(): void {
 		this.#stopAdvisorRuntime();
@@ -688,7 +701,12 @@ export class SessionAdvisors {
 			} = descriptor;
 
 			const emissionGuard = new AdvisorEmissionGuard();
-			const adviseTool = new AdviseTool((note, severity) => this.#routeAdvice(advisorRef, note, severity));
+			const wipNotesRaw = this.#host.settings.get("advisor.wipNotes");
+			const wipNotes =
+				wipNotesRaw === "buffer" || wipNotesRaw === "all" || wipNotesRaw === "blocker" ? wipNotesRaw : "all";
+			const adviseTool = new AdviseTool((note, severity) => this.#routeAdvice(advisorRef, note, severity), {
+				wipNotes,
+			});
 
 			// `#advisorWatchdogPrompt` already carries WATCHDOG.md + YAML shared
 			// instructions; `config.instructions` adds this advisor's specialization.

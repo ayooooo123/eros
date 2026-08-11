@@ -1,0 +1,23 @@
+{
+  "id": "pack-007",
+  "name": "Intro 007 \u2014 1woman guild navigator|3people",
+  "file": "scifi-pass031/sci-0019-00-goon.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, (1980s retro sci-fi magazine illustration:1.2), heavy film grain, vivid painterly colors, dramatic chiaroscuro, heavy metal comic style, vintage sci-fi cover art, masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, clean lineart, bold ink lines, black ink, spot color, selective color, red blood accent, (3people:1.2), full body wide shot, 1woman guild navigator, transparent breathing mask neural sockets along spine, pale slender frame, bound to rusted desert tent pole on command bridge, obsessive devotion expression, gaze locked upward, marks=ancient red ink ritual circles painted across chest and thighs like navigation charts, fluids=(cum:1.4) thick clumps pooled on breasts, (dripping cum:1.3), white fluid against monochrome skin, frame three-quarter turn showing depth of bridge corridor hazard lights strobing background, completely nude exposed pussy swollen labia visible clitoris anus stretched open deep lacerations bleeding wounds bruises welts heavy chain collar chest chafe ring implant sockets inflamed bright red glow detailed hands gripping tent rope clean fingers strained expression ecstatic pain wide eyes mouth slightly agape drool trail force field void starfield behind transparent glass, high contrast ink sharp focus rating_explicit",
+  "sequence_files": [
+    "spiral-r06-pass001/r06-025-fles.png",
+    "scifi-pass033/sci-0009-00-goon.png",
+    "v4-pass001/dmg-0069-04.png",
+    "scifi-pass031/sci-0019-00-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

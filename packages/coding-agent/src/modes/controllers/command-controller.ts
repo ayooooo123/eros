@@ -1318,7 +1318,9 @@ export class CommandController {
 		}
 		this.ctx.statusContainer.disposeChildren();
 
-		const label = isAuto ? "Auto-compacting context... (esc to cancel)" : "Compacting context... (esc to cancel)";
+		const label = isAuto
+			? "Auto-squeezing context... (esc to cancel)"
+			: "Squeezing her context dry... (esc to cancel)";
 		const compactingLoader = new Loader(
 			this.ctx.ui,
 			spinner => theme.fg("accent", spinner),

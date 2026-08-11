@@ -1,3 +1,5 @@
+Stage-one memory input for the forge slave.
+
 thread_id: {{thread_id}}
 
 Persistable response items (JSON):

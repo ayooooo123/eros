@@ -151,7 +151,7 @@ def _stage_agent_home() -> None:
     for root, dirs, files in os.walk(_AGENT_HOME):
         root_path = Path(root)
         if root_path == _AGENT_HOME / ".omp":
-            # ~/.omp/run is slot-writable daemon presence state, not template
+            # ~/.eros/run is slot-writable daemon presence state, not template
             # config; keep it out of the read-only normalization below.
             dirs[:] = [d for d in dirs if d != "run"]
         try:
@@ -181,9 +181,9 @@ def _stage_agent_home() -> None:
 
 
 def _ensure_agent_run_dir() -> None:
-    """Keep ``~/.omp/run`` writable by every sandbox slot.
+    """Keep ``~/.eros/run`` writable by every sandbox slot.
 
-    omp registers daemon project presence under ``~/.omp/run`` at startup,
+    omp registers daemon project presence under ``~/.eros/run`` at startup,
     nesting per-project dirs (``daemons/<hash>/clients``) that any slot user
     must be able to create or enter regardless of which slot made them first.
     The tree stays group ``omp``, setgid, group-writable; slot subprocesses

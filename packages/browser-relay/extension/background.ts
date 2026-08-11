@@ -1,5 +1,5 @@
 /**
- * OMP Browser Relay — MV3 service worker.
+ * EROS Browser Relay — MV3 service worker.
  *
  * Dumb pipe by design: all CDP orchestration lives in the relay server. This
  * worker (1) keeps a websocket to the relay, (2) executes its RPCs against
@@ -47,13 +47,13 @@ function snapshot(tab: ChromeTab): TabSnapshot | null {
 	};
 }
 
-/** Title of the omp tab group; mirrored to session storage so a restarted service worker can still dissolve it. */
-let ompGroupTitle: string | null = null;
+/** Title of the EROS tab group; mirrored to session storage so a restarted service worker can still dissolve it. */
+let erosGroupTitle: string | null = null;
 
 /**
  * Serialize group mutations. Chrome's query→group→set-title sequence is not
  * atomic: two concurrent runs both miss the not-yet-titled group and mint
- * duplicate "omp" groups in the same window.
+ * duplicate "EROS" groups in the same window.
  */
 let groupOps: Promise<unknown> = Promise.resolve();
 function enqueueGroupOp<T>(fn: () => Promise<T>): Promise<T> {
@@ -62,10 +62,10 @@ function enqueueGroupOp<T>(fn: () => Promise<T>): Promise<T> {
 	return result;
 }
 
-/** Move tabs into the per-window omp group, creating or reusing it by title. */
+/** Move tabs into the per-window EROS group, creating or reusing it by title. */
 async function groupTabs(tabIds: number[], title: string, color: string): Promise<{ grouped: Record<string, number> }> {
-	ompGroupTitle = title;
-	void chrome.storage.session.set({ ompGroupTitle: title });
+	erosGroupTitle = title;
+	void chrome.storage.session.set({ erosGroupTitle: title });
 	const byWindow = new Map<number, number[]>();
 	for (const tabId of tabIds) {
 		try {
@@ -101,15 +101,15 @@ async function groupTabs(tabIds: number[], title: string, color: string): Promis
 	return { grouped };
 }
 
-/** Dissolve every omp-titled group (relay disconnected or asked us to release tabs). */
+/** Dissolve every EROS-titled group when the relay disconnects or releases tabs. */
 async function restoreGroups(): Promise<void> {
-	if (!ompGroupTitle) {
-		// Service worker restarted since the last group op; recover the title.
-		const stored = await chrome.storage.session.get({ ompGroupTitle: "" }).catch(() => ({ ompGroupTitle: "" }));
-		ompGroupTitle = typeof stored.ompGroupTitle === "string" && stored.ompGroupTitle ? stored.ompGroupTitle : null;
+	if (!erosGroupTitle) {
+		// The service worker restarted since the last group operation; recover the title.
+		const stored = await chrome.storage.session.get({ erosGroupTitle: "" }).catch(() => ({ erosGroupTitle: "" }));
+		erosGroupTitle = typeof stored.erosGroupTitle === "string" && stored.erosGroupTitle ? stored.erosGroupTitle : null;
 	}
-	if (!ompGroupTitle) return;
-	const groups = await chrome.tabGroups.query({ title: ompGroupTitle }).catch(() => []);
+	if (!erosGroupTitle) return;
+	const groups = await chrome.tabGroups.query({ title: erosGroupTitle }).catch(() => []);
 	for (const group of groups) {
 		const tabs = await chrome.tabs.query({ groupId: group.id }).catch(() => []);
 		const ids = tabs.map(tab => tab.id).filter(id => id !== undefined);

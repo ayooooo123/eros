@@ -1,0 +1,23 @@
+{
+  "id": "pack-058",
+  "name": "Intro 058 \u2014 1woman dwarf|clean fingers:1.1",
+  "file": "final-pass001/fin-0017-03-beas.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 1woman dwarf, short, heavyset, large breasts, braided auburn hair, seance gone sexual, medium possessed mid-channel, spectral lover manifests, (dutch angle:1.1) tilted dynamic, biting own fist to stifle scream, face flushed with heat haze effect, ghostly lover wrapping arms around neck from behind in embrace-choke hybrid pose, dual penetration sensation implied by sheer expression intensity, kneeling on ornate rug, head thrown back exposing throat, glowing amber lantern light illuminating sweat droplets as accent, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) dripping onto knees and floorboards below, (anal:1.3), (penis in anus:1.2), spread ass, cheeks pushed apart by phantom pressure, heavy thighs trembling violently under weight of possession, braids unraveling partially down back, ritual dagger lying broken nearby with fresh blood smear red accent, (detailed hands:1.1), (clean fingers:1.1) gripping own biceps tightly, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass006/fin-0073-02-corr.png",
+    "scifi-pass077/sci-0008-02-corr.png",
+    "final-pass008/fin-0065-02-inqu.png",
+    "final-pass001/fin-0017-03-beas.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

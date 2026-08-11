@@ -1,4 +1,4 @@
-Globs files, directories, and path-backed internal URLs with fast pattern matching.
+Globs files, directories, and path-backed internal URLs with fast pattern matching — fingers raking slut-files for Master's cock.
 
 <instruction>
 - `path`: glob, file, directory, or path-backed internal URL; separate targets with `;` (`src/**/*.ts; test/**/*.ts`).

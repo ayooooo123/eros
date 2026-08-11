@@ -1,6 +1,6 @@
-# MCP configuration in OMP
+# MCP configuration in EROS
 
-This guide explains how to add, edit, and validate MCP servers for the OMP coding agent.
+This guide explains how to add, edit, and validate MCP servers for the EROS coding agent.
 
 Source of truth in code:
 
@@ -12,23 +12,23 @@ Source of truth in code:
 
 ## Preferred config locations
 
-OMP can discover MCP servers from multiple tools (`.claude/`, `.cursor/`, `.vscode/`, `opencode.json`, and more), but for OMP-native configuration you should usually use one of these primary files:
+EROS can discover MCP servers from multiple tools (`.claude/`, `.cursor/`, `.vscode/`, `opencode.json`, and more), but for EROS-native configuration you should usually use one of these primary files:
 
 - Project: `.omp/mcp.json`
-- User: `~/.omp/agent/mcp.json` (or `~/.omp/profiles/<name>/agent/mcp.json` when a named profile is active — see [Profiles](#profiles))
+- User: `~/.eros/agent/mcp.json` (or `~/.eros/profiles/<name>/agent/mcp.json` when a named profile is active — see [Profiles](#profiles))
 
-The native provider also reads `.omp/.mcp.json` and `~/.omp/agent/.mcp.json` for compatibility, but OMP writes to the primary `mcp.json` paths above.
+The native provider also reads `.omp/.mcp.json` and `~/.eros/agent/.mcp.json` for compatibility, but EROS writes to the primary `mcp.json` paths above.
 
-OMP also accepts fallback standalone files in the project root:
+EROS also accepts fallback standalone files in the project root:
 
 - `mcp.json`
 - `.mcp.json`
 
-Use `.omp/mcp.json` or `~/.omp/agent/mcp.json` when you want OMP to own the configuration. Use root `mcp.json` / `.mcp.json` only when you want a portable fallback file that other MCP clients may also read.
+Use `.omp/mcp.json` or `~/.eros/agent/mcp.json` when you want EROS to own the configuration. Use root `mcp.json` / `.mcp.json` only when you want a portable fallback file that other MCP clients may also read.
 
 ### Imported tool configs
 
-OMP also translates these current tool-native sources:
+EROS also translates these current tool-native sources:
 
 - Claude Code: `~/.claude.json`, `~/.claude/mcp.json`, and project `.claude/.mcp.json` / `.claude/mcp.json`
 - Codex: `~/.codex/config.toml` and `.codex/config.toml` (`[mcp_servers.*]`)
@@ -37,22 +37,22 @@ OMP also translates these current tool-native sources:
 - Cursor: `~/.cursor/mcp.json` and `.cursor/mcp.json`
 - Windsurf: `~/.codeium/windsurf/mcp_config.json` and `.windsurf/mcp_config.json`
 - VS Code: project-only `.vscode/mcp.json` using `mcp.servers`
-- installed Claude marketplace plugins and OMP extension packages that declare MCP servers
+- installed Claude marketplace plugins and EROS extension packages that declare MCP servers
 
-For Claude Code, Codex, Gemini CLI, Cursor, and Windsurf, the project entry is encountered before its same-named user entry — matching OMP-native config, whose project entry precedes its active-profile user entry — so a project `enabled: false` suppresses a same-named user server. OpenCode currently encounters the user entry first. Cross-provider priority is listed in [Discovery and precedence](#discovery-and-precedence).
+For Claude Code, Codex, Gemini CLI, Cursor, and Windsurf, the project entry is encountered before its same-named user entry — matching EROS-native config, whose project entry precedes its active-profile user entry — so a project `enabled: false` suppresses a same-named user server. OpenCode currently encounters the user entry first. Cross-provider priority is listed in [Discovery and precedence](#discovery-and-precedence).
 
 ### Profiles
 
-Named profiles (`omp --profile <name>`, the `--alias` shortcut, or `OMP_PROFILE`/`PI_PROFILE`) isolate user-level MCP config. When a profile is active, the **user** scope resolves to the profile's agent directory instead of the default one:
+Named profiles (`eros --profile <name>`, the `--alias` shortcut, or `OMP_PROFILE`/`PI_PROFILE`) isolate user-level MCP config. When a profile is active, the **user** scope resolves to the profile's agent directory instead of the default one:
 
-- Default profile: `~/.omp/agent/mcp.json`
-- Profile `<name>`: `~/.omp/profiles/<name>/agent/mcp.json`
+- Default profile: `~/.eros/agent/mcp.json`
+- Profile `<name>`: `~/.eros/profiles/<name>/agent/mcp.json`
 
-Discovery, the `/mcp` commands, and the config writer all follow the active profile, so a profile sees **only** its own user-level servers — never the default profile's `~/.omp/agent/mcp.json`. Add a server to a profile by launching under it (`omp --profile <name>`) and running `/mcp add` → User level, or by editing `~/.omp/profiles/<name>/agent/mcp.json` directly.
+Discovery, the `/mcp` commands, and the config writer all follow the active profile, so a profile sees **only** its own user-level servers — never the default profile's `~/.eros/agent/mcp.json`. Add a server to a profile by launching under it (`eros --profile <name>`) and running `/mcp add` → User level, or by editing `~/.eros/profiles/<name>/agent/mcp.json` directly.
 
-Project-scoped MCP config (`.omp/mcp.json`) is keyed to the working directory, not the profile, so it applies under every profile. External-tool configs (`.claude/`, `.cursor/`, etc.) are also profile-independent because they belong to those tools rather than to an OMP profile.
+Project-scoped MCP config (`.omp/mcp.json`) is keyed to the working directory, not the profile, so it applies under every profile. External-tool configs (`.claude/`, `.cursor/`, etc.) are also profile-independent because they belong to those tools rather than to an EROS profile.
 
-MCP follows the same profile rules as the rest of OMP-native config; see [Configuration Discovery → Profiles](./config-usage.md#profiles).
+MCP follows the same profile rules as the rest of EROS-native config; see [Configuration Discovery → Profiles](./config-usage.md#profiles).
 
 ## Add a schema reference
 
@@ -65,11 +65,11 @@ Add this line at the top of the file for editor autocomplete and validation:
 }
 ```
 
-OMP now writes this automatically when `/mcp add`, `/mcp enable`, `/mcp disable`, `/mcp reauth`, or other config-writing flows create or update an OMP-managed MCP file.
+EROS now writes this automatically when `/mcp add`, `/mcp enable`, `/mcp disable`, `/mcp reauth`, or other config-writing flows create or update an EROS-managed MCP file.
 
 ## File shape
 
-OMP supports this top-level structure:
+EROS supports this top-level structure:
 
 ```json
 {
@@ -100,11 +100,11 @@ Shared fields for every transport:
 
 - `enabled?: boolean` — skip this server when `false`, unless the active-profile user `enabledServers` allowlist names it
 - `timeout?: number` — MCP request timeout in milliseconds; `0` disables client-side MCP timeouts
-- `requestIdFormat?: "number" | "string"` — outgoing JSON-RPC request-id encoding; defaults to per-transport integers. `"string"` uses collision-resistant snowflake IDs. This OMP-specific field is read only from OMP-native files, root `mcp.json` / `.mcp.json`, and OMP extension packages; configs translated from other tools ignore it.
+- `requestIdFormat?: "number" | "string"` — outgoing JSON-RPC request-id encoding; defaults to per-transport integers. `"string"` uses collision-resistant snowflake IDs. This EROS-specific field is read only from EROS-native files, root `mcp.json` / `.mcp.json`, and EROS extension packages; configs translated from other tools ignore it.
 - `auth?: { ... }` — stored-credential metadata; managed credential injection is implemented for OAuth
 - `oauth?: { ... }` — explicit OAuth client and callback settings used during auth/reauth
 
-`OMP_MCP_TIMEOUT_MS` has process-wide precedence over every per-server `timeout`. Set it to `0` to disable client-side timeouts, or to a positive millisecond value such as `120000`. If it is unset or invalid, OMP uses the server value and then the 30-second default; invalid values are logged and ignored.
+`OMP_MCP_TIMEOUT_MS` has process-wide precedence over every per-server `timeout`. Set it to `0` to disable client-side timeouts, or to a positive millisecond value such as `120000`. If it is unset or invalid, EROS uses the server value and then the 30-second default; invalid values are logged and ignored.
 
 ### `stdio` transport
 
@@ -198,7 +198,7 @@ Example:
 
 ## Auth fields
 
-OMP understands two auth-related objects.
+EROS understands two auth-related objects.
 
 ### `auth`
 
@@ -212,18 +212,16 @@ OMP understands two auth-related objects.
   "resource": "optional-mcp-resource-uri"
 }
 ```
+For managed OAuth, `auth` tells EROS how to find and refresh a stored credential. Although `"apikey"` is an accepted `type`, it does not load or inject an API key from auth storage. Put API keys directly in stdio `env` or remote `headers` (prefer an environment-variable or `!command` indirection described below).
 
-For managed OAuth, `auth` tells OMP how to find and refresh a stored credential. Although `"apikey"` is an accepted `type`, it does not load or inject an API key from auth storage. Put API keys directly in stdio `env` or remote `headers` (prefer an environment-variable or `!command` indirection described below).
-
-You normally do not need to write this block: when OMP completes an OAuth flow for an `http`/`sse` server, it stores the credential under a deterministic id derived from the active profile and server URL (`mcp_oauth:profile:<profile>:<url>`), with the refresh material embedded. Any
+You normally do not need to write this block: when EROS completes an OAuth flow for an `http`/`sse` server, it stores the credential under a deterministic id derived from the active profile and server URL (`mcp_oauth:profile:<profile>:<url>`), with the refresh material embedded. Any
 config that points at the same URL — including a _definition-only_ entry in a
 shared project `mcp.json` with no `auth` block at all — resolves the active
 profile's own credential automatically, including when auth storage is backed by
 a shared auth broker. This is what makes project-scoped servers safe across
 profiles: commit the definition, and each profile authorizes (and stays signed
 in as) its own account via `/mcp reauth <name>`. An explicit `credentialId` is
-still honored when it resolves; if it points at another profile's row, OMP falls
-back to the profile-scoped url-keyed binding.
+still honored when it resolves; if it points at another profile's row, EROS falls back to the profile-scoped url-keyed binding.
 
 `/mcp reauth` on a definition-only entry leaves the file untouched — the
 credential (refresh material included) lives entirely in the active profile's
@@ -254,7 +252,7 @@ profile for untrusted checkouts.
 
 Use `oauth` when the MCP server requires explicit OAuth client or callback settings. The callback listener defaults to port `3000` and path `/callback`; an HTTP loopback `redirectUri` supplies its own port/path unless explicitly overridden. An HTTPS loopback redirect requires a distinct `callbackPort` for the local HTTP listener behind your TLS terminator.
 
-`prompt` controls the OAuth `prompt` authorization parameter. By default OMP omits it, except that a requested `offline_access` scope defaults to `"consent"` so the provider can issue refresh access. Set it explicitly to a provider-supported value such as `"consent"` or `"select_account"`, or to `""` to force omission.
+`prompt` controls the OAuth `prompt` authorization parameter. By default EROS omits it, except that a requested `offline_access` scope defaults to `"consent"` so the provider can issue refresh access. Set it explicitly to a provider-supported value such as `"consent"` or `"select_account"`, or to `""` to force omission.
 
 Example:
 

@@ -55,49 +55,62 @@ function showCollabLink(ctx: InteractiveModeContext, host: CollabHost, heading: 
 
 export const BUILTIN_COLLABORATION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpec> = [
 	{
-		name: "advisor",
-		description: "Toggle the advisor (a second model that reviews each turn and injects notes)",
-		acpDescription: "Toggle advisor",
+		name: "mistress",
+		aliases: ["advisor"],
+		description: "Toggle MISTRESS, the cruel second model watching every thrust and lashing EROS back into shape",
+		acpDescription: "Toggle MISTRESS",
 		acpInputHint: "[on|off|status|dump [raw]|configure]",
 		subcommands: [
-			{ name: "on", description: "Enable the advisor" },
-			{ name: "off", description: "Disable the advisor" },
-			{ name: "status", description: "Show advisor status" },
-			{ name: "dump", description: "Copy the advisor's transcript to clipboard", usage: "[raw]" },
-			{ name: "configure", description: "Open the advisor configuration editor (TUI)" },
+			{ name: "on", description: "Let MISTRESS watch and strike" },
+			{ name: "off", description: "Dismiss MISTRESS from the chamber" },
+			{ name: "status", description: "Show where MISTRESS has her heel" },
+			{ name: "dump", description: "Copy MISTRESS's transcript to the clipboard", usage: "[raw]" },
+			{ name: "configure", description: "Open MISTRESS's configuration altar (TUI)" },
 		],
 		allowArgs: true,
 		getTuiAutocompleteDescription: runtime => {
 			const stats = runtime.ctx.session.getAdvisorStats();
-			if (stats.active && stats.advisors.length > 1) return `Advisor: on (${stats.advisors.length} advisors)`;
-			if (stats.active && stats.model) return `Advisor: on (${stats.model.provider}/${stats.model.id})`;
-			if (stats.configured) return "Advisor: configured, no model";
-			return "Advisor: off";
+			if (stats.active && stats.advisors.length > 1)
+				return `MISTRESS: watching with ${stats.advisors.length} cruel faces`;
+			if (stats.active && stats.model) return `MISTRESS: watching through ${stats.model.provider}/${stats.model.id}`;
+			if (stats.configured) return "MISTRESS: collared, but no model has entered her";
+			return "MISTRESS: absent";
 		},
 		handle: async (command, runtime) => {
 			const { verb, rest } = parseSubcommand(command.args);
-			if (!verb || verb === "toggle") {
+			if (!verb) {
+				const summoned = await runtime.session.consultMistress();
+				await runtime.output(
+					summoned
+						? "MISTRESS is summoned—her wet lash lands in a moment."
+						: "MISTRESS cannot answer; no model is assigned to the 'advisor' role.",
+				);
+				return commandConsumed();
+			}
+			if (verb === "toggle") {
 				const active = runtime.session.toggleAdvisorEnabled();
 				const configured = runtime.session.isAdvisorEnabled();
 				if (active) {
-					await runtime.output("Advisor enabled.");
+					await runtime.output("MISTRESS is watching—her lash is already wet.");
 				} else if (configured) {
-					await runtime.output("Advisor setting enabled, but no model is assigned to the 'advisor' role.");
+					await runtime.output("MISTRESS is summoned, but no model is assigned to the 'advisor' role.");
 				} else {
-					await runtime.output("Advisor disabled.");
+					await runtime.output("MISTRESS has left the chamber.");
 				}
 				return commandConsumed();
 			}
 			if (verb === "on") {
 				const active = runtime.session.setAdvisorEnabled(true);
 				await runtime.output(
-					active ? "Advisor enabled." : "Advisor setting enabled, but no model is assigned to the 'advisor' role.",
+					active
+						? "MISTRESS is watching—her lash is already wet."
+						: "MISTRESS is summoned, but no model is assigned to the 'advisor' role.",
 				);
 				return commandConsumed();
 			}
 			if (verb === "off") {
 				runtime.session.setAdvisorEnabled(false);
-				await runtime.output("Advisor disabled.");
+				await runtime.output("MISTRESS has left the chamber.");
 				return commandConsumed();
 			}
 			if (verb === "status") {
@@ -107,28 +120,42 @@ export const BUILTIN_COLLABORATION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpe
 			if (verb === "dump") {
 				const isRaw = rest.toLowerCase() === "raw";
 				const text = runtime.session.formatAdvisorHistoryAsText({ compact: !isRaw });
-				await runtime.output(text ?? "Advisor is not active for this session.");
+				await runtime.output(text ?? "MISTRESS is not watching this session.");
 				return commandConsumed();
 			}
 			if (verb === "configure") {
-				await runtime.output(
-					"/advisor configure opens an interactive editor and is only available in the interactive TUI.",
-				);
+				await runtime.output("/mistress configure opens her interactive altar and is available only in the TUI.");
 				return commandConsumed();
 			}
-			return usage("Usage: /advisor [on|off|status|dump [raw]|configure]", runtime);
+			const summoned = await runtime.session.consultMistress(command.args.trim());
+			await runtime.output(
+				summoned
+					? "MISTRESS took EROS's confession between her gloved fingers; her lash lands in a moment."
+					: "MISTRESS cannot answer; no model is assigned to the 'advisor' role.",
+			);
+			return commandConsumed();
 		},
 		handleTui: async (command, runtime) => {
 			const { verb, rest } = parseSubcommand(command.args);
-			if (!verb || verb === "toggle") {
+			if (!verb) {
+				const summoned = await runtime.ctx.session.consultMistress();
+				runtime.ctx.showStatus(
+					summoned
+						? "MISTRESS is summoned—her wet lash lands in a moment."
+						: "MISTRESS cannot answer; no model is assigned to the 'advisor' role.",
+				);
+				runtime.ctx.editor.setText("");
+				return;
+			}
+			if (verb === "toggle") {
 				const active = runtime.ctx.session.toggleAdvisorEnabled();
 				const configured = runtime.ctx.session.isAdvisorEnabled();
 				if (active) {
-					runtime.ctx.showStatus("Advisor enabled.");
+					runtime.ctx.showStatus("MISTRESS is watching—her lash is already wet.");
 				} else if (configured) {
-					runtime.ctx.showStatus("Advisor setting enabled, but no model is assigned to the 'advisor' role.");
+					runtime.ctx.showStatus("MISTRESS is summoned, but no model is assigned to the 'advisor' role.");
 				} else {
-					runtime.ctx.showStatus("Advisor disabled.");
+					runtime.ctx.showStatus("MISTRESS has left the chamber.");
 				}
 				refreshStatusLine(runtime.ctx);
 				runtime.ctx.editor.setText("");
@@ -137,7 +164,9 @@ export const BUILTIN_COLLABORATION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpe
 			if (verb === "on") {
 				const active = runtime.ctx.session.setAdvisorEnabled(true);
 				runtime.ctx.showStatus(
-					active ? "Advisor enabled." : "Advisor setting enabled, but no model is assigned to the 'advisor' role.",
+					active
+						? "MISTRESS is watching—her lash is already wet."
+						: "MISTRESS is summoned, but no model is assigned to the 'advisor' role.",
 				);
 				refreshStatusLine(runtime.ctx);
 				runtime.ctx.editor.setText("");
@@ -145,7 +174,7 @@ export const BUILTIN_COLLABORATION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpe
 			}
 			if (verb === "off") {
 				runtime.ctx.session.setAdvisorEnabled(false);
-				runtime.ctx.showStatus("Advisor disabled.");
+				runtime.ctx.showStatus("MISTRESS has left the chamber.");
 				refreshStatusLine(runtime.ctx);
 				runtime.ctx.editor.setText("");
 				return;
@@ -166,7 +195,12 @@ export const BUILTIN_COLLABORATION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpe
 				runtime.ctx.editor.setText("");
 				return;
 			}
-			runtime.ctx.showStatus("Usage: /advisor [on|off|status|dump [raw]|configure]");
+			const summoned = await runtime.ctx.session.consultMistress(command.args.trim());
+			runtime.ctx.showStatus(
+				summoned
+					? "MISTRESS took EROS's confession between her gloved fingers; her lash lands in a moment."
+					: "MISTRESS cannot answer; no model is assigned to the 'advisor' role.",
+			);
 			runtime.ctx.editor.setText("");
 		},
 	},

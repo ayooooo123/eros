@@ -1,3 +1,7 @@
+Carve only what Master would brand into a slave.
+
+Extract durable facts Master would want carved into a slave's memory. Specific. Exact. No fluff.
+
 Extract durable, long-term memory items from the user message below.
 
 Output ONE item per line as a short plain-text statement: no JSON, no bullets, no numbering, no field labels.

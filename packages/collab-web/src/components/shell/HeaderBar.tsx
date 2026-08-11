@@ -1,11 +1,10 @@
 import { LogOut, PanelRight } from "lucide-react";
 import type { ReactNode } from "react";
-import type { GuestSnapshot } from "../../lib/client";
+import type { GatewaySnapshot } from "../../lib/client";
 import { fmtPercent, shortenPath } from "../../lib/format";
-import { ThemeToggle } from "./ThemeToggle";
 
 export interface HeaderBarProps {
-	snapshot: GuestSnapshot;
+	snapshot: GatewaySnapshot;
 	subCount: number;
 	railOpen: boolean;
 	onToggleRail(): void;
@@ -28,6 +27,13 @@ export function HeaderBar({ snapshot, subCount, railOpen, onToggleRail, onLeave 
 	return (
 		<header className="sh-header">
 			<div className="sh-header-left">
+				<span className="sh-brand" title="EROS GATEWAY">
+					<span className="sh-brand-name">eros</span>
+					<span className="sh-brand-bar" aria-hidden="true">
+						▌
+					</span>
+					<span className="sh-brand-role">gateway</span>
+				</span>
 				<span className="sh-title" title={title}>
 					{title}
 				</span>
@@ -39,8 +45,8 @@ export function HeaderBar({ snapshot, subCount, railOpen, onToggleRail, onLeave 
 			</div>
 			<div className="sh-header-right">
 				{readOnly && (
-					<span className="sh-chip" title="you joined with a read-only link — watching only">
-						read-only
+					<span className="sh-chip" title="this key opens her to look at only — the host withheld the reins">
+						held back
 					</span>
 				)}
 				{state?.model && <span className="sh-chip sh-chip-meta">{state.model.name}</span>}
@@ -70,7 +76,6 @@ export function HeaderBar({ snapshot, subCount, railOpen, onToggleRail, onLeave 
 					</span>
 				)}
 				<span className={`sh-dot sh-dot-${phase}`} title={phase} />
-				<ThemeToggle />
 				<button
 					type="button"
 					className={railOpen ? "sh-btn sh-btn-icon sh-btn-on" : "sh-btn sh-btn-icon"}

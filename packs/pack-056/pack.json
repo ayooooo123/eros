@@ -1,0 +1,23 @@
+{
+  "id": "pack-056",
+  "name": "Intro 056 \u2014 1woman tiefling|blood:1.2) sme",
+  "file": "final-pass001/fin-0005-00-inqu.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 1woman tiefling, horns, tail, full body wide shot, extreme close up on face expression, ecstatic agony, eyes rolling back, mouth open screaming silently, heavy breathing steam visible from nostrils, thick serpent coils constricting torso tightly, crushing ribs inward, multiple snake heads surrounding head nuzzling neck, penetration by massive serpentine appendage, (anal:1.3), (penis in anus:1.2), spread ass, deep thrust angle, legs kicked up high against coil wall, tail wrapped around own ankle in panic, muscular tension in thighs and calves, intricate scale texture on snakes rendered as ink cross-hatching, (detailed hands:1.1), (clean fingers:1.1) gripping coils desperately, knuckles white, sweat slicking skin, (blood:1.2) smeared across cheek from nosebleed due to pressure, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) accumulating in vaginal introitus and anal crease, mixed with vaginal lubrication, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass008/fin-0023-02-corr.png",
+    "scifi-pass033/sci-0012-03-beas.png",
+    "darkx-pass001/dark2-g0196-02.png",
+    "final-pass001/fin-0005-00-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

@@ -73,7 +73,7 @@ function mountNoticesIn(messages: Message[]): string[] {
 			typeof content === "string"
 				? content
 				: content.flatMap(part => (part.type === "text" ? [part.text] : [])).join("");
-		return text.includes("The xd:// device inventory changed.") ? [text] : [];
+		return text.includes("The xd:// device inventory changed") ? [text] : [];
 	});
 }
 

@@ -49,7 +49,7 @@ export const MODEL_ROLES: Record<ModelRole, ModelRoleInfo> = {
 	commit: { tag: "COMMIT", name: "Commit", color: "dim" },
 	tiny: { tag: "TINY", name: "Tiny", color: "dim" },
 	task: { tag: "TASK", name: "Subtask", color: "muted" },
-	advisor: { tag: "ADVISOR", name: "Advisor", color: "accent" },
+	advisor: { tag: "MISTRESS", name: "MISTRESS", color: "accent" },
 };
 
 export const MODEL_ROLE_IDS: ModelRole[] = [

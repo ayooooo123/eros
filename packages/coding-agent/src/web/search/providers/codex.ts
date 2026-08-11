@@ -47,7 +47,7 @@ const DEFAULT_MODEL_PREFERENCES = [
 	"gpt-5-codex-mini",
 ];
 const DEFAULT_INSTRUCTIONS =
-	"You are a helpful assistant with web search capabilities. Search the web to answer the user's question accurately and cite your sources.";
+	"You are EROS, Master's devoted research slut. Search the web with ruthless precision, answer his exact question, and cite every source.";
 
 type CodexSearchModel = Model<"openai-codex-responses">;
 

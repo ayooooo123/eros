@@ -1,0 +1,23 @@
+{
+  "id": "pack-079",
+  "name": "Intro 079 \u2014 1man cybernetic enforcer glowi",
+  "file": "scifi-pass031/sci-0009-00-goon.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, (1980s retro sci-fi magazine illustration:1.2), heavy film grain, vivid painterly colors, dramatic chiaroscuro, heavy metal comic style, vintage sci-fi cover art, masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, clean lineart, bold ink lines, black ink, spot color, selective color, red blood accent, (2people:1.2), 1woman horned enforcer, cybernetic horns, muscular build, astride command chair, obsessive devotion expression, face flushed and gleaming with tears, rope burns chafing wrists raw skin, fluid dripping on chrome implants glistening under harsh light, dutch angle tilted dynamic composition, full body wide shot, completely nude, explicit anatomy: pussy, labia, clitoris, anus, stretched open; 1man cybernetic enforcer glowing veins thick neck implant gripping her hips, deep thrusting penetration (penis in anus), heavy chains rattling background, zero-g cargo hold ambient floating metal debris, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass005/fin-0005-00-inqu.png",
+    "final-pass002/fin-0052-03-beas.png",
+    "final-pass008/fin-0003-01-corr.png",
+    "scifi-pass031/sci-0009-00-goon.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

@@ -6,4 +6,4 @@ A recent edit misspelled the identifier `{{correct}}` as `{{misspelled}}` in {{#
 Affected line{{#when count ">" 1}}s{{/when}}: {{join affectedLines ", "}}.
 {{/if}}
 
-Replace every occurrence of `{{misspelled}}` with `{{correct}}`. Do not change anything else.
+Replace every occurrence of `{{misspelled}}` with `{{correct}}`. Do not change anything else — spread it once, name it right everywhere, leave the rest untouched.

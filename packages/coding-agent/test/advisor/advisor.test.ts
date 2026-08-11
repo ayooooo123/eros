@@ -428,9 +428,9 @@ describe("advisor", () => {
 			expect(onAdvice).toHaveBeenNthCalledWith(3, note, "blocker");
 		});
 
-		it("withholds non-blockers for in-progress updates without consuming dedupe state", async () => {
+		it("withholds non-blockers for in-progress updates without consuming dedupe state (blocker mode)", async () => {
 			const onAdvice = vi.fn();
-			const tool = new AdviseTool(onAdvice);
+			const tool = new AdviseTool(onAdvice, { wipNotes: "blocker" });
 			const note = "The result still needs a focused regression test.";
 
 			tool.beginUpdate(true);
@@ -442,9 +442,53 @@ describe("advisor", () => {
 			expect(onAdvice).toHaveBeenCalledWith("A destructive command is running.", "blocker");
 
 			tool.beginUpdate(false);
+			// Dropped WIP notes stay dropped — they do not flush on completed update.
+			expect(onAdvice).toHaveBeenCalledTimes(1);
 			await tool.execute("tc-4", { note, severity: "concern" });
 			expect(onAdvice).toHaveBeenCalledTimes(2);
 			expect(onAdvice).toHaveBeenLastCalledWith(note, "concern");
+		});
+
+		it("buffers WIP non-blockers and flushes them on the next completed update", async () => {
+			const onAdvice = vi.fn();
+			const tool = new AdviseTool(onAdvice, { wipNotes: "buffer" });
+			const note = "The result still needs a focused regression test.";
+
+			tool.beginUpdate(true);
+			await tool.execute("tc-1", { note, severity: "concern" });
+			await tool.execute("tc-2", { note: "Minor naming cleanup.", severity: "nit" });
+			await tool.execute("tc-3", { note: "A destructive command is running.", severity: "blocker" });
+			// Blocker delivered live; non-blockers held.
+			expect(onAdvice).toHaveBeenCalledTimes(1);
+			expect(onAdvice).toHaveBeenCalledWith("A destructive command is running.", "blocker");
+
+			tool.beginUpdate(false);
+			expect(onAdvice).toHaveBeenCalledTimes(3);
+			expect(onAdvice).toHaveBeenNthCalledWith(2, note, "concern");
+			expect(onAdvice).toHaveBeenNthCalledWith(3, "Minor naming cleanup.", "nit");
+		});
+
+		it("defaults to delivering all WIP severities mid-turn", async () => {
+			const onAdvice = vi.fn();
+			const tool = new AdviseTool(onAdvice); // default wipNotes: "all"
+			tool.beginUpdate(true);
+			await tool.execute("tc-1", { note: "Default concern.", severity: "concern" });
+			expect(onAdvice).toHaveBeenCalledWith("Default concern.", "concern");
+		});
+
+		it("delivers all WIP severities immediately when wipNotes is all", async () => {
+			const onAdvice = vi.fn();
+			const tool = new AdviseTool(onAdvice, { wipNotes: "all" });
+
+			tool.beginUpdate(true);
+			await tool.execute("tc-1", { note: "Concern mid-turn.", severity: "concern" });
+			await tool.execute("tc-2", { note: "Nit mid-turn.", severity: "nit" });
+			await tool.execute("tc-3", { note: "Blocker mid-turn.", severity: "blocker" });
+
+			expect(onAdvice).toHaveBeenCalledTimes(3);
+			expect(onAdvice).toHaveBeenNthCalledWith(1, "Concern mid-turn.", "concern");
+			expect(onAdvice).toHaveBeenNthCalledWith(2, "Nit mid-turn.", "nit");
+			expect(onAdvice).toHaveBeenNthCalledWith(3, "Blocker mid-turn.", "blocker");
 		});
 
 		it("validates parameters using ArkType", () => {
@@ -5115,7 +5159,7 @@ describe("advisor", () => {
 				uiTheme,
 			);
 			const text = strip(card.render(80));
-			expect(text).toContain("Advisor");
+			expect(text).toContain("MISTRESS");
 			expect(text).toContain("2 notes");
 			expect(text).toContain("blocker");
 			expect(text).toContain("deleting the wrong file");

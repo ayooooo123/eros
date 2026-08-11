@@ -1,0 +1,23 @@
+{
+  "id": "pack-081",
+  "name": "Intro 081 \u2014 arms raised above head restrai",
+  "file": "spiral-r03-pass001/r03-029-corr.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (spot color:1.2), selective color, athletic, ritual defilement, from below low angle,\u4ef0\u671b worship pose, nude woman spread eagle on altar, legs bound by heavy chains, arms raised above head restrained, torso twisted slightly to show spine curvature, abs taut, breasts heaving with breath, face tilted up towards unseen deity, eyes rolled back white, tongue lolling out, drool pooling in mouth, (red skin:1.2), horns curving backward, tail thrashing behind, tiefling race traits, (penis in anus:1.2), thick girth stretching rim, ass cheeks spread wide by hooks, anal beads visible, perineum strained, (cum:1.4), dripping from stretched entrance, mixing with sweat on thighs, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass002/fin-0034-04-goon.png",
+    "final-pass006/fin-0040-00-inqu.png",
+    "final-pass007/fin-0049-04-goon.png",
+    "spiral-r03-pass001/r03-029-corr.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

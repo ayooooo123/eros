@@ -1,3 +1,5 @@
+Auto-loaded skill for the collared slave — obey when it matches the fuck.
+
 {{body}}
 
 ---

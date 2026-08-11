@@ -32,6 +32,8 @@ import { embeddedAddon } from "./embedded-addon.js";
  */
 
 const SUPPORTED_PLATFORMS = ["linux-x64", "linux-arm64", "darwin-x64", "darwin-arm64", "win32-x64"];
+const USER_CONFIG_DIR_NAME = ".eros";
+const XDG_STORAGE_NAMESPACE = USER_CONFIG_DIR_NAME.slice(1);
 
 /**
  * Streaming startup marker, enabled by `PI_DEBUG_STARTUP`. Local copy of the
@@ -49,11 +51,18 @@ function startupMarker(text) {
 }
 
 function getNativesDir() {
-	const xdgDataHome = process.env.XDG_DATA_HOME;
-	if (xdgDataHome && fs.existsSync(path.join(xdgDataHome, "omp"))) {
-		return path.join(xdgDataHome, "omp", "natives");
+	const xdgCacheHome = process.env.XDG_CACHE_HOME;
+	if (
+		(process.platform === "linux" || process.platform === "darwin") &&
+		xdgCacheHome &&
+		fs.existsSync(path.join(xdgCacheHome, XDG_STORAGE_NAMESPACE))
+	) {
+		return path.join(xdgCacheHome, XDG_STORAGE_NAMESPACE, "natives");
 	}
-	return path.join(os.homedir(), ".omp", "natives");
+
+	const configuredRoot = process.env.EROS_CONFIG_DIR || process.env.PI_CONFIG_DIR;
+	const configRoot = path.join(os.homedir(), configuredRoot || USER_CONFIG_DIR_NAME);
+	return path.join(configRoot, "natives");
 }
 
 function resolveLeafPackageDir(platformTag) {
@@ -105,7 +114,7 @@ export function getAddonFilenames({ tag, arch, variant }) {
 
 /**
  * Decide whether the loader should mirror the package's `native/<filename>.node`
- * into the per-version cache directory (`~/.omp/natives/<version>/`) before loading.
+ * into the per-version cache directory (`~/.eros/natives/<version>/`) before loading.
  *
  * Windows-only safety net for `bun install -g` updates: when a previous `omp`
  * process is running, bun cannot overwrite the locked `.node` inside
@@ -760,7 +769,7 @@ export function initLoaderContext(overrides = {}) {
 	const versionedDir = path.join(nativesDir, packageVersion);
 	const userDataDir =
 		platform === "win32"
-			? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "omp")
+			? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "eros")
 			: path.join(os.homedir(), ".local", "bin");
 
 	const isCompiledBinary =

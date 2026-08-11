@@ -88,6 +88,9 @@ describe("Anthropic search request body", () => {
 		expect(userId.session_id).toBe("session-2295");
 		expect(userId.account_uuid).toBe(accountUuid);
 		expect(userId.device_id).toMatch(/^[0-9a-f]{64}$/);
+		const system = cap.body()?.system as Array<{ text?: string }> | undefined;
+		expect(system?.some(block => block.text?.includes("You are EROS, Master's devoted research slut."))).toBe(true);
+		expect(system?.some(block => block.text?.includes("helpful AI assistant"))).toBe(false);
 	});
 
 	it("maps site: to allowed_domains and strips the directive from the query", async () => {

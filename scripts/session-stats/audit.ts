@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Token-usage audit over the local omp session corpus (~/.omp/agent/sessions/).
+ * Token-usage audit over the local omp session corpus (~/.eros/agent/sessions/).
  *
  * Phase 1 (scan, no LLM): walks recent sessions, sums *real* per-request usage
  * (input/output/cacheRead/cacheWrite + nominal cost recorded in each assistant
@@ -23,7 +23,7 @@
  *   bun scripts/session-stats/audit.ts --json out.json
  *
  * Auth: resolves an API key for the classifier provider through omp's auth
- * storage (~/.omp/agent/agent.db: stored key, OAuth, or env var fallback).
+ * storage (~/.eros/agent/agent.db: stored key, OAuth, or env var fallback).
  */
 
 import type { Dirent } from "node:fs";
@@ -106,7 +106,7 @@ function parseCli(argv: string[]): CliOptions {
 	});
 	if (values.help) {
 		console.log(
-			`session audit — token usage analysis over ~/.omp/agent/sessions\n\n` +
+			`session audit — token usage analysis over ~/.eros/agent/sessions\n\n` +
 				`  --since <12h|3d|1w|1mo>  window by session mtime (default 1w)\n` +
 				`  --folder <substr>        only folders containing substring\n` +
 				`  --exclude <substr>       drop folders containing substring\n` +
@@ -117,7 +117,7 @@ function parseCli(argv: string[]): CliOptions {
 				`  --json <file>            write full machine-readable results\n` +
 				`  --digest-dir <dir>       dump per-session digests fed to the model\n` +
 				`  --session <substr>       classify sessions whose id/title matches (ignores --min-cost)\n` +
-				`  --no-cache               skip the verdict cache (~/.omp/stats-audit-cache.json)\n` +
+				`  --no-cache               skip the verdict cache (~/.eros/stats-audit-cache.json)\n` +
 				`  --no-llm                 scan + report only\n` +
 				`  --limit <n>              scan at most n session groups (debug)`,
 		);

@@ -103,7 +103,7 @@ describe("StatusLineComponent", () => {
 		);
 
 		const stripped = statusLine.getTopBorder(120).content.replace(/\x1b\[[0-9;]*m/g, "");
-		expect(stripped).toContain("$2.67 (sub) + $0.41 (adv)");
+		expect(stripped).toContain("$2.67 (sub) + $0.41 (mistress)");
 	});
 
 	it("omits advisor cost when the advisor has never been active", () => {
@@ -116,6 +116,6 @@ describe("StatusLineComponent", () => {
 
 		const stripped = statusLine.getTopBorder(120).content.replace(/\x1b\[[0-9;]*m/g, "");
 		expect(stripped).toContain("$2.67 (sub)");
-		expect(stripped).not.toContain("(adv)");
+		expect(stripped).not.toContain("(mistress)");
 	});
 });

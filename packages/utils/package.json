@@ -3,7 +3,6 @@
   "name": "@oh-my-pi/pi-utils",
   "version": "17.2.12",
   "description": "Shared utilities for pi packages",
-  "homepage": "https://omp.sh",
   "author": "Can Boluk",
   "license": "MIT",
   "repository": {

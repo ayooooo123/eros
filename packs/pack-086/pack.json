@@ -1,0 +1,23 @@
+{
+  "id": "pack-086",
+  "name": "Intro 086 \u2014 1woman|back arched excessively",
+  "file": "final-pass003/fin-0088-00-corr.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 1woman, dark elf, long silver hair, purple eyes, pointed ears, (muscular build:1.1), (hollow eyes:1.3), broken expression, screaming mouth, teeth bared, tongue lolling out, white foam at lips, (possessed body:1.2), spectral hands gripping her shoulders, translucent ghostly fingers digging into flesh, bruises on shoulders, welts from spiritual pressure, back arched excessively, spine visible through skin, (detailed face:1.3), tears streaming down cheeks, eyes rolled back showing whites, nostrils flaring, sweat dripping, (wet hair:1.2), clinging to forehead, (POV:1.2) looking at viewer, eye contact shattered, unseeing gaze, (cum:1.4), (dripping cum:1.3), (cum pool:1.2), pooling on floor beneath her, staining the seance circle runes, (blood:1.2), nosebleed dripping onto chin, mixing with tears, (wounds:1.1), small cuts on forearms from spectral nails, (detailed hands:1.1), (clean fingers:1.1), one hand clutching her own throat, the other gripping a burning candle, wax melting over knuckles, nude, naked body, shivering skin, goosebumps visible, room dark except for candlelight and ethereal glow, shadows lengthening across floorboards, ancient book open on table, pages fluttering wildly, incense smoke forming ghostly shapes in background, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass008/fin-0045-05-inqu.png",
+    "scifi-pass100/sci-0008-02-corr.png",
+    "final-pass008/fin-0058-01-corr.png",
+    "final-pass003/fin-0088-00-corr.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

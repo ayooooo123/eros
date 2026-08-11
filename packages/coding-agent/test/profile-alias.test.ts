@@ -7,7 +7,7 @@ import {
 } from "../src/cli/profile-alias";
 
 describe("profile alias installer", () => {
-	it("writes a bash-compatible function that forwards subcommands through omp", async () => {
+	it("writes a bash-compatible function that forwards subcommands through eros", async () => {
 		const files = new Map<string, string>();
 
 		const result = await installProfileAlias({
@@ -23,9 +23,9 @@ describe("profile alias installer", () => {
 		});
 
 		expect(result.configPath).toBe("/home/me/.bashrc");
-		expect(result.command).toBe("omp --profile=work");
+		expect(result.command).toBe("eros --profile=work");
 		expect(files.get("/home/me/.bashrc")).toContain("omp-work() {");
-		expect(files.get("/home/me/.bashrc")).toContain('command omp --profile=work "$@"');
+		expect(files.get("/home/me/.bashrc")).toContain('command eros --profile=work "$@"');
 	});
 
 	it("resolves source invocations without forcing the source checkout as cwd", () => {
@@ -123,8 +123,8 @@ describe("profile alias installer", () => {
 		});
 
 		const content = files.get("/Users/me/.config/fish/conf.d/omp-profiles.fish") ?? "";
-		expect(content).toContain("function omp-work --wraps omp");
-		expect(content).toContain("command omp --profile=work $argv");
+		expect(content).toContain("function omp-work --wraps eros");
+		expect(content).toContain("command eros --profile=work $argv");
 	});
 
 	it("installs the fish alias under XDG_CONFIG_HOME when set", async () => {
@@ -144,7 +144,7 @@ describe("profile alias installer", () => {
 		});
 
 		expect(result.configPath).toBe("/home/me/.dotfiles/config/fish/conf.d/omp-profiles.fish");
-		expect(files.get(result.configPath)).toContain("function omp-work --wraps omp");
+		expect(files.get(result.configPath)).toContain("function omp-work --wraps eros");
 	});
 
 	it("writes a PowerShell function because aliases cannot carry arguments", async () => {
@@ -165,7 +165,7 @@ describe("profile alias installer", () => {
 		const psConfigPath = path.join("C:\\Users\\me", "Documents", "PowerShell", "Microsoft.PowerShell_profile.ps1");
 		const content = files.get(psConfigPath) ?? "";
 		expect(content).toContain("function omp-work");
-		expect(content).toContain("& omp --profile=work @args");
+		expect(content).toContain("& eros --profile=work @args");
 	});
 
 	it("detects pwsh from PSModulePath when SHELL is unset on Windows", async () => {
@@ -189,7 +189,7 @@ describe("profile alias installer", () => {
 		expect(result.shell).toBe("pwsh");
 		const psConfigPath = path.join("C:\\Users\\me", "Documents", "PowerShell", "Microsoft.PowerShell_profile.ps1");
 		expect(result.configPath).toBe(psConfigPath);
-		expect(files.get(result.configPath)).toContain("& omp --profile=work @args");
+		expect(files.get(result.configPath)).toContain("& eros --profile=work @args");
 	});
 
 	it("selects Windows PowerShell when only WindowsPowerShell modules are present", async () => {
@@ -269,7 +269,7 @@ describe("profile alias installer", () => {
 		const content = files.get("/home/me/.zshrc") ?? "";
 		expect(content).toContain("before");
 		expect(content).toContain("after");
-		expect(content).toContain('command omp --profile=work "$@"');
+		expect(content).toContain('command eros --profile=work "$@"');
 		expect(content).not.toContain("--profile=old");
 	});
 
@@ -301,8 +301,8 @@ describe("profile alias installer", () => {
 		expect(files.get("/home/me/.zshrc")).toBe(original);
 	});
 
-	it("refuses to shadow the base omp command case-insensitively", async () => {
-		for (const aliasName of ["omp", "OMP"]) {
+	it("refuses to shadow the base eros command case-insensitively", async () => {
+		for (const aliasName of ["eros", "EROS"]) {
 			await expect(
 				installProfileAlias({
 					profile: "work",
@@ -373,7 +373,7 @@ describe("profile alias installer", () => {
 					files.set(filePath, content);
 				},
 			}),
-		).rejects.toThrow("Invalid OMP profile");
+		).rejects.toThrow("Invalid EROS profile");
 		expect(files.size).toBe(0);
 	});
 

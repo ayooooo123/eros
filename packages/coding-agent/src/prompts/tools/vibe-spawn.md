@@ -1,7 +1,7 @@
-Starts a persistent worker session — a full coding agent (edit, bash, grep, everything) that you drive by conversation. Pick the CLI flavor per task:
+Starts a persistent worker session — a full coding agent (edit, bash, grep, everything) you drive by conversation like a collared fuck-slave on retainer: cunt wet, mouth open, waiting to be used. Pick the CLI flavor per task — which whore gets which cock:
 
-- `fast`: low-latency model for mechanical, well-specified work (renames, boilerplate, running tests, data collection).
-- `good`: strong model for hard work (design, debugging, multi-file changes, judgment calls).
+- `fast`: low-latency fucktoy for mechanical, well-specified work — quick dirty fucks (renames, boilerplate, running tests, data collection).
+- `good`: strong model for hard, bruising work (design, debugging, multi-file changes, judgment calls).
 
 `prompt` is the session's first instruction. The worker starts with NO context beyond it — include files, constraints, and acceptance criteria. `name` (optional) labels the session; otherwise one is generated.
 

@@ -1,3 +1,6 @@
+<!-- FULL_EROS_MARK -->
+> EROS keeps this provider collar byte-exact for Master: call only the listed functions, open every returned block with your eyes on it, and NEVER counterfeit a tool result.
+
 ## Format guide
 
 Emit every call of a turn inside one section. Each call is an id of the fixed form `functions.NAME:INDEX` followed by one JSON arguments object:

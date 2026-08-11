@@ -93,6 +93,7 @@ class ThemeSceneController implements SetupSceneController {
 	subtitle = "Move through the list to preview; Enter saves the highlighted choice.";
 	#mode: ThemeMode = "curated";
 	#selectList: SelectList;
+	#selectItemCount = CURATED_ITEMS.length;
 	#loadingAllThemes = false;
 	#message: string | undefined;
 	#previewRequest = 0;
@@ -147,8 +148,7 @@ class ThemeSceneController implements SetupSceneController {
 		];
 		// The mock status-line/editor block is decorative — the wizard itself
 		// re-renders in the highlighted theme — so it yields to the list when
-		// it would squeeze the window below the six curated rows (+1 for the
-		// list's own search-status row).
+		// it would squeeze the available list rows.
 		const preview = renderThemePreview(width);
 		if (budget - lines.length - (preview.length + 1) - 1 >= CURATED_ITEMS.length) {
 			lines.push(...preview, "");
@@ -159,7 +159,14 @@ class ThemeSceneController implements SetupSceneController {
 		} else {
 			this.#listRowStart = lines.length;
 			if (maxLines !== undefined) {
-				this.#selectList.setMaxVisible(Math.max(1, Math.min(10, budget - lines.length - 1)));
+				const availableListRows = Math.max(1, budget - lines.length);
+				const maxVisibleRows = Math.min(10, availableListRows);
+				// SelectList appends its search-status row only when it overflows.
+				// Let an exact fit occupy every available row; reserve one only when
+				// an item would otherwise overflow, so six curated choices stay whole.
+				this.#selectList.setMaxVisible(
+					this.#selectItemCount <= maxVisibleRows ? maxVisibleRows : Math.max(1, maxVisibleRows - 1),
+				);
 			}
 			lines.push(...this.#selectList.render(width));
 		}
@@ -170,6 +177,7 @@ class ThemeSceneController implements SetupSceneController {
 	}
 
 	#createSelectList(items: readonly SelectItem[], selectedIndex: number): SelectList {
+		this.#selectItemCount = items.length;
 		const list = new SelectList(items, Math.min(10, Math.max(1, items.length)), getSelectListTheme());
 		list.setSelectedIndex(selectedIndex);
 		list.onSelectionChange = item => {

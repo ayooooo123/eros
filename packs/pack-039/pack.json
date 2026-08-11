@@ -1,0 +1,23 @@
+{
+  "id": "pack-039",
+  "name": "Intro 039 \u2014 2people|actually let's go full",
+  "file": "final-pass005/fin-0065-04-inqu.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), 2people, empress, gladiator, intimate close-up wide context, silver hair braided loosely, mature woman biting lip hard, teeth marks visible, eyes half-lidded seductive yet pained, gladiator whispering in ear, hand on throat gently choking, thumb pressing pulse point, sweat beading on collarbone, chest pressed together, nipple hardness implied through fabric tear or nudity suggestion if nude assumed but rule says no clothing tags on nudes so assume partial nudity or focus on upper body contact, actually let's go full nude torso connection, bare skin rubbing bare skin, friction burn redness, (blood:1.2), drop of blood from bitten lip falling onto his chest, sand grains between bodies, detailed muscle tension in neck and shoulders, moody shadows obscuring lower half except for hint of penetration, high contrast ink, sharp focus, rating_explicit, 48",
+  "sequence_files": [
+    "spiral-r08-pass001/r08-073-goon.png",
+    "final-pass002/fin-0005-01-inqu.png",
+    "spiral-r02-pass001/r02-083-inqu.png",
+    "final-pass005/fin-0065-04-inqu.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

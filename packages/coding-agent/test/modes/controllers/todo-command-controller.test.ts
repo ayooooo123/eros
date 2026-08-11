@@ -171,7 +171,7 @@ describe("TodoCommandController", () => {
 
 		expect(ctx.agent.appendMessage).toHaveBeenCalledTimes(1);
 		const text = reminderTextFrom(ctx);
-		expect(text).toContain("intentionally cleared the todo list");
+		expect(text).toContain("Master wiped the todo list clean on purpose.");
 		expect(text).toMatch(/Do NOT recreate/i);
 	});
 

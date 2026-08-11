@@ -29,7 +29,6 @@ export function exportSecurityBundleToSarif(bundle: SecurityScanBundle): Record<
 					driver: {
 						name: bundle.scan.producer.name,
 						version: bundle.scan.producer.version,
-						informationUri: "https://omp.sh",
 						rules: [...rules.values()].map(finding => ({
 							id: finding.ruleId,
 							name: finding.ruleId,

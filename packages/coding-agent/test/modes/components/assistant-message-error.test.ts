@@ -178,7 +178,7 @@ describe("AssistantMessageComponent streaming thinking pulse", () => {
 
 	// First frame of the expanding/shrinking ✻ pulse; deterministic right after updateContent.
 	const PULSE = "✻";
-	const THINKING_LABEL = "Thinking";
+	const THINKING_LABEL = "Squirming";
 	const THINKING_GLYPH_ONLY_LINE = /^[✻✼❉❊✺✹✸✶]\s*$/;
 
 	it("shows a described pulse in place of hidden reasoning while thinking streams", () => {

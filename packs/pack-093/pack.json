@@ -1,0 +1,23 @@
+{
+  "id": "pack-093",
+  "name": "Intro 093 \u2014 1man human|blood|blood drippin",
+  "file": "final-pass005/fin-0071-02-fles.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1) (2people:1.2) necro-gothic romance, crypt rendezvous, coffin lid sex, grave dust, candle skulls, 1man human, muscular build, chest pierced by thorned vines, thorns embedding in pectorals, blood dripping from wounds, face pressed into chest of partner, eyes closed tight, tears mixing with sweat, grimace of pain, (detailed hands:1.1), (clean fingers:1.1) tangled in partner's hair, gripping head, (anal:1.3), (penis in anus:1.2), spread ass, shallow penetration, teasing angle, pelvic tilt, glutes clenching, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) on inner thighs, sticky texture detail, (blood:1.2), (cuts:1.1), (wounds:1.1), vine stems black ink, leaves red accent, dark fantasy illustration, gothic arch background, stone texture detailed, skull candles low on wax, eerie atmosphere, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "scifi-pass289/sci-0008-02-corr.png",
+    "scifi-pass001/sci-0014-00-goon.png",
+    "scifi-pass066/sci-0008-00-corr.png",
+    "final-pass005/fin-0071-02-fles.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

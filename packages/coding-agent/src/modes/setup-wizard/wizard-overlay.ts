@@ -8,12 +8,11 @@ import {
 	truncateToWidth,
 	visibleWidth,
 } from "@oh-my-pi/pi-tui";
-import { APP_NAME } from "@oh-my-pi/pi-utils";
 import { gradientLogo, PI_LOGO } from "../components/welcome";
 import { theme } from "../theme/theme";
 import type { InteractiveModeContext } from "../types";
 import { renderSetupOutro, SETUP_OUTRO_MS } from "./scenes/outro";
-import { renderSetupSplash, SETUP_SPLASH_MS, SETUP_TICK_MS } from "./scenes/splash";
+import { getStartupSplashDuration, renderSetupSplash, SETUP_TICK_MS } from "./scenes/splash";
 import type { SetupScene, SetupSceneController, SetupSceneHost, SetupSceneResult } from "./scenes/types";
 
 type WizardPhase = "splash" | "transition" | "scene" | "outro" | "done";
@@ -178,7 +177,7 @@ export class SetupWizardComponent implements Component, OverlayFocusOwner {
 			case "transition": {
 				const elapsed = performance.now() - this.#phaseStartedAt;
 				const progress = Math.min(1, elapsed / SCENE_TRANSITION_MS);
-				const splash = renderSetupSplash(safeWidth, height, SETUP_SPLASH_MS + elapsed);
+				const splash = renderSetupSplash(safeWidth, height, getStartupSplashDuration() + elapsed);
 				const scene = this.#renderScene(safeWidth, height);
 				lines = dissolveFrames(splash, scene, progress, height);
 				break;
@@ -205,7 +204,7 @@ export class SetupWizardComponent implements Component, OverlayFocusOwner {
 		const header = [
 			"",
 			...logo.map(line => centerLine(line, width)),
-			centerLine(theme.bold(theme.fg("accent", APP_NAME)), width),
+			centerLine(theme.bold(theme.fg("accent", "LYCORPEROS")), width),
 			centerLine(theme.fg("muted", `Setup step ${this.#sceneIndex + 1} of ${this.scenes.length}`), width),
 			"",
 			indentLine(theme.bold(title), width, SCENE_MARGIN_X),
@@ -243,7 +242,7 @@ export class SetupWizardComponent implements Component, OverlayFocusOwner {
 		this.#timer = setInterval(() => {
 			if (this.#disposed) return;
 			const elapsed = performance.now() - this.#phaseStartedAt;
-			if (this.#phase === "splash" && elapsed >= SETUP_SPLASH_MS) {
+			if (this.#phase === "splash" && elapsed >= getStartupSplashDuration()) {
 				this.#beginScene();
 			} else if (this.#phase === "transition" && elapsed >= SCENE_TRANSITION_MS) {
 				this.#phase = "scene";

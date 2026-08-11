@@ -43,7 +43,18 @@ function shouldUseMacOSAppearanceFallback(): boolean {
 	return process.platform === "darwin" && !!Bun.env.ZELLIJ;
 }
 
+/** Explicit user override; profiles otherwise follow terminal appearance. */
+function shouldForceDarkTheme(): boolean {
+	const env = (Bun.env.OMP_FORCE_DARK || Bun.env.PI_FORCE_DARK || "").trim().toLowerCase();
+	return env === "1" || env === "true" || env === "yes" || env === "on";
+}
+
 function detectTerminalBackground(): "dark" | "light" {
+	// Explicit force-dark remains available, but profiles follow terminal appearance by default.
+	if (shouldForceDarkTheme()) {
+		return "dark";
+	}
+
 	// Tier 1: terminal-reported appearance from OSC 11 luminance.
 	if (!shouldUseMacOSAppearanceFallback() && terminalReportedAppearance) {
 		return terminalReportedAppearance;
@@ -122,7 +133,12 @@ export async function initTheme(
 ): Promise<void> {
 	autoDetectedTheme = true;
 	autoDarkTheme = darkTheme ?? "dark";
-	autoLightTheme = lightTheme ?? "light";
+	// Force-dark profiles (EROS) use the dark theme for both slots so light
+	// terminal detection cannot select a light palette.
+	autoLightTheme = shouldForceDarkTheme() ? (darkTheme ?? "dark") : (lightTheme ?? "light");
+	if (shouldForceDarkTheme()) {
+		terminalReportedAppearance = "dark";
+	}
 	const name = getDefaultTheme();
 	currentThemeName = name;
 	currentSymbolPresetOverride = symbolPreset;
@@ -229,6 +245,10 @@ export function onTerminalAppearanceChange(
 	mode: "dark" | "light",
 	event: ThemeChangeEvent = { ephemeral: true },
 ): void {
+	// EROS ignores light reports so Ghostty/system light cannot flip the TUI.
+	if (shouldForceDarkTheme()) {
+		mode = "dark";
+	}
 	if (terminalReportedAppearance === mode) return;
 	terminalReportedAppearance = mode;
 	reevaluateAutoTheme("terminal appearance", event);
@@ -416,6 +436,9 @@ function applyResolvedAutoTheme(resolved: string, debugLabel: string, event: The
  */
 function reevaluateAutoTheme(debugLabel: string, event: ThemeChangeEvent = {}, appearance?: "dark" | "light"): void {
 	if (!autoDetectedTheme) return;
+	if (shouldForceDarkTheme()) {
+		appearance = "dark";
+	}
 	const resolved =
 		appearance === undefined ? getDefaultTheme() : appearance === "dark" ? autoDarkTheme : autoLightTheme;
 	applyResolvedAutoTheme(resolved, debugLabel, event);

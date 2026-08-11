@@ -1,0 +1,23 @@
+{
+  "id": "pack-030",
+  "name": "Intro 030 \u2014 blood:1.2) droplets mid-air|cu",
+  "file": "final-pass004/fin-0087-02-beas.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1) 1woman human, (from above:1.2) high angle, open coffin lid background, shrouded figures in distance, ghoul warren atmosphere, corpse-stench haze effect, pallid flesh eater woman gripping shoulders from behind, emerald eyes reflecting light, red hair cascading down back like a curtain, freckles visible on pale skin, curvy body folded forward over knees, standing bend pose, hands grasping own calves, face buried in thighs, (anal:1.3), (penis in anus:1.2), spread ass, rear entry from behind view, hips thrusting back, impact lines indicating forceful thrusting, love bites on neck cluster, scratch trails on spine, (blood:1.2) droplets mid-air, (cuts:1.1) on forearms, (wounds:1.1) fresh and raw, (bruises:1.1) mottled texture, (welts:1.1) distinct lines, (cum:1.4), (dripping cum:1.3), (cum pool:1.2) overflowing from rear onto floorboards, mixing with blood splatters, expression of suppressed scream, mouth covered by hand, veins bulging in neck, ink wash texture heavy, dark fantasy illustration, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass004/fin-0032-04-beas.png",
+    "scifi-pass337/sci-0008-00-corr.png",
+    "final-pass007/fin-0034-04-goon.png",
+    "final-pass004/fin-0087-02-beas.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

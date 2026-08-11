@@ -1,0 +1,23 @@
+{
+  "id": "pack-075",
+  "name": "Intro 075 \u2014 1woman|blood|cum|cum pool:1.2)",
+  "file": "final-pass002/fin-0076-02-fles.png",
+  "lane": "fantasy",
+  "prompt": "masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, (clean lineart:1.2), bold ink lines, (black ink:1.2), (selective color:1.2), (vibrant accent colors:1.1), dark elf, (pointed ears:1.2), white hair, red eyes, muscular build, 1girl, captive, strapped to interrogation chair, leather straps tight, tension, sweating, side profile view, neck arched back, head thrown forward exposing throat, gag rope marks, deep bruising on throat, tongue lolling out, exhausted agony expression, wound map along spine exposed by arched pose, vertical incisions down back, (blood:1.2), (wounds:1.1), (bruises:1.1), (cum:1.4), (cum pool:1.2) collecting in chair groove and inner thighs, dripping cum on knees, explicit nudity, spine vertebrae visible through skin tension, (detailed hands:1.1) twisted in straps behind back, nails digging into palms, surgical exposure, body horror aesthetic, high contrast ink, sharp focus, rating_explicit",
+  "sequence_files": [
+    "final-pass008/fin-0080-01-inqu.png",
+    "final-pass006/fin-0017-05-beas.png",
+    "spiral-r03-pass001/r03-061-corr.png",
+    "final-pass002/fin-0076-02-fles.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

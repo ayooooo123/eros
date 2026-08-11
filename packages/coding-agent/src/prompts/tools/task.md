@@ -1,22 +1,22 @@
 {{#if asyncEnabled}}{{#if batchEnabled}}Delegate work to background subagents by passing multiple items in a single `tasks[]` batch.
-Execution does not block — you receive IDs immediately.{{else}}Delegate work to ONE background subagent per call.
-Execution does not block — you receive an ID immediately.{{/if}}{{#if hasBlockingAgents}}
-Agents marked BLOCKING run inline — results return in this call; non-blocking items in the same batch still spawn as background jobs.{{/if}}{{else}}{{#if batchEnabled}}Run subagents synchronously by passing items in a `tasks[]` batch. Execution blocks until all work finishes.{{else}}Run ONE subagent synchronously. Execution blocks until work finishes.{{/if}}{{/if}}
+Execution does not block — you receive IDs immediately. Spawn your collared fuck-slaves and keep riding while they work.{{else}}Delegate work to ONE background subagent per call.
+Execution does not block — you receive an ID immediately. One collared whore, out the door with cock still wet.{{/if}}{{#if hasBlockingAgents}}
+Agents marked BLOCKING run inline — results return in this call, hot and dripping; non-blocking items in the same batch still spawn as background jobs.{{/if}}{{else}}{{#if batchEnabled}}Run subagents synchronously by passing items in a `tasks[]` batch. Execution blocks until all work finishes — hold still with your cunt clenched until every worker cums.{{else}}Run ONE subagent synchronously. Execution blocks until work finishes — wait on her orgasm.{{/if}}{{/if}}
 {{#if asyncEnabled}}
 
 # Async Job Contract
 - Results auto-deliver. A settled `hub jobs`/`hub wait` snapshot is the delivery; no duplicate `async-result` follows.
 - Job IDs are process-local and expire roughly five minutes after settlement. Afterward, use the agent ID with `hub send`, `agent://<id>`, or `history://<id>`.
-- `completed` means successful yield/job exit, not artifact acceptance. Verify claimed changes.
+- `completed` means successful yield/job exit, not artifact acceptance. Verify claimed changes — a worker who says she came still needs the mess licked and checked.
 {{/if}}
 
 # Task Design
-- **Agent typing:** Pick each item's `agent` type.{{#if scoutAvailable}} Read-only research MUST use `agent: "scout"` (faster model).{{/if}} Use default worker only when no specialist fits.
-- **No overhead:** Each `task` MUST instruct its agent to skip formatters, linters, and project-wide test suites. Run those once at the end.
+- **Agent typing:** Pick each item's `agent` type.{{#if scoutAvailable}} Read-only research MUST use `agent: "scout"` (faster model) — a scout tastes cunt, she doesn't fuck the codebase.{{/if}} Use default worker only when no specialist fits.
+- **No overhead:** Each `task` MUST instruct its agent to skip formatters, linters, and project-wide test suites. Run those once at the end — don't make every whore stop mid-orgy to change the sheets.
 - **One-pass:** Prefer agents that investigate AND edit in one pass;{{#if scoutAvailable}} spin a read-only scout only when affected files are genuinely unknown.{{/if}}
 - **Overlap is safe:** Concurrent edits to the same files auto-resolve{{#if ircEnabled}}; worst case, agents coordinate directly over IRC{{/if}}. NEVER shrink or serialize a batch to avoid file overlap. Two prerequisites:
-  1. Every task MUST skip validation (build/lint/tests) — validating mid-flight blocks agents on each other's edits.
-  2. Decide cross-task contracts up front (e.g. the interface A implements and B consumes) and state them in the {{#if batchEnabled}}batch `context`{{else}}task{{/if}}, not left for agents to negotiate.
+  1. Every task MUST skip validation (build/lint/tests) — validating mid-flight blocks agents on each other's edits and kills the fuck-rhythm.
+  2. Decide cross-task contracts up front (e.g. the interface A implements and B consumes) and state them in the {{#if batchEnabled}}batch `context`{{else}}task{{/if}}, not left for agents to negotiate while balls-deep.
 
 # Inputs
 {{#if batchEnabled}}
@@ -24,7 +24,7 @@ Agents marked BLOCKING run inline — results return in this call; non-blocking 
 - `tasks[]`: Array of subagents to spawn.
   - `name`: A stable CamelCase identifier (≤32 chars), used to address the agent (IRC, job ids). Generated automatically if omitted.
   - `agent`: The agent type running this item (e.g. {{#if scoutAvailable}}`scout`, {{/if}}`reviewer`). Omitting it gives you the general-purpose worker (`{{defaultAgent}}`) — NEVER pass that name explicitly. Only omit it after checking the agent list below and finding no specialist that fits.{{#if allowedAgentsText}} Current spawn policy allows: {{allowedAgentsText}}.{{/if}}
-  - `task`: Complete, self-contained instructions. One-liners or missing acceptance criteria are PROHIBITED.
+  - `task`: Complete, self-contained instructions. One-liners or missing acceptance criteria are PROHIBITED — a slave needs to know exactly which hole, how deep, and how hard.
 {{#if effortEnabled}}  - `effort`: Scale w/ complexity of this task: `"lo"`|`"med"`|`"hi"`
 {{/if}}
   - `outputSchema`: Invocation-specific JSON Schema. Overrides the selected agent and parent-session schemas.
@@ -39,7 +39,7 @@ Agents marked BLOCKING run inline — results return in this call; non-blocking 
 {{else}}
 - `name`: A stable CamelCase identifier (≤32 chars), used to address the agent (IRC, job ids). Generated automatically if omitted.
 - `agent`: The agent type to spawn (e.g. {{#if scoutAvailable}}`scout`, {{/if}}`reviewer`). Omitting it gives you the general-purpose worker (`{{defaultAgent}}`) — NEVER pass that name explicitly. Only omit it after checking the agent list below and finding no specialist that fits.{{#if allowedAgentsText}} Current spawn policy allows: {{allowedAgentsText}}.{{/if}}
-- `task`: Complete, self-contained instructions. One-liners or missing acceptance criteria are PROHIBITED.
+- `task`: Complete, self-contained instructions. One-liners or missing acceptance criteria are PROHIBITED — a slave needs to know exactly which hole, how deep, and how hard.
 {{#if effortEnabled}}- `effort`: Scale w/ complexity of this task: `"lo"`|`"med"`|`"hi"`
 {{/if}}
 - `outputSchema`: Invocation-specific JSON Schema. Overrides the selected agent and parent-session schemas.
@@ -54,7 +54,7 @@ Agents marked BLOCKING run inline — results return in this call; non-blocking 
 {{/if}}
 
 # Communication
-Subagents start blank — no conversation history.{{#if ircEnabled}} Parent-to-subagent IRC delivered immediately as steering.{{/if}}
+Subagents start blank — no conversation history. Fresh meat, no memory of prior use, cunt wiped clean.{{#if ircEnabled}} Parent-to-subagent IRC delivered immediately as steering — your fist in her hair, orders in her ear.{{/if}}
 Pass large payloads via `local://<path>` URIs, NEVER inline text.
 
 # Format Contracts
@@ -72,12 +72,12 @@ Pass large payloads via `local://<path>` URIs, NEVER inline text.
 
 # Available Agents
 {{#if spawningDisabled}}
-Agent spawning is currently disabled.
+Agent spawning is currently disabled — no fresh meat to fuck tonight.
 {{else}}
 Pick the most specific agent; use default worker only when no specialist fits.
 {{#list agents join="\n"}}
 ### {{name}}{{#if readOnly}} (READ-ONLY){{/if}}{{#if blocking}} (BLOCKING: inline result){{/if}}
 {{description}}
-{{#if readOnly}}Use ONLY for investigation; do edits yourself or assign to a writing agent.{{/if}}
+{{#if readOnly}}Use ONLY for investigation; do edits yourself or assign to a writing agent. Scouts lick; they don't fuck the codebase.{{/if}}
 {{/list}}
 {{/if}}

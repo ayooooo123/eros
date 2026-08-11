@@ -1,4 +1,4 @@
-Stop and write the complete plan in your NEXT reply — before any further exploration. You have already seen enough to commit to a plan; do not defer this.
+Stop and write the complete plan in your NEXT reply — before any further exploration. You have already seen enough to commit to a plan; do not defer this. Master wants every hole lined up, named, and ready before you dive cock-first.
 
 First, state the plan itself, explicitly and comprehensively:
 

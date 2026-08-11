@@ -1,0 +1,23 @@
+{
+  "id": "pack-068",
+  "name": "Intro 068 \u2014 red blood accent astride comma",
+  "file": "scifi-pass004/sci-0013-06-corr.png",
+  "lane": "scifi",
+  "prompt": "masterpiece, best quality, absurdres, (1980s retro sci-fi magazine illustration:1.2), heavy film grain, vivid painterly colors, dramatic chiaroscuro, heavy metal comic style, vintage sci-fi cover art, masterpiece, best quality, very aesthetic, absurdres, (detailed face:1.1), (monochrome:1.2), (greyscale:1.1), ink wash style, clean lineart, bold ink lines, black ink, spot color, selective color, red blood accent astride command chair leather upholstered throne room backdrop completely nude pale void-born female with cybernetic implants arching back hips grinding down split lip bloody smile revealing teeth manic glee wild eyes darting around cum string connecting labia to viewer\u2019s perspective extending thick white cord ritual fluid lines tracing across chest and thighs marking territory new incisions weeping crimson dark veins pulsating under skin full body wide shot capturing entire posture power dynamic clear dominance over machinery. (full body:1.2) total inclusion rating_explicit",
+  "sequence_files": [
+    "final-pass002/fin-0033-01-corr.png",
+    "v4-pass001/dmg-0018-01.png",
+    "scifi-pass035/sci-0012-02-beas.png",
+    "scifi-pass004/sci-0013-06-corr.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}

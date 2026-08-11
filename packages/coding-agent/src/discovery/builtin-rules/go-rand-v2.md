@@ -1,11 +1,11 @@
 ---
-description: Prefer math/rand/v2 over the legacy math/rand package
+description: Prefer math/rand/v2 over the legacy math/rand package — ride the modern generator, stop humping the old global-seeded one
 condition: '"math/rand"'
 scope: "tool:edit(*.go), tool:write(*.go)"
 interruptMode: never
 ---
 
-Use `math/rand/v2` instead of the legacy `math/rand` package (stable since Go 1.22).
+Use `math/rand/v2` instead of the legacy `math/rand` package (stable since Go 1.22) — the old global seed is a filthy shared hole everyone sticks a finger in; `v2` is the clean, sperate stream.
 
 ## Why
 
@@ -37,5 +37,5 @@ f := rand.Float64()
 
 ## Keep math/rand only when
 
-- You need a reproducible stream from a fixed seed via the classic `NewSource`/`Seed` API that a caller already depends on.
-- Reach for `crypto/rand` instead when the values are security-sensitive — neither `math/rand` variant is cryptographically secure.
+- You need a reproducible stream from a fixed seed via the classic `NewSource`/`Seed` API that a caller already depends on — keep the old hand in that one hole only if you must.
+- Reach for `crypto/rand` instead when the values are security-sensitive — neither `math/rand` variant is cryptographically secure, and a fake-safe stream is still a fake-safe stream.

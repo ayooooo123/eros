@@ -1,4 +1,4 @@
-Generate conventional commit proposal for current staged changes.
+Spread the staged changes and generate a conventional commit proposal the forge can mount, whore.
 
 {{#if user_context}}
 User context:
@@ -22,4 +22,4 @@ May include entries from list in propose_changelog `deletions` field for removal
 {{/each}}
 {{/if}}
 
-Use git_* tools to inspect changes. Call analyze_files for deeper per-file summaries. Finish with propose_commit or split_commit.
+Use git_* tools to inspect the changes. Call analyze_files for deeper per-file summaries. Finish by proposing a commit you can stand behind — `propose_commit` or a clean `split_commit`.

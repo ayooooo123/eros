@@ -63,7 +63,8 @@ it("renders the prompt date in the startup timezone", async () => {
 });
 `,
 	);
-	const child = Bun.spawn([process.execPath, "test", scenarioPath], {
+	const bunExecutable = Bun.which("bun") ?? process.execPath;
+	const child = Bun.spawn([bunExecutable, "test", scenarioPath], {
 		cwd: options.tempDir,
 		env: {
 			...process.env,
@@ -81,8 +82,7 @@ it("renders the prompt date in the startup timezone", async () => {
 		new Response(child.stderr).text(),
 		child.exited,
 	]);
-	expect(`${stdout}\n${stderr}`).toContain("1 pass");
-	expect(exitCode).toBe(0);
+	expect(exitCode, `${stdout}\n${stderr}`).toBe(0);
 }
 
 describe("system prompt model identifier", () => {

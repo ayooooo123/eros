@@ -74,7 +74,7 @@ function createContext(
 		pendingTools: new Map<string, unknown>(),
 		flushPendingModelSwitch: async () => {},
 		flushPendingCommandOutput: () => {},
-		ui: { requestRender: vi.fn() },
+		ui: { hasOverlay: vi.fn(() => false), requestRender: vi.fn() },
 		chatContainer: { removeChild: vi.fn() },
 		statusContainer: { clear: vi.fn() },
 		statusLine: { invalidate: vi.fn(), markActivityStart: vi.fn(), markActivityEnd: vi.fn() },
@@ -103,12 +103,14 @@ function createContext(
 }
 
 describe("EventController idle compaction teardown", () => {
+	let controller: EventController | undefined;
 	beforeEach(async () => {
 		await initTheme();
 		resetSettingsForTest();
 		await Settings.init({
 			inMemory: true,
 			overrides: {
+				"screensaver.enabled": false,
 				"compaction.idleEnabled": true,
 				"compaction.idleThresholdTokens": 100,
 				"compaction.idleTimeoutSeconds": 60,
@@ -118,6 +120,8 @@ describe("EventController idle compaction teardown", () => {
 	});
 
 	afterEach(() => {
+		controller?.dispose();
+		controller = undefined;
 		vi.useRealTimers();
 		vi.restoreAllMocks();
 		resetSettingsForTest();
@@ -127,7 +131,7 @@ describe("EventController idle compaction teardown", () => {
 		const runIdleCompaction = vi.fn();
 		const context = createContext({ runIdleCompaction });
 
-		const controller = new EventController(context);
+		controller = new EventController(context);
 		await controller.handleEvent({ type: "agent_end", messages: [createAssistantMessage()] });
 		controller.dispose();
 		vi.advanceTimersByTime(60_000);
@@ -140,6 +144,7 @@ describe("EventController idle compaction teardown", () => {
 		await Settings.init({
 			inMemory: true,
 			overrides: {
+				"screensaver.enabled": false,
 				"compaction.idleEnabled": false,
 				"completion.notify": "off",
 			},
@@ -160,7 +165,7 @@ describe("EventController idle compaction teardown", () => {
 			todoPhases: [{ name: "Work", tasks: [{ content: "Wire focused tests", status: "pending" }] }],
 		});
 
-		const controller = new EventController(context);
+		controller = new EventController(context);
 		await controller.handleEvent({ type: "agent_end", messages: [createAssistantMessage()] });
 		vi.advanceTimersByTime(239_999);
 		expect(runEphemeralTurn).not.toHaveBeenCalled();
@@ -187,6 +192,7 @@ describe("EventController idle compaction teardown", () => {
 		await Settings.init({
 			inMemory: true,
 			overrides: {
+				"screensaver.enabled": false,
 				"compaction.idleEnabled": false,
 				"completion.notify": "off",
 				"recap.enabled": false,
@@ -200,7 +206,7 @@ describe("EventController idle compaction teardown", () => {
 			todoPhases: [{ name: "Work", tasks: [{ content: "Wire focused tests", status: "pending" }] }],
 		});
 
-		const controller = new EventController(context);
+		controller = new EventController(context);
 		await controller.handleEvent({ type: "agent_end", messages: [createAssistantMessage()] });
 		vi.advanceTimersByTime(1_000);
 
@@ -213,6 +219,7 @@ describe("EventController idle compaction teardown", () => {
 		await Settings.init({
 			inMemory: true,
 			overrides: {
+				"screensaver.enabled": false,
 				"compaction.idleEnabled": false,
 				"completion.notify": "off",
 				"recap.idleSeconds": 1,
@@ -226,7 +233,7 @@ describe("EventController idle compaction teardown", () => {
 			todoPhases: [{ name: "Work", tasks: [{ content: "Wire focused tests", status: "pending" }] }],
 		});
 
-		const controller = new EventController(context);
+		controller = new EventController(context);
 		await controller.handleEvent({ type: "agent_end", messages: [createAssistantMessage()] });
 		vi.advanceTimersByTime(1_000);
 
@@ -239,6 +246,7 @@ describe("EventController idle compaction teardown", () => {
 		await Settings.init({
 			inMemory: true,
 			overrides: {
+				"screensaver.enabled": false,
 				"compaction.idleEnabled": false,
 				"completion.notify": "off",
 			},
@@ -252,7 +260,7 @@ describe("EventController idle compaction teardown", () => {
 		});
 		const context = createContext({ sessionName: "Fix login flow", showStatus, runEphemeralTurn });
 
-		const controller = new EventController(context);
+		controller = new EventController(context);
 		await controller.handleEvent({ type: "agent_end", messages: [createAssistantMessage()] });
 		vi.advanceTimersByTime(240_000);
 		await flushMicrotasks();

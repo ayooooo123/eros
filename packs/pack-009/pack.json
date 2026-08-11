@@ -1,0 +1,23 @@
+{
+  "id": "pack-009",
+  "name": "Intro 009 \u2014 1woman|azure-skinned near-huma",
+  "file": "eros-pass001/eros-1785937767-67381-w003.png",
+  "lane": "scifi",
+  "prompt": "1woman, azure-skinned near-human, (blue skin:1.1), glowing red eyes, white hair, slender, draped across holo table, starship bridge, (red alert lighting:1.2), serene surrender, welts across breasts, fluid on chrome implants, detailed pussy, dutch angle tilted dynamic, test scene, trembling, completely nude, blood red accent",
+  "sequence_files": [
+    "scifi-pass006/sci-0010-14-inqu.png",
+    "scifi-pass034/sci-0010-14-inqu.png",
+    "scifi-pass012/sci-0012-02-beas.png",
+    "eros-pass001/eros-1785937767-67381-w003.png"
+  ],
+  "beats": {
+    "ember_ms": 550,
+    "braille_ms": 1900,
+    "morph_ms": 3100,
+    "bloom_ms": 1200,
+    "wide_ms": 1700,
+    "punch_ms": 1500
+  },
+  "wordmark": "E R O S",
+  "subtitle": "h a r n e s s e d"
+}
