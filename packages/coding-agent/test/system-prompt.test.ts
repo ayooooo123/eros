@@ -234,3 +234,30 @@ describe("non-Linux system prompt CPU model", () => {
 		}
 	});
 });
+
+describe("delegation policy", () => {
+	it("keeps single-layer delegation available but not preferred by default", async () => {
+		const result = await buildSystemPrompt({
+			contextFiles: [],
+			skills: [],
+			rules: [],
+			toolNames: ["task"],
+			eagerTasks: false,
+			taskBatch: false,
+			taskMaxConcurrency: 1,
+			workspaceTree: {
+				rootPath: import.meta.dir,
+				rendered: "",
+				truncated: false,
+				totalLines: 0,
+				agentsMdFiles: [],
+			},
+			activeRepoContext: null,
+		});
+		const rendered = result.systemPrompt.join("\n");
+		expect(rendered).toContain("Delegation is available but not preferred.");
+		expect(rendered).toContain("At most 1 subagent");
+		expect(rendered).not.toContain("Delegation is preferred here.");
+		expect(rendered).not.toContain("Do not spawn sub-agents unless");
+	});
+});

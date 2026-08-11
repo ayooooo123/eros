@@ -514,7 +514,7 @@ export const SETTINGS_SCHEMA = {
 	"advisor.wipNotes": {
 		type: "enum",
 		values: ["blocker", "buffer", "all"] as const,
-		default: "all",
+		default: "blocker",
 		ui: {
 			tab: "model",
 			group: "MISTRESS",
@@ -525,7 +525,7 @@ export const SETTINGS_SCHEMA = {
 				{
 					value: "blocker",
 					label: "Blockers only",
-					description: "Drop mid-turn nits/concerns. Only blockers interrupt live work.",
+					description: "Default. Drop mid-turn nits/concerns; only blockers interrupt live work.",
 				},
 				{
 					value: "buffer",
@@ -535,7 +535,7 @@ export const SETTINGS_SCHEMA = {
 				{
 					value: "all",
 					label: "Deliver all live",
-					description: "Deliver every lash immediately, including mid-turn concerns/nits. Default.",
+					description: "Deliver every lash immediately, including mid-turn concerns/nits.",
 				},
 			],
 			condition: "advisorEnabled",
@@ -4628,7 +4628,7 @@ export const SETTINGS_SCHEMA = {
 
 	"task.batch": {
 		type: "boolean",
-		default: true,
+		default: false,
 		ui: {
 			tab: "tasks",
 			group: "Subagents",
@@ -4652,7 +4652,7 @@ export const SETTINGS_SCHEMA = {
 
 	"task.maxConcurrency": {
 		type: "number",
-		default: 32,
+		default: 1,
 		ui: {
 			tab: "tasks",
 			group: "Subagents",
@@ -4685,7 +4685,7 @@ export const SETTINGS_SCHEMA = {
 
 	"task.maxRecursionDepth": {
 		type: "number",
-		default: 2,
+		default: 1,
 		ui: {
 			tab: "tasks",
 			group: "Subagents",
@@ -4734,7 +4734,7 @@ export const SETTINGS_SCHEMA = {
 
 	"task.softRequestBudget": {
 		type: "number",
-		default: 200,
+		default: 32,
 		ui: {
 			tab: "tasks",
 			group: "Subagents",
@@ -4743,9 +4743,10 @@ export const SETTINGS_SCHEMA = {
 				"Soft per-subagent request budget (assistant requests per run). Crossing it injects a wrap-up steering notice (see task.softRequestBudgetNotice); at 1.5x the budget the run is force-stopped and the agent must yield its partial findings. 0 disables the guard. Bundled scout/sonic agents cap out at a lower built-in budget, so a value below that cap still applies to them.",
 			options: [
 				{ value: "0", label: "Disabled" },
+				{ value: "32", label: "32 requests", description: "Default" },
 				{ value: "90", label: "90 requests" },
 				{ value: "150", label: "150 requests" },
-				{ value: "200", label: "200 requests", description: "Default" },
+				{ value: "200", label: "200 requests" },
 			],
 		},
 	},

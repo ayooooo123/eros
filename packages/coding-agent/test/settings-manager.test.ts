@@ -16,6 +16,7 @@ import {
 	Settings,
 } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { AgentStorage } from "@oh-my-pi/pi-coding-agent/session/agent-storage";
+import { canSpawnAtDepth } from "@oh-my-pi/pi-coding-agent/task/types";
 import { AUTO_IMAGE_PROVIDER_ORDER } from "@oh-my-pi/pi-coding-agent/tools/image-providers";
 import { SEARCH_PROVIDER_ORDER } from "@oh-my-pi/pi-coding-agent/web/search/types";
 import { getProjectAgentDir, TempDir } from "@oh-my-pi/pi-utils";
@@ -419,6 +420,24 @@ describe("Settings", () => {
 			const settings = Settings.isolated();
 			expect(settings.get("providers.maxInFlightRequests")).toEqual({});
 			expect(getDefault("providers.maxInFlightRequests")).toEqual({});
+		});
+
+		it("defaults to restrained advisor and optional delegation policy", () => {
+			const settings = Settings.isolated();
+			expect(settings.get("advisor.enabled")).toBe(false);
+			expect(settings.get("advisor.immuneTurns")).toBe(3);
+			expect(settings.get("advisor.wipNotes")).toBe("blocker");
+			expect(settings.get("advisor.subagents")).toBe(false);
+			expect(settings.get("advisor.syncBacklog")).toBe("off");
+			expect(settings.get("task.eager")).toBe("default");
+			expect(settings.get("task.batch")).toBe(false);
+			expect(settings.get("task.enableEffort")).toBe(false);
+			expect(settings.get("task.enableLsp")).toBe(false);
+			expect(settings.get("task.maxConcurrency")).toBe(1);
+			expect(settings.get("task.maxRecursionDepth")).toBe(1);
+			expect(settings.get("task.softRequestBudget")).toBe(32);
+			expect(canSpawnAtDepth(settings.get("task.maxRecursionDepth"), 0)).toBe(true);
+			expect(canSpawnAtDepth(settings.get("task.maxRecursionDepth"), 1)).toBe(false);
 		});
 
 		it("exposes all tool calling mode options", () => {

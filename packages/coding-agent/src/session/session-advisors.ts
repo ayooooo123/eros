@@ -703,7 +703,7 @@ export class SessionAdvisors {
 			const emissionGuard = new AdvisorEmissionGuard();
 			const wipNotesRaw = this.#host.settings.get("advisor.wipNotes");
 			const wipNotes =
-				wipNotesRaw === "buffer" || wipNotesRaw === "all" || wipNotesRaw === "blocker" ? wipNotesRaw : "all";
+				wipNotesRaw === "buffer" || wipNotesRaw === "all" || wipNotesRaw === "blocker" ? wipNotesRaw : "blocker";
 			const adviseTool = new AdviseTool((note, severity) => this.#routeAdvice(advisorRef, note, severity), {
 				wipNotes,
 			});

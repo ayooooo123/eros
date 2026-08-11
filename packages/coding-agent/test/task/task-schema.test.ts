@@ -8,8 +8,8 @@ import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
 // Contract: the single-spawn schema (`task.batch: false`; the exported
 // `taskSchema` instance) carries no batch fields while accepting a caller
 // `model`, `outputSchema`, and its validation mode. The batch shape (`tasks[]` + shared
-// `context`) is gated by the `task.batch` setting (default on, covered by
-// test/task/task-batch.test.ts).
+// `context`) remains available behind the non-default `task.batch: true` setting
+// (covered by test/task/task-batch.test.ts).
 
 describe("task schema (single-spawn)", () => {
 	it("accepts {agent, task}", () => {

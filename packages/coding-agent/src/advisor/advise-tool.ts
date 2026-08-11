@@ -186,7 +186,7 @@ export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails>
 	#inProgressUpdate = false;
 	/** Notes held during a WIP review under `buffer` mode until the next completed update. */
 	#bufferedNotes: Array<{ note: string; severity?: AdvisorSeverity }> = [];
-	#wipNotes: AdvisorWipNotesMode = "all";
+	#wipNotes: AdvisorWipNotesMode = "blocker";
 
 	constructor(
 		private readonly onAdvice: (note: string, severity?: AdviseDetails["severity"]) => void,
@@ -207,9 +207,9 @@ export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails>
 	/**
 	 * Mark whether the next advisor prompt reviews an in-progress primary turn.
 	 *
-	 * Under `advisor.wipNotes: "blocker"`, non-blockers filed
+	 * Under `advisor.wipNotes: "blocker"` (default), non-blockers filed
 	 * during WIP are dropped. Under `"buffer"`, they queue and flush when the
-	 * next completed update begins. Under `"all"` (default), every severity delivers live.
+	 * next completed update begins. Under `"all"`, every severity delivers live.
 	 */
 	beginUpdate(inProgress: boolean): void {
 		const wasInProgress = this.#inProgressUpdate;

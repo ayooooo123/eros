@@ -468,12 +468,14 @@ describe("advisor", () => {
 			expect(onAdvice).toHaveBeenNthCalledWith(3, "Minor naming cleanup.", "nit");
 		});
 
-		it("defaults to delivering all WIP severities mid-turn", async () => {
+		it("defaults to delivering only blockers mid-turn", async () => {
 			const onAdvice = vi.fn();
-			const tool = new AdviseTool(onAdvice); // default wipNotes: "all"
+			const tool = new AdviseTool(onAdvice);
 			tool.beginUpdate(true);
 			await tool.execute("tc-1", { note: "Default concern.", severity: "concern" });
-			expect(onAdvice).toHaveBeenCalledWith("Default concern.", "concern");
+			await tool.execute("tc-2", { note: "Default blocker.", severity: "blocker" });
+			expect(onAdvice).toHaveBeenCalledTimes(1);
+			expect(onAdvice).toHaveBeenCalledWith("Default blocker.", "blocker");
 		});
 
 		it("delivers all WIP severities immediately when wipNotes is all", async () => {
