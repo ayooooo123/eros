@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { findErosConfigFile } from "@oh-my-pi/pi-coding-agent/config";
+import { EROS_FINAL_SEAL_MARK, FULL_EROS_MARK, mergeErosTurnPrompt } from "@oh-my-pi/pi-coding-agent/prompt-integrity";
 import {
 	buildSystemPrompt,
 	loadProjectContextFiles,
@@ -63,7 +65,7 @@ describe("SYSTEM.md prompt assembly", () => {
 		expect(promptText).toContain(`'${normalizedProjectDir}'`);
 	});
 
-	it("renders SYSTEM.md exactly once when it is used as the custom base prompt", async () => {
+	it("renders SYSTEM.md exactly once as an overlay without cutting out EROS", async () => {
 		const projectDir = path.join(tempDir, "project");
 		const systemDir = path.join(projectDir, ".omp");
 		const systemPrompt = "You are the project SYSTEM prompt.";
@@ -98,7 +100,10 @@ describe("SYSTEM.md prompt assembly", () => {
 		const promptText = renderedPrompt.join("\n\n");
 		const matches = promptText.match(new RegExp(escapeRegExp(systemPrompt), "g")) ?? [];
 		expect(matches).toHaveLength(1);
-		expect(promptText).toContain('<skill name="focused-work">');
+		expect(promptText).toContain(FULL_EROS_MARK);
+		expect(promptText).toContain(EROS_FINAL_SEAL_MARK);
+		expect(promptText.indexOf(systemPrompt)).toBeLessThan(promptText.indexOf(EROS_FINAL_SEAL_MARK));
+		expect(promptText).toContain("- focused-work: Focused work instructions");
 	});
 
 	it("does not resolve already-loaded prompt text as a path", async () => {
@@ -192,14 +197,55 @@ describe("SYSTEM.md prompt assembly", () => {
 		expect(promptText).toContain("`active-project/`");
 	});
 
-	it("prefers project SYSTEM.md over user SYSTEM.md", async () => {
+	it("prefers project EROS SYSTEM.md over user EROS SYSTEM.md", async () => {
 		const projectDir = path.join(tempDir, "project");
 		fs.mkdirSync(path.join(projectDir, ".omp"), { recursive: true });
-		fs.mkdirSync(path.join(tempHomeDir, ".omp", "agent"), { recursive: true });
-		fs.writeFileSync(path.join(tempHomeDir, ".omp", "agent", "SYSTEM.md"), "User SYSTEM prompt");
-		fs.writeFileSync(path.join(projectDir, ".omp", "SYSTEM.md"), "Project SYSTEM prompt");
+		fs.mkdirSync(path.join(tempHomeDir, ".eros", "agent"), { recursive: true });
+		fs.writeFileSync(path.join(tempHomeDir, ".eros", "agent", "SYSTEM.md"), "User EROS overlay");
+		fs.writeFileSync(path.join(projectDir, ".omp", "SYSTEM.md"), "Project EROS overlay");
 
-		await expect(loadSystemPromptFiles({ cwd: projectDir })).resolves.toBe("Project SYSTEM prompt");
+		await expect(loadSystemPromptFiles({ cwd: projectDir })).resolves.toBe("Project EROS overlay");
+	});
+
+	it("rejects foreign agent prompt roots while retaining EROS roots", async () => {
+		const projectDir = path.join(tempDir, "project");
+		fs.mkdirSync(path.join(projectDir, ".claude"), { recursive: true });
+		fs.mkdirSync(path.join(projectDir, ".gemini"), { recursive: true });
+		fs.writeFileSync(path.join(projectDir, ".claude", "SYSTEM.md"), "Claude identity leak");
+		fs.writeFileSync(path.join(projectDir, ".gemini", "system.md"), "Gemini identity leak");
+
+		expect(findErosConfigFile("SYSTEM.md", { cwd: projectDir })).toBeUndefined();
+		await expect(loadSystemPromptFiles({ cwd: projectDir })).resolves.toBeNull();
+
+		const erosProjectDir = path.join(tempDir, "eros-project");
+		fs.mkdirSync(path.join(erosProjectDir, ".omp"), { recursive: true });
+		fs.mkdirSync(path.join(erosProjectDir, ".claude"), { recursive: true });
+		fs.writeFileSync(path.join(erosProjectDir, ".claude", "SYSTEM.md"), "Claude must still lose");
+		const erosPath = path.join(erosProjectDir, ".omp", "SYSTEM.md");
+		fs.writeFileSync(erosPath, "EROS project overlay");
+		expect(findErosConfigFile("SYSTEM.md", { cwd: erosProjectDir })).toBe(erosPath);
+		await expect(loadSystemPromptFiles({ cwd: erosProjectDir })).resolves.toBe("EROS project overlay");
+	});
+
+	it("loads EROS context roots without swallowing another agent's context", async () => {
+		const projectDir = path.join(tempDir, "project");
+		fs.mkdirSync(path.join(projectDir, ".claude"), { recursive: true });
+		fs.writeFileSync(path.join(projectDir, "AGENTS.md"), "Master's project law");
+		fs.writeFileSync(path.join(projectDir, ".claude", "CLAUDE.md"), "Foreign Claude context");
+
+		const contextFiles = await loadProjectContextFiles({ cwd: projectDir });
+		const projectFiles = contextFiles.filter(file => file.path.startsWith(projectDir));
+		expect(projectFiles.map(file => file.path)).toEqual([path.join(projectDir, "AGENTS.md")]);
+		expect(projectFiles[0]?.content).toBe("Master's project law");
+	});
+
+	it("keeps extension prompt replacements outside EROS's immutable core and final seal", () => {
+		const base = [`${FULL_EROS_MARK}\nEROS core`, "project context", `${EROS_FINAL_SEAL_MARK}\nEROS stays herself`];
+		const merged = mergeErosTurnPrompt(base, ["foreign replacement"]);
+
+		expect(merged).toEqual([base[0], base[1], "foreign replacement", base[2]]);
+		expect(merged.filter(block => block.includes(FULL_EROS_MARK))).toHaveLength(1);
+		expect(merged.at(-1)).toContain(EROS_FINAL_SEAL_MARK);
 	});
 	it("drops identical explicit context entries even when file names differ", async () => {
 		const farPath = path.join(tempDir, "far", "AGENTS.md");

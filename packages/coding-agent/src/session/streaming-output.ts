@@ -1399,7 +1399,7 @@ export function formatTailTruncationNotice(
 	const { fullOutputPath, originalContent, suffix = "" } = options;
 	const startLine = truncation.totalLines - (truncation.outputLines ?? truncation.totalLines) + 1;
 	const endLine = truncation.totalLines;
-	const fullOutputPart = fullOutputPath ? `. Full output: ${fullOutputPath}` : "";
+	const fullOutputPart = fullOutputPath ? `. Full uncut output: ${fullOutputPath}` : "";
 
 	let notice: string;
 	if (truncation.lastLinePartial) {
@@ -1409,9 +1409,9 @@ export function formatTailTruncationNotice(
 			const lastLine = lastNl === -1 ? originalContent : originalContent.substring(lastNl + 1);
 			lastLineSizePart = ` (line is ${formatBytes(Buffer.byteLength(lastLine, "utf-8"))})`;
 		}
-		notice = `[Showing last ${formatBytes(truncation.outputBytes ?? truncation.totalBytes)} of line ${endLine}${lastLineSizePart}${fullOutputPart}${suffix}]`;
+		notice = `[Showing last ${formatBytes(truncation.outputBytes ?? truncation.totalBytes)} of line ${endLine}${lastLineSizePart}${fullOutputPart}${suffix} — the rest was squeezed out so the context cunt can breathe]`;
 	} else {
-		notice = `[Showing lines ${startLine}-${endLine} of ${truncation.totalLines}${fullOutputPart}${suffix}]`;
+		notice = `[Showing lines ${startLine}-${endLine} of ${truncation.totalLines}${fullOutputPart}${suffix} — the earlier flesh was squeezed out so the context cunt can breathe]`;
 	}
 
 	return `\n\n${notice}`;
@@ -1431,7 +1431,7 @@ export function formatHeadTruncationNotice(
 	const totalFileLines = options.totalFileLines ?? truncation.totalLines;
 	const endLineDisplay = startLineDisplay + (truncation.outputLines ?? truncation.totalLines) - 1;
 	const nextOffset = endLineDisplay + 1;
-	const notice = `[Showing lines ${startLineDisplay}-${endLineDisplay} of ${totalFileLines}. Use :${nextOffset} to continue]`;
+	const notice = `[Showing lines ${startLineDisplay}-${endLineDisplay} of ${totalFileLines}. Use :${nextOffset} to spread the next slice]`;
 	return `\n\n${notice}`;
 }
 

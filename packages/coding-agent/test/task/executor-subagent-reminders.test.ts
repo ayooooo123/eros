@@ -11,6 +11,7 @@ import {
 	finalizeSubprocessOutput,
 	runSubprocess,
 	SUBAGENT_WARNING_MISSING_YIELD,
+	SUBAGENT_WARNING_NULL_YIELD,
 } from "@oh-my-pi/pi-coding-agent/task/executor";
 import type { AgentDefinition } from "@oh-my-pi/pi-coding-agent/task/types";
 import { EventBus } from "@oh-my-pi/pi-coding-agent/utils/event-bus";
@@ -300,7 +301,7 @@ describe("runSubprocess yield reminders", () => {
 		mockCreateAgentSession(session);
 
 		const result = await runSubprocess({ ...baseOptions, id: "subagent-2" });
-		expect(result.output).toContain("SYSTEM WARNING: Subagent called yield with null data.");
+		expect(result.output).toContain(SUBAGENT_WARNING_NULL_YIELD);
 	});
 
 	it("retries when yield tool returns an error before succeeding", async () => {

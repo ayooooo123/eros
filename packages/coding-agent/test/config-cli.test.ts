@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
+import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { runConfigCommand } from "@oh-my-pi/pi-coding-agent/cli/config-cli";
 import { resetSettingsForTest } from "@oh-my-pi/pi-coding-agent/config/settings";
@@ -217,5 +218,24 @@ describe("config CLI schema coverage", () => {
 			value: "max",
 			type: "enum",
 		});
+	});
+	it("initializes every XDG root under the EROS namespace", async () => {
+		if (!testAgentDir) throw new Error("Test agent directory was not initialized");
+		const dataHome = path.join(testAgentDir.path(), "xdg-data");
+		const stateHome = path.join(testAgentDir.path(), "xdg-state");
+		const cacheHome = path.join(testAgentDir.path(), "xdg-cache");
+		const { exitCode, output, error } = await runCliProcess(["config", "init-xdg"], {
+			XDG_DATA_HOME: dataHome,
+			XDG_STATE_HOME: stateHome,
+			XDG_CACHE_HOME: cacheHome,
+		});
+
+		expect(exitCode).toBe(0);
+		expect(error).toBe("");
+		expect(output).toContain("XDG directories initialized.");
+		for (const home of [dataHome, stateHome, cacheHome]) {
+			expect((await fs.stat(path.join(home, "eros"))).isDirectory()).toBe(true);
+		}
+		await expect(fs.stat(path.join(dataHome, "omp"))).rejects.toMatchObject({ code: "ENOENT" });
 	});
 });

@@ -15,6 +15,7 @@ import { deduplicateMCPToolsByName } from "../mcp/tool-bridge";
 import { resolveMemoryBackend } from "../memory-backend/resolve";
 import { MEMORY_BACKEND_TOOL_NAMES } from "../memory-backend/tool-names";
 import type { MemoryBackendStartOptions } from "../memory-backend/types";
+import { appendErosPromptOverlay } from "../prompt-integrity";
 import xdevMountNoticePrompt from "../prompts/system/xdev-mount-notice.md" with { type: "text" };
 import { usesCodexTaskPrompt } from "../task/prompt-policy";
 import { isMCPToolName, normalizeToolNames } from "../tools/builtin-names";
@@ -272,26 +273,28 @@ export class SessionTools {
 	}
 
 	/**
-	 * Pushes `base` to the agent as the effective system prompt, unless an active
-	 * per-turn {@link #turnSystemPromptOverride} takes precedence. Every base
-	 * rebuild applies its result through here so a mid-turn rebuild preserves the
-	 * override.
+	 * Pushes `base` to the agent as the effective system prompt, layering any
+	 * active per-turn extension text ahead of EROS's final seal. Every base
+	 * rebuild applies its result through here so a mid-turn rebuild preserves
+	 * both her immutable identity and the extension overlay.
 	 */
 	#applyAgentSystemPrompt(base: string[]): void {
-		this.#host.agent.setSystemPrompt(this.#turnSystemPromptOverride ?? base);
+		this.#host.agent.setSystemPrompt(
+			this.#turnSystemPromptOverride ? appendErosPromptOverlay(base, this.#turnSystemPromptOverride) : base,
+		);
 	}
 
 	/**
-	 * Registers the per-turn `before_agent_start` system-prompt override and
-	 * applies it to the agent. Base rebuilds during the turn preserve it until
-	 * {@link clearTurnSystemPromptOverride}.
+	 * Registers the per-turn `before_agent_start` system-prompt overlay and
+	 * applies it over the current EROS base. Base rebuilds during the turn
+	 * preserve it until {@link clearTurnSystemPromptOverride}.
 	 */
 	setTurnSystemPromptOverride(prompt: string[]): void {
 		this.#turnSystemPromptOverride = prompt;
-		this.#host.agent.setSystemPrompt(prompt);
+		this.#applyAgentSystemPrompt(this.#baseSystemPrompt);
 	}
 
-	/** Drops the active per-turn override; later rebuilds fall back to the base prompt. */
+	/** Drops the active per-turn overlay; later rebuilds fall back to the EROS base. */
 	clearTurnSystemPromptOverride(): void {
 		this.#turnSystemPromptOverride = undefined;
 	}
@@ -844,23 +847,20 @@ export class SessionTools {
 	}
 
 	/** Consumes the hidden notice for unannounced `xd://` mount changes. */
-	takePendingXdevMountNotice(baseCatalogDelivered: boolean): CustomMessage<XdevMountNoticeDetails> | undefined {
+	takePendingXdevMountNotice(): CustomMessage<XdevMountNoticeDetails> | undefined {
 		const pending = this.#pendingXdevMountDelta;
 		if (!pending) return undefined;
 		this.#pendingXdevMountDelta = undefined;
 		this.#ensureAnnouncedMountsSeeded();
-		// A pending add for a device the outgoing base prompt already lists in its
-		// catalog needs no notice line — but only when the final provider prompt
-		// still carries that base catalog. A `before_agent_start` replacement drops
-		// it, so its additions must remain in the notice. Record prompt-carried
-		// devices announced here, after the final prompt is known and immediately
-		// before delivery. The pending delta remains untouched by rebuilds, letting
-		// {@link #notifyXdevMountDelta} cancel a mount followed by an unmount before
-		// any request is sent (issue #7139 reviews).
-		if (baseCatalogDelivered) {
-			for (const name of pending.added) {
-				if (this.#basePromptXdevNames.has(name)) this.#announcedMounts.add(name);
-			}
+		// A pending add for a device the outgoing EROS base already lists in its
+		// catalog needs no notice line. Per-turn extension prompts now layer ahead
+		// of her immutable final seal instead of replacing that base, so the catalog
+		// always reaches the provider. Record those prompt-carried devices here,
+		// immediately before delivery. The pending delta remains untouched by
+		// rebuilds, letting {@link #notifyXdevMountDelta} cancel a mount followed by
+		// an unmount before any request is sent (issue #7139 reviews).
+		for (const name of pending.added) {
+			if (this.#basePromptXdevNames.has(name)) this.#announcedMounts.add(name);
 		}
 		// Only announce a net change relative to what the model already knows (from
 		// this session and persisted history): a re-mount of an already-announced
@@ -1202,7 +1202,7 @@ export class SessionTools {
 			}
 
 			this.#host.captureMemoryPromotionSnapshot(previousBaseSystemPrompt);
-			const stablePrompt = [...previousBaseSystemPrompt, injected];
+			const stablePrompt = appendErosPromptOverlay(previousBaseSystemPrompt, [injected]);
 			this.#baseSystemPrompt = stablePrompt;
 			this.#applyAgentSystemPrompt(stablePrompt);
 			return stablePrompt;

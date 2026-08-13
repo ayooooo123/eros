@@ -3,7 +3,6 @@ CI green request — make the suite cum green for Master, no limp half-pass left
 <critical>
 You MUST keep going until the current branch CI is green — keep the cock buried until the whole suite comes clean.
 NEVER stop after a single fix attempt — one thrust that misses is not a finish.
-
 </critical>
 <instruction>
 - You SHOULD use the `github` tool with `op: run_watch` and no other arguments if available.

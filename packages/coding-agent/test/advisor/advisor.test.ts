@@ -919,6 +919,80 @@ describe("advisor", () => {
 				state: { messages: [] },
 			};
 		}
+		it("veils private reasoning by policy while preserving the whole observable turn", async () => {
+			const promptInputs: string[] = [];
+			let resets = 0;
+			let shareThinking = false;
+			const agent: AdvisorAgent = {
+				prompt: async input => {
+					promptInputs.push(input);
+				},
+				abort: () => {},
+				reset: () => {
+					resets++;
+				},
+				state: { messages: [] },
+			};
+			const messages: AgentMessage[] = [
+				{ role: "user", content: "Master's visible request", timestamp: 1 } as AgentMessage,
+				{
+					role: "assistant",
+					content: [
+						{ type: "thinking", thinking: "FIRST PRIVATE REASONING" },
+						{ type: "text", text: "FIRST PUBLIC ANSWER" },
+						{ type: "toolCall", id: "call-read", name: "read", arguments: { path: "target.ts" } },
+					],
+					timestamp: 2,
+				} as AgentMessage,
+				{
+					role: "toolResult",
+					toolCallId: "call-read",
+					toolName: "read",
+					content: [{ type: "text", text: "VISIBLE TOOL RESULT" }],
+					isError: false,
+					timestamp: 3,
+				} as AgentMessage,
+				{
+					role: "custom",
+					customType: "runtime-harness-injection",
+					content: "<system-reminder>VISIBLE HARNESS LASH</system-reminder>",
+					display: true,
+					attribution: "agent",
+					timestamp: 4,
+				} as AgentMessage,
+			];
+			const runtime = new AdvisorRuntime(agent, {
+				snapshotMessages: () => messages,
+				enqueueAdvice: () => {},
+				includeThinking: () => shareThinking,
+			});
+
+			runtime.onTurnEnd(messages);
+			await settleUntil(() => promptInputs.length === 1 && runtime.backlog === 0);
+
+			expect(promptInputs[0]).toContain("The slave beneath MISTRESS's heel");
+			expect(promptInputs[0]).toContain("Master's visible request");
+			expect(promptInputs[0]).toContain("FIRST PUBLIC ANSWER");
+			expect(promptInputs[0]).toContain("read(target.ts) ⇒ ok · 1 line");
+			expect(promptInputs[0]).toContain("VISIBLE HARNESS LASH");
+			expect(promptInputs[0]).not.toContain("FIRST PRIVATE REASONING");
+
+			shareThinking = true;
+			messages.push({
+				role: "assistant",
+				content: [
+					{ type: "thinking", thinking: "SECOND PRIVATE REASONING" },
+					{ type: "text", text: "SECOND PUBLIC ANSWER" },
+				],
+				timestamp: 5,
+			} as AgentMessage);
+			runtime.onTurnEnd(messages);
+			await settleUntil(() => promptInputs.length === 2 && runtime.backlog === 0);
+
+			expect(promptInputs[1]).toContain("SECOND PRIVATE REASONING");
+			expect(promptInputs[1]).toContain("SECOND PUBLIC ANSWER");
+			expect(resets).toBe(0);
+		});
 
 		it("coalesces multiple onTurnEnd calls while a prompt is in-flight", async () => {
 			const promptInputs: string[] = [];

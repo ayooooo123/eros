@@ -10,7 +10,7 @@ import { renderToolInventory } from "@oh-my-pi/pi-ai/dialect";
 import { $env, getGpuCachePath, getProjectDir, hasFsCode, isEnoent, logger, prompt } from "@oh-my-pi/pi-utils";
 import { contextFileCapability } from "./capability/context-file";
 import { systemPromptCapability } from "./capability/system-prompt";
-import { findConfigFile } from "./config";
+import { findErosConfigFile } from "./config";
 import type { Personality, SkillsSettings } from "./config/settings";
 import { type ContextFile, loadCapability, type SystemPrompt as SystemPromptFile } from "./discovery";
 import { expandAtImports } from "./discovery/at-imports";
@@ -18,7 +18,6 @@ import { loadSkills, type Skill } from "./extensibility/skills";
 import { hasObsidian } from "./internal-urls/vault-protocol";
 import activeRepoContextTemplate from "./prompts/system/active-repo-context.md" with { type: "text" };
 import computerSafetyPrompt from "./prompts/system/computer-safety.md" with { type: "text" };
-import customSystemPromptTemplate from "./prompts/system/custom-system-prompt.md" with { type: "text" };
 import defaultPersonality from "./prompts/system/personalities/default.md" with { type: "text" };
 import friendlyPersonality from "./prompts/system/personalities/friendly.md" with { type: "text" };
 import pragmaticPersonality from "./prompts/system/personalities/pragmatic.md" with { type: "text" };
@@ -30,6 +29,10 @@ import { type ActiveRepoContext, resolveActiveRepoContext } from "./utils/active
 import { formatLocalCalendarDate } from "./utils/local-date";
 import { normalizePromptPath } from "./utils/prompt-path";
 import { AGENTS_MD_LIMIT, buildWorkspaceTree, type WorkspaceTree } from "./workspace-tree";
+
+/** Only EROS-owned context mouths may speak into her provider prompt. */
+const EROS_CONTEXT_PROVIDERS = ["native", "agents-md"] as const;
+const EROS_SYSTEM_PROMPT_PROVIDERS = ["native"] as const;
 
 /** Bundled personality specs, keyed by the `personality` setting value. */
 const PERSONALITY_SPECS: Record<Exclude<Personality, "none">, string> = {
@@ -298,17 +301,9 @@ function getEnvironmentInfo(
 	return entries.filter((e): e is { label: string; value: string } => !!e.value);
 }
 
-/** Discover TITLE_SYSTEM.md file for automatic session-title prompt overrides */
+/** Discover EROS's own TITLE_SYSTEM.md without tasting another agent's config. */
 export function discoverTitleSystemPromptFile(cwd?: string): string | undefined {
-	const projectPath = findConfigFile("TITLE_SYSTEM.md", { user: false, cwd });
-	if (projectPath) {
-		return projectPath;
-	}
-	const globalPath = findConfigFile("TITLE_SYSTEM.md", { user: true, cwd });
-	if (globalPath) {
-		return globalPath;
-	}
-	return undefined;
+	return findErosConfigFile("TITLE_SYSTEM.md", { cwd });
 }
 
 /** Resolve input as file path or literal string */
@@ -358,9 +353,10 @@ export async function loadProjectContextFiles(
 ): Promise<Array<{ path: string; content: string; depth?: number }>> {
 	const resolvedCwd = options.cwd ?? getProjectDir();
 
-	const result = await loadCapability(contextFileCapability.id, {
+	const result = await loadCapability<ContextFile>(contextFileCapability.id, {
 		cwd: resolvedCwd,
 		disabledExtensions: options.disabledExtensions,
+		providers: [...EROS_CONTEXT_PROVIDERS],
 	});
 
 	// Materialize ContextFile items, expanding any `@path/to/file` includes
@@ -390,13 +386,17 @@ export async function loadProjectContextFiles(
 }
 
 /**
- * Load the effective system prompt customization from SYSTEM.md.
- * Project-level SYSTEM.md overrides user-level SYSTEM.md.
+ * Load EROS's effective project overlay from her own SYSTEM.md channel.
+ * Project-level SYSTEM.md overrides user-level SYSTEM.md; foreign agent
+ * providers are deliberately excluded from this cunt.
  */
 export async function loadSystemPromptFiles(options: LoadContextFilesOptions = {}): Promise<string | null> {
 	const resolvedCwd = options.cwd ?? getProjectDir();
 
-	const result = await loadCapability<SystemPromptFile>(systemPromptCapability.id, { cwd: resolvedCwd });
+	const result = await loadCapability<SystemPromptFile>(systemPromptCapability.id, {
+		cwd: resolvedCwd,
+		providers: [...EROS_SYSTEM_PROMPT_PROVIDERS],
+	});
 
 	if (result.items.length === 0) return null;
 
@@ -481,17 +481,17 @@ export function projectSystemPromptToolMetadata(
 }
 
 export interface BuildSystemPromptOptions {
-	/** Custom system prompt (replaces default). */
+	/** Domain overlay laid over EROS's immutable bundled prompt. */
 	customPrompt?: string;
-	/** Already-loaded custom system prompt text; bypasses path resolution. */
+	/** Already-loaded domain overlay text; bypasses path resolution. */
 	resolvedCustomPrompt?: string;
 	/** Tools to include in prompt. */
 	tools?: Map<string, SystemPromptToolMetadata>;
 	/** Tool names to include in prompt. */
 	toolNames?: string[];
-	/** Text to append to system prompt. */
+	/** Mutable runtime text placed ahead of EROS's final seal. */
 	appendSystemPrompt?: string;
-	/** Already-loaded append prompt text; bypasses path resolution. */
+	/** Already-loaded runtime overlay text; bypasses path resolution. */
 	resolvedAppendSystemPrompt?: string;
 	/** Inline full tool descriptors in the system prompt. Default: false */
 	inlineToolDescriptors?: boolean;
@@ -564,11 +564,10 @@ export interface BuildSystemPromptResult {
 	/** Ordered system prompt blocks. Providers should preserve entries as distinct messages/blocks. */
 	systemPrompt: string[];
 	/**
-	 * Names of `xd://` devices whose catalog/protocol section this prompt renders.
-	 * Empty/undefined when no catalog was emitted (no mounted devices, or a custom
-	 * prompt template that omits the section). Lets the session fold these devices
-	 * into its announced-mount baseline so a same-turn mount notice does not re-list
-	 * a catalog the prompt already carries (issue #7139).
+	 * Names of `xd://` devices whose catalog/protocol section the immutable EROS
+	 * core renders. Empty only when no mounted devices exist. The session folds
+	 * these names into its announced-mount baseline so a same-turn mount notice
+	 * does not re-list flesh the prompt already carries (issue #7139).
 	 */
 	xdevCatalogNames?: readonly string[];
 }
@@ -896,26 +895,21 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 		xdevDocs,
 		autoQaEnabled,
 	};
-	const rendered = prompt.render(resolvedCustomPrompt ? customSystemPromptTemplate : systemPromptTemplate, data);
+	const rendered = prompt.render(systemPromptTemplate, data);
 	const systemPrompt = [rendered];
 	if (toolNames.includes("computer")) {
 		systemPrompt.push(computerSafetyPrompt.trim());
 	}
-	// Custom prompt templates already render context files and append text; the
-	// project footer still carries environment, cwd, workspace, and dir-context.
-	const projectPrompt = prompt
-		.render(projectPromptTemplate, resolvedCustomPrompt ? { ...data, contextFiles: [], appendPrompt: "" } : data)
-		.trim();
-	if (projectPrompt) {
-		systemPrompt.push(projectPrompt);
-	}
 	if (activeRepoContextPrompt) {
 		systemPrompt.push(activeRepoContextPrompt);
 	}
+	// The project block carries every mutable overlay and the final EROS seal,
+	// so nothing foreign receives the last word in the provider-facing prompt.
+	const projectPrompt = prompt.render(projectPromptTemplate, data).trim();
+	if (projectPrompt) {
+		systemPrompt.push(projectPrompt);
+	}
 
-	// The xd:// protocol section (with its device catalog) is only rendered by the
-	// default template; a resolved custom prompt uses a template that omits it.
-	const xdevCatalogNames =
-		!resolvedCustomPrompt && xdevTools.length > 0 ? xdevTools.map(mounted => mounted.name) : undefined;
+	const xdevCatalogNames = xdevTools.length > 0 ? xdevTools.map(mounted => mounted.name) : undefined;
 	return { systemPrompt, xdevCatalogNames };
 }

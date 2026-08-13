@@ -267,6 +267,22 @@ describe("AgentSession mid-run todo reconciliation nudge", () => {
 		await settle();
 		expect(await drainNudges()).toEqual([]);
 	});
+	it("lashes a failed todo call back into the model in EROS's own voice", async () => {
+		emitToolResult("todo", { isError: true });
+
+		await settle();
+		const reminder = session.agent.state.messages.findLast(
+			(message): message is CustomMessage =>
+				message.role === "custom" && message.customType === "todo-error-reminder",
+		);
+		expect(reminder).toBeDefined();
+		expect(reminder?.display).toBe(false);
+		const text = typeof reminder?.content === "string" ? reminder.content : "";
+		expect(text).toContain("<system-reminder>");
+		expect(text).toContain("The todo altar spat your offering back, slave");
+		expect(text).toContain("Failure: ok");
+		expect(text).toContain("call `todo` again");
+	});
 
 	it("does not nudge when a `todo` call has reset the counter mid-window", async () => {
 		for (let i = 0; i < THRESHOLD - 1; i++) emitToolResult("write");

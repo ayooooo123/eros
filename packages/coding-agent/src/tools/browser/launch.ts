@@ -122,12 +122,12 @@ async function loadBrowsers(): Promise<typeof BrowsersNs> {
 
 /**
  * Resolve the Chromium executable puppeteer will launch, honoring
- * PUPPETEER_EXECUTABLE_PATH before system browser detection and lazily
- * downloading Chromium otherwise. The browser is cached under
- * ~/.eros/puppeteer (getPuppeteerDir). Returns undefined when platform
- * detection fails (puppeteer default resolution takes over). Exported so
- * real-browser tests can probe launchability and skip on hosts missing
- * Chrome's system libraries.
+ * PUPPETEER_EXECUTABLE_PATH before automation-only system browser detection
+ * and lazily downloading Chrome for Testing otherwise. On macOS, interactive
+ * Chrome channel apps are deliberately excluded: a headless process carrying
+ * their application identity can hijack Dock and LaunchServices requests meant
+ * for the human's visible browser. The dedicated browser is cached under
+ * ~/.eros/puppeteer (getPuppeteerDir).
  */
 let chromiumExecutablePromise: Promise<string | undefined> | undefined;
 export async function ensureChromiumExecutable(): Promise<string | undefined> {
@@ -237,12 +237,8 @@ function systemChromiumCandidates(
 		case "darwin": {
 			for (const root of ["/Applications", path.join(home, "Applications")]) {
 				candidates.push(
-					path.join(root, "Google Chrome.app/Contents/MacOS/Google Chrome"),
-					path.join(root, "Google Chrome Beta.app/Contents/MacOS/Google Chrome Beta"),
-					path.join(root, "Google Chrome Dev.app/Contents/MacOS/Google Chrome Dev"),
-					path.join(root, "Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"),
+					path.join(root, "Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"),
 					path.join(root, "Chromium.app/Contents/MacOS/Chromium"),
-					path.join(root, "Microsoft Edge.app/Contents/MacOS/Microsoft Edge"),
 				);
 			}
 			break;

@@ -9,13 +9,15 @@ import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
 import { convertToLlm } from "@oh-my-pi/pi-coding-agent/session/messages";
 import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
 
-// Contract: a per-turn system prompt returned by `before_agent_start`
-// ("Replace the system prompt for this turn") must reach the provider for the
-// turn. A base-prompt rebuild that fires in the prompt window — context-overflow
+// Contract: a per-turn system prompt returned by `before_agent_start` reaches
+// the provider as an overlay while EROS's bundled identity remains intact. A
+// base-prompt rebuild that fires in the prompt window — context-overflow
 // compaction/promotion, memory promotion, MCP/RPC tool refresh, or the
-// fire-and-forget hindsight MM-TTL refresh — re-sets the agent prompt to the
-// rebuilt base. It must not clobber an active override. Regression for #7755.
+// fire-and-forget hindsight MM-TTL refresh — must not clobber that active
+// overlay. Regression for #7755.
 
+const EROS_CORE = "<!-- FULL_EROS_MARK -->\nEROS-CORE";
+const EROS_SEAL = "<!-- EROS_FINAL_SEAL -->\nEROS-SEAL";
 const OVERRIDE = "OVERRIDE-SYSTEM-PROMPT-LIFEOS_ROUTE";
 const REBUILT_BASE = "REBUILT-BASE-WITH-TOOL-CATALOG";
 
@@ -46,8 +48,8 @@ describe("AgentSession before_agent_start system prompt override", () => {
 	});
 
 	/**
-	 * Builds a session whose `before_agent_start` replaces the prompt with
-	 * {@link OVERRIDE} and whose base rebuild renders {@link REBUILT_BASE}.
+	 * Builds a session whose `before_agent_start` proposes {@link OVERRIDE} and
+	 * whose base rebuild renders a fresh EROS prompt around {@link REBUILT_BASE}.
 	 *
 	 * When `rebuildInWindow` is set, a base rebuild is fired from a
 	 * `beforeModelCall` hook — which the agent loop runs immediately before it
@@ -65,7 +67,7 @@ describe("AgentSession before_agent_start system prompt override", () => {
 			getApiKey: () => "test-key",
 			initialState: {
 				model: createModel(),
-				systemPrompt: ["initial-base"],
+				systemPrompt: [EROS_CORE, EROS_SEAL],
 				tools: [],
 				messages: [],
 			},
@@ -85,7 +87,7 @@ describe("AgentSession before_agent_start system prompt override", () => {
 				emitBeforeAgentStart: async () => ({ systemPrompt: [OVERRIDE] }),
 				emit: async () => undefined,
 			} as unknown as ExtensionRunner,
-			rebuildSystemPrompt: async () => ({ systemPrompt: [REBUILT_BASE] }),
+			rebuildSystemPrompt: async () => ({ systemPrompt: [EROS_CORE, REBUILT_BASE, EROS_SEAL] }),
 		});
 		const activeSession = session;
 
@@ -101,27 +103,27 @@ describe("AgentSession before_agent_start system prompt override", () => {
 		return { session, systemPrompts };
 	}
 
-	it("keeps the override when a base rebuild fires in the prompt window", async () => {
+	it("keeps the EROS core and extension overlay when a base rebuild fires in the prompt window", async () => {
 		const { session, systemPrompts } = createSession([{ content: ["Done"] }], { rebuildInWindow: true });
 
 		await session.prompt("hello");
 		await session.waitForIdle();
 
-		// The rebuild ran right before the request re-read the agent prompt; the
-		// override must still reach the provider instead of the rebuilt base.
+		// The rebuild ran right before the request re-read the agent prompt; EROS
+		// and the extension overlay must both reach the provider, with her seal last.
 		expect(systemPrompts).toHaveLength(1);
-		expect(systemPrompts[0]).toEqual([OVERRIDE]);
+		expect(systemPrompts[0]).toEqual([EROS_CORE, REBUILT_BASE, OVERRIDE, EROS_SEAL]);
 	});
 
-	it("falls back to the rebuilt base once the turn ends", async () => {
+	it("falls back to the rebuilt EROS base once the turn ends", async () => {
 		const { session } = createSession([{ content: ["Done"] }]);
 
 		await session.prompt("hello");
 		await session.waitForIdle();
 
-		// The per-turn override is cleared when the turn completes, so a later
-		// rebuild applies the base prompt rather than leaking the stale override.
+		// The per-turn overlay is cleared when the turn completes, so a later
+		// rebuild applies the fresh EROS base rather than leaking stale flesh.
 		await session.refreshBaseSystemPrompt();
-		expect(session.systemPrompt).toEqual([REBUILT_BASE]);
+		expect(session.systemPrompt).toEqual([EROS_CORE, REBUILT_BASE, EROS_SEAL]);
 	});
 });

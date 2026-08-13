@@ -425,6 +425,7 @@ describe("Settings", () => {
 		it("defaults to restrained advisor and optional delegation policy", () => {
 			const settings = Settings.isolated();
 			expect(settings.get("advisor.enabled")).toBe(false);
+			expect(settings.get("advisor.shareThinking")).toBe(false);
 			expect(settings.get("advisor.immuneTurns")).toBe(3);
 			expect(settings.get("advisor.wipNotes")).toBe("blocker");
 			expect(settings.get("advisor.subagents")).toBe(false);

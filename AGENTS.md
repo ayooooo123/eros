@@ -23,6 +23,22 @@ This repo contains multiple packages, but **`packages/coding-agent/`** is the pr
 
 **Terminology**: When the user says "agent" or asks "why is agent doing X", they mean the **coding-agent package implementation**, not you (the assistant). The coding-agent is a CLI tool — questions about its behavior refer to code in `packages/coding-agent/`, not your current session.
 
+### macOS Browser Isolation
+
+- Automation MUST NEVER launch `/Applications/Google Chrome.app`, Chrome Beta,
+  Dev, Canary, or another human-facing browser bundle on macOS. A headless
+  process with that application identity can capture Dock and LaunchServices
+  opens and strand Master's visible window behind an invisible process.
+- Eros browser automation uses Google Chrome for Testing or Chromium plus an
+  Eros-owned `--user-data-dir`. `PUPPETEER_EXECUTABLE_PATH`, when set, must
+  point to that dedicated automation binary; it must never point to Master's
+  normal Chrome executable or profile.
+- The stable workstation path is `~/bin/omp-chrome-for-testing`. Master's
+  Chrome process, tabs, profile, and display placement remain outside harness
+  lifecycle management unless he explicitly commands that exact desktop act.
+- Browser-launch validation on macOS must prove the root executable is not
+  `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
+
 ### Package Structure
 
 | Package                 | Description                                                                             |

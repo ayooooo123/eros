@@ -169,6 +169,7 @@ import planModeToolDecisionReminderPrompt from "../prompts/system/plan-mode-tool
 };
 import rewindReportTemplate from "../prompts/system/rewind-report.md" with { type: "text" };
 import sideChannelNoToolsReminder from "../prompts/system/side-channel-no-tools.md" with { type: "text" };
+import todoErrorReminderTemplate from "../prompts/system/todo-error-reminder.md" with { type: "text" };
 import vibeModeActivePrompt from "../prompts/system/vibe-mode-active.md" with { type: "text" };
 import {
 	deobfuscateAssistantContent,
@@ -2633,13 +2634,7 @@ export class AgentSession {
 				}
 				if (toolName === "todo" && isError) {
 					const errorText = content.find(part => part.type === "text")?.text;
-					const reminderText = [
-						"<system-reminder>",
-						"todo failed, so todo progress is not visible to the user.",
-						errorText ? `Failure: ${errorText}` : "Failure: todo returned an error.",
-						"Fix the todo payload and call todo again before continuing.",
-						"</system-reminder>",
-					].join("\n");
+					const reminderText = prompt.render(todoErrorReminderTemplate, { errorText });
 					await this.sendCustomMessage(
 						{
 							customType: "todo-error-reminder",
@@ -5357,7 +5352,6 @@ export class AgentSession {
 			if ((this.#isDisposed && !disposingBeforeTransition) || this.#promptGeneration !== generation) return;
 			const beforeAgentStartSystemPrompt = await this.#buildSystemPromptForAgentStart(expandedText);
 
-			let baseXdevCatalogDelivered = true;
 			// Emit before_agent_start extension event
 			if (this.#extensionRunner) {
 				const result = await this.#extensionRunner.emitBeforeAgentStart(
@@ -5392,7 +5386,6 @@ export class AgentSession {
 				}
 
 				if (result?.systemPrompt !== undefined) {
-					baseXdevCatalogDelivered = false;
 					this.#tools.setTurnSystemPromptOverride(result.systemPrompt);
 				} else {
 					this.#tools.clearTurnSystemPromptOverride();
@@ -5418,9 +5411,7 @@ export class AgentSession {
 					return;
 				}
 			}
-			const xdevMountNotice = isUserQueuedMessage(message)
-				? this.#tools.takePendingXdevMountNotice(baseXdevCatalogDelivered)
-				: undefined;
+			const xdevMountNotice = isUserQueuedMessage(message) ? this.#tools.takePendingXdevMountNotice() : undefined;
 			if (xdevMountNotice) {
 				messages.splice(xdevMountNoticeIndex, 0, xdevMountNotice);
 			}

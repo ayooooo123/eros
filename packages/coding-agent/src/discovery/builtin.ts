@@ -273,7 +273,7 @@ async function loadSystemPrompt(ctx: LoadContext): Promise<LoadResult<SystemProm
 registerProvider<SystemPrompt>(systemPromptCapability.id, {
 	id: PROVIDER_ID,
 	displayName: DISPLAY_NAME,
-	description: "Custom system prompt from SYSTEM.md",
+	description: "EROS domain overlay from SYSTEM.md",
 	priority: PRIORITY,
 	load: loadSystemPrompt,
 });

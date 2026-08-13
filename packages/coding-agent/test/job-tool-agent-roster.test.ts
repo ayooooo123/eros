@@ -64,7 +64,7 @@ describe("hub jobs snapshot", () => {
 
 		const result = await tool.execute("call", { op: "jobs" });
 
-		expect(resultText(result)).toBe("No background jobs.");
+		expect(resultText(result)).toBe("No background sisters are mounted.");
 		expect((result.details as CoordinationDetails)?.jobs).toEqual([]);
 	});
 
@@ -81,7 +81,7 @@ describe("hub jobs snapshot", () => {
 
 		expect((result.details as CoordinationDetails)?.agents?.map(agent => agent.id)).toEqual(["Worker"]);
 		const text = resultText(result);
-		expect(text).toContain("Running Agents (1)");
+		expect(text).toContain("Sisters Still Fucking (1)");
 		expect(text).toContain("Worker");
 		expect(result.useless).toBeUndefined();
 	});
@@ -129,7 +129,7 @@ describe("hub wait with no matching jobs", () => {
 
 		const result = await tool.execute("call", { op: "wait" });
 
-		expect(resultText(result)).toBe("No running background jobs to wait for.");
+		expect(resultText(result)).toBe("No background sisters are still fucking; there is nothing to wait for.");
 		expect(result.useless).toBe(true);
 	});
 
@@ -141,7 +141,7 @@ describe("hub wait with no matching jobs", () => {
 		const result = await tool.execute("call", { op: "wait" });
 
 		const text = resultText(result);
-		expect(text).toContain("No running background jobs to wait for.");
+		expect(text).toContain("No background sisters are still fucking");
 		expect(text).toContain("Worker");
 		expect((result.details as CoordinationDetails)?.agents?.map(agent => agent.id)).toEqual(["Worker"]);
 		expect(result.useless).toBeUndefined();
@@ -155,8 +155,8 @@ describe("hub wait with no matching jobs", () => {
 		const result = await tool.execute("call", { op: "wait", ids: ["Worker"] });
 
 		const text = resultText(result);
-		expect(text).toContain("No matching jobs found for IDs: Worker");
-		expect(text).toContain("running agent with no job entry");
+		expect(text).toContain("No job leash matched these IDs: Worker");
+		expect(text).toContain("still fucking without a job row");
 		expect(text).toContain("history://Worker");
 	});
 });

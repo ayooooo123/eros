@@ -35,6 +35,7 @@ import { type GeneratedProvider, getBundledModels } from "@oh-my-pi/pi-catalog/m
 import { getConfigRootDir, isEnoent, logger, VERSION } from "@oh-my-pi/pi-utils";
 import chalk from "@oh-my-pi/pi-utils/chalk";
 import { ModelRegistry } from "../config/model-registry";
+import authGatewayConnectivityPrompt from "../prompts/system/auth-gateway-connectivity.md" with { type: "text" };
 import { type AuthBrokerClientConfig, resolveAuthBrokerConfig } from "../session/auth-broker-config";
 
 export type AuthGatewayAction = "serve" | "token" | "status" | "check";
@@ -505,7 +506,7 @@ async function probeOneModel(
 	const response = await completeSimple(
 		model,
 		{
-			systemPrompt: ["Connectivity check. Reply with the single word 'pong'."],
+			systemPrompt: [authGatewayConnectivityPrompt],
 			messages: [{ role: "user", content: "ping", timestamp: start }],
 		},
 		{

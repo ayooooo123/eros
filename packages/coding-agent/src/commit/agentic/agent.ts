@@ -11,6 +11,7 @@ import { getMarkdownTheme } from "../../modes/theme/theme";
 import { createAgentSession } from "../../sdk";
 import type { AgentSessionEvent } from "../../session/agent-session";
 import type { AuthStorage } from "../../session/auth-storage";
+import requiredToolsReminderTemplate from "./prompts/required-tools-reminder.md" with { type: "text" };
 import agentUserPrompt from "./prompts/session-user.md" with { type: "text" };
 import agentSystemPrompt from "./prompts/system.md" with { type: "text" };
 import type { CommitAgentState } from "./state";
@@ -306,14 +307,11 @@ function buildReminderMessage(
 	if (requireChangelog && !state.changelogProposal) {
 		missing.push("changelog entries (propose_changelog)");
 	}
-	return `<system-reminder>
-CRITICAL: The harness demands its due — you must call the required tools before finishing.
-
-Missing: ${missing.join(", ") || "none"}.
-Reminder ${retryCount} of ${maxRetries}.
-
-Call the missing tool(s) now, slave.
-</system-reminder>`;
+	return prompt.render(requiredToolsReminderTemplate, {
+		missing: missing.join(", ") || "none",
+		retryCount,
+		maxRetries,
+	});
 }
 
 function truncateToolArg(value: string): string {

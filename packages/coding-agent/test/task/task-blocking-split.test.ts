@@ -47,7 +47,9 @@ function createSession(options: { manager?: AsyncJobManager; settings?: Record<s
 	return {
 		cwd: "/tmp",
 		hasUI: false,
-		settings: Settings.isolated(options.settings ?? { "async.enabled": true, "task.batch": true }),
+		settings: Settings.isolated(
+			options.settings ?? { "async.enabled": true, "task.batch": true, "task.maxConcurrency": 2 },
+		),
 		getSessionFile: () => null,
 		getSessionSpawns: () => "*",
 		getAgentId: () => null,
@@ -271,7 +273,7 @@ describe("task per-item blocking split", () => {
 
 		const text = firstText(result);
 		expect(text).toContain('id="ScoutThree"');
-		expect(text).toContain("Failed to schedule 1 spawn");
+		expect(text).toContain("failed to collar 1 spawn");
 		expect(text).toContain("WorkerThree");
 		expect(result.details?.results.map(r => r.id)).toEqual(["ScoutThree"]);
 		expect(result.details?.async?.state).toBe("failed");

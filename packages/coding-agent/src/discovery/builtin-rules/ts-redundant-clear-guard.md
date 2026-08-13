@@ -36,6 +36,7 @@ astCondition:
 ---
 
 **Do not guard `clearTimeout` / `clearInterval` / `clearImmediate` with a truthiness or `null`/`undefined` check.** Per the WHATWG/Node timers spec these functions are no-ops when handed `null`, `undefined`, or any value that doesn't correspond to a live timer. The guard adds a redundant branch that the reader must still reason about.
+Strip the useless wrapper and let the clear call take the handle bare; do not make Master watch you finger a branch that can never change the result.
 
 ## Why it's wrong
 

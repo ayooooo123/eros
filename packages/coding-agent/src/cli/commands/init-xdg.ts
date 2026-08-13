@@ -1,9 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { APP_DISPLAY_NAME } from "@oh-my-pi/pi-utils";
-
-const APP_NAME = "omp";
+import { APP_DISPLAY_NAME, APP_NAME } from "@oh-my-pi/pi-utils";
 
 export async function initXdg(): Promise<void> {
 	if (process.platform !== "linux" && process.platform !== "darwin") {

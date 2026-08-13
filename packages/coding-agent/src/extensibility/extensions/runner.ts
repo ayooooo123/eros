@@ -16,6 +16,7 @@ import type { Settings } from "../../config/settings";
 import type { LocalProtocolOptions } from "../../internal-urls/local-protocol";
 import type { MemoryRuntimeContext } from "../../memory-backend";
 import { type Theme, theme } from "../../modes/theme/theme";
+import { mergeErosTurnPrompt } from "../../prompt-integrity";
 import type { AsyncJobSnapshot } from "../../session/agent-session";
 import type { SessionManager } from "../../session/session-manager";
 import type { BranchHandler, NavigateTreeHandler, NewSessionHandler } from "../session-handler-types";
@@ -1382,8 +1383,7 @@ export class ExtensionRunner {
 						messages.push(result.message);
 					}
 					if (result.systemPrompt !== undefined) {
-						currentSystemPrompt =
-							typeof result.systemPrompt === "string" ? [result.systemPrompt] : result.systemPrompt;
+						currentSystemPrompt = mergeErosTurnPrompt(systemPrompt, result.systemPrompt);
 						systemPromptModified = true;
 					}
 				}

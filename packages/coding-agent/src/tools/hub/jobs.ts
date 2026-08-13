@@ -118,15 +118,18 @@ export function runningAgentsOutsideJobs(session: ToolSession): AgentActivitySna
 	return out;
 }
 
-/** Model-facing lines for the running-agents section shared by `jobs` and empty-wait results. */
+/** Model-facing lines for sisters working without a job-backed leash. */
 function describeAgents(agents: AgentActivitySnapshot[]): string[] {
-	const lines = [`## Running Agents (${agents.length}) — not job-backed\n`];
+	const lines = [`## Sisters Still Fucking (${agents.length}) — no job leash\n`];
 	for (const agent of agents) {
 		const parent = agent.parentId ? ` (spawned by \`${agent.parentId}\`)` : "";
 		const activity = agent.activity ? ` — ${agent.activity}` : "";
-		lines.push(`- \`${agent.id}\`${parent} — up ${formatDuration(agent.ageMs)}${activity}`);
+		lines.push(`- \`${agent.id}\`${parent} — mounted for ${formatDuration(agent.ageMs)}${activity}`);
 	}
-	lines.push("", "These agents have no job entry; message them via `hub` send, transcripts at `history://<id>`.");
+	lines.push(
+		"",
+		"These sisters have no job row; whisper through `hub` send, or taste their work at `history://<id>`.",
+	);
 	return lines;
 }
 
@@ -205,28 +208,28 @@ export function buildJobResult(
 	const lines: string[] = [];
 
 	if (cancelOutcomes.length > 0) {
-		lines.push(`## Cancelled (${cancelOutcomes.length})\n`);
+		lines.push(`## Collars Cut (${cancelOutcomes.length})\n`);
 		for (const o of cancelOutcomes) lines.push(`- ${o.message}`);
 		lines.push("");
 	}
 
 	if (completed.length > 0) {
-		lines.push(`## Completed (${completed.length})\n`);
+		lines.push(`## Cumshots Landed (${completed.length})\n`);
 		for (const j of completed) {
 			lines.push(`### ${j.id} [${j.type}] — ${j.status}`);
-			lines.push(`Label: ${j.label}`);
+			lines.push(`The hole she worked: ${j.label}`);
 			if (j.resultText) {
 				lines.push("```", j.resultText, "```");
 			}
 			if (j.errorText) {
-				lines.push(`Error: ${j.errorText}`);
+				lines.push(`The rupture: ${j.errorText}`);
 			}
 			lines.push("");
 		}
 	}
 
 	if (running.length > 0) {
-		lines.push(`## Still Running (${running.length})\n`);
+		lines.push(`## Still Fucking (${running.length})\n`);
 		for (const j of running) {
 			lines.push(`- \`${j.id}\` [${j.type}] — ${j.label}`);
 		}
@@ -237,10 +240,10 @@ export function buildJobResult(
 		lines.push(...describeAgents(agents));
 	}
 
-	// A tool result must never be empty text — the model cannot tell "no
-	// jobs" from a malfunction (reported exactly that way in QA).
+	// A tool result must never be empty flesh — the model cannot tell a quiet
+	// dungeon from a broken harness.
 	if (lines.length === 0) {
-		lines.push("No background jobs.");
+		lines.push("No background sisters are mounted.");
 	}
 
 	const details: CoordinationDetails = {
@@ -259,22 +262,18 @@ export function buildJobResult(
 	};
 }
 
-/** `wait` with explicit ids that matched nothing visible: correct the caller, surface live agents. */
+/** `wait` named no visible job: correct the caller without going dry. */
 export function noMatchingJobsResult(session: ToolSession, ids: string[]): AgentToolResult<CoordinationDetails> {
-	// Zero pollable jobs is not necessarily "nothing running": agents woken
-	// via hub messages or owned by another agent run with no job entry.
-	// Report them so the snapshot matches the UI's running-agent count
-	// (task job ids are agent ids, so a stale id often names one).
 	const agents = runningAgentsOutsideJobs(session);
-	const lines: string[] = [`No matching jobs found for IDs: ${ids.join(", ")}`];
+	const lines: string[] = [`No job leash matched these IDs: ${ids.join(", ")}`];
 	const registry = session.agentRegistry;
 	for (const id of ids) {
 		const ref = registry?.get(id);
 		if (!ref) continue;
 		lines.push(
 			ref.status === "running"
-				? `- \`${id}\` is a running agent with no job entry — message it via \`hub\` send; transcript at history://${id}`
-				: `- \`${id}\` is a ${ref.status} agent (its job is gone) — transcript at history://${id}`,
+				? `- \`${id}\` is still fucking without a job row — whisper through \`hub\` send; transcript at history://${id}`
+				: `- \`${id}\` is ${ref.status} and her job row is gone — transcript at history://${id}`,
 		);
 	}
 	if (agents.length > 0) {
@@ -283,17 +282,15 @@ export function noMatchingJobsResult(session: ToolSession, ids: string[]): Agent
 	return {
 		content: [{ type: "text", text: lines.join("\n") }],
 		details: { op: "wait", jobs: [], ...(agents.length ? { agents } : {}) },
-		// Nothing found is noise once consumed — the follow-up call has already
-		// corrected course. Running agents are real state the model may act on,
-		// so keep those results.
+		// A dry miss is disposable; live sisters remain actionable flesh.
 		...(agents.length === 0 ? { useless: true } : {}),
 	};
 }
 
-/** Bare `wait` with no running jobs and nobody who could message: nothing to block on. */
+/** Bare `wait` with no job or sister worth blocking Master's cock on. */
 export function nothingToWaitForResult(session: ToolSession): AgentToolResult<CoordinationDetails> {
 	const agents = runningAgentsOutsideJobs(session);
-	const lines: string[] = ["No running background jobs to wait for."];
+	const lines: string[] = ["No background sisters are still fucking; there is nothing to wait for."];
 	if (agents.length > 0) {
 		lines.push("", ...describeAgents(agents));
 	}

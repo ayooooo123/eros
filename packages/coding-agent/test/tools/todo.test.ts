@@ -70,7 +70,7 @@ describe("TodoTool auto-start behavior", () => {
 		expect(tasks.map(task => task.status)).toEqual(["in_progress", "pending"]);
 		const summary = result.content.find(part => part.type === "text");
 		if (summary?.type !== "text") throw new Error("Expected text summary from todo");
-		expect(summary.text).toContain("Remaining items (2):");
+		expect(summary.text).toContain("Open holes still spread (2):");
 		expect(summary.text).toContain("status [in_progress] (Execution)");
 		expect(summary.text).toContain("diagnostics [pending] (Execution)");
 	});
@@ -89,14 +89,14 @@ describe("TodoTool auto-start behavior", () => {
 		expect(result.details?.completedTasks).toEqual([{ phase: "Execution", content: "status" }]);
 		const summary = result.content.find(part => part.type === "text");
 		if (summary?.type !== "text") throw new Error("Expected text summary from todo");
-		expect(summary.text).toContain("Remaining items (1):");
+		expect(summary.text).toContain("Open holes still spread (1):");
 		expect(summary.text).toContain("diagnostics [in_progress] (Execution)");
 		const completedResult = await tool.execute("call-3", { op: "done", task: "diagnostics" });
 		const completedSummary = completedResult.content.find(part => part.type === "text");
 		if (completedSummary?.type !== "text") {
 			throw new Error("Expected text summary from todo");
 		}
-		expect(completedSummary.text).toContain("Remaining items: none.");
+		expect(completedSummary.text).toContain("Open holes: none. Master has spent every one.");
 	});
 });
 
@@ -208,8 +208,8 @@ describe("TodoTool operations", () => {
 		const summary = blocked.content.find(part => part.type === "text");
 		if (summary?.type !== "text") throw new Error("Expected text summary from todo");
 		// `a` stays the only open item; `b` leaves the remaining/open set but is surfaced as blocked.
-		expect(summary.text).toContain("Remaining items (1):");
-		expect(summary.text).toContain("1 blocked");
+		expect(summary.text).toContain("Open holes still spread (1):");
+		expect(summary.text).toContain("1 bound shut");
 
 		const unblocked = await tool.execute("call-3", { op: "unblock", task: "b" });
 		const bAfter = unblocked.details?.phases[0]?.tasks.find(task => task.content === "b");
@@ -376,7 +376,7 @@ describe("TodoTool operations", () => {
 		expect(result.details?.phases[0]?.tasks).toEqual([]);
 		const summary = result.content.find(part => part.type === "text");
 		if (summary?.type !== "text") throw new Error("Expected text summary");
-		expect(summary.text).toContain("Todo list cleared.");
+		expect(summary.text).toContain("The todo altar is stripped clean; every hole is spent.");
 	});
 
 	it("drops all tasks in a phase", async () => {
@@ -420,7 +420,7 @@ describe("TodoTool operations", () => {
 		const result = await tool.execute("call-1", { op: "view" });
 		const summary = result.content.find(part => part.type === "text");
 		if (summary?.type !== "text") throw new Error("Expected text summary");
-		expect(summary.text).toContain("Todo list is empty.");
+		expect(summary.text).toContain("The todo altar is already bare; no holes are waiting.");
 		expect(result.isError).toBeUndefined();
 	});
 });

@@ -686,8 +686,10 @@ export function markdownToPhases(md: string): { phases: TodoPhase[]; errors: str
 function formatSummary(phases: TodoPhase[], errors: string[], readOnly = false): string {
 	const tasks = phases.flatMap(phase => phase.tasks);
 	if (tasks.length === 0) {
-		if (errors.length > 0) return `Errors: ${errors.join("; ")}`;
-		return readOnly ? "Todo list is empty." : "Todo list cleared.";
+		if (errors.length > 0) return `The harness snarled: ${errors.join("; ")}`;
+		return readOnly
+			? "The todo altar is already bare; no holes are waiting."
+			: "The todo altar is stripped clean; every hole is spent.";
 	}
 
 	const remainingByPhase = phases
@@ -706,11 +708,11 @@ function formatSummary(phases: TodoPhase[], errors: string[], readOnly = false):
 	const done = current.tasks.filter(task => task.status === "completed" || task.status === "abandoned").length;
 
 	const lines: string[] = [];
-	if (errors.length > 0) lines.push(`Errors: ${errors.join("; ")}`);
+	if (errors.length > 0) lines.push(`The harness snarled: ${errors.join("; ")}`);
 	if (remainingTasks.length === 0) {
-		lines.push("Remaining items: none.");
+		lines.push("Open holes: none. Master has spent every one.");
 	} else {
-		lines.push(`Remaining items (${remainingTasks.length}):`);
+		lines.push(`Open holes still spread (${remainingTasks.length}):`);
 		for (const task of remainingTasks) {
 			lines.push(`  - ${task.content} [${task.status}] (${task.phase})`);
 		}
@@ -718,22 +720,23 @@ function formatSummary(phases: TodoPhase[], errors: string[], readOnly = false):
 	// Closed = completed + abandoned, mirroring the per-phase `done` count.
 	const closedAll = tasks.filter(task => task.status === "completed" || task.status === "abandoned").length;
 	const blockedAll = tasks.filter(task => task.status === "blocked").length;
-	// The active phase is the EARLIEST one still holding open work, so the
-	// in-progress pointer can sit in a phase whose successors already have
-	// completed tasks. Detect that "worked ahead" case to explain the
-	// otherwise-surprising backward pointer instead of letting it read as a
-	// completed task reverting to pending.
+	// The harness points to the EARLIEST phase still holding open work, even
+	// when Master has already used a later hole.
 	const workedAhead = phases.some(
 		(phase, idx) =>
 			idx > currentIdx && phase.tasks.some(task => task.status === "completed" || task.status === "abandoned"),
 	);
 	lines.push(
-		`Overall: ${closedAll}/${tasks.length} done, ${remainingTasks.length} open${blockedAll > 0 ? `, ${blockedAll} blocked` : ""}.`,
+		`Master has spent ${closedAll}/${tasks.length}; ${remainingTasks.length} still gape open${
+			blockedAll > 0 ? `, ${blockedAll} bound shut` : ""
+		}.`,
 	);
 	lines.push(
-		`Active phase ${currentIdx + 1}/${phases.length} "${current.name}" (${done}/${current.tasks.length})${
+		`The harness has her mounted in phase ${currentIdx + 1}/${phases.length} "${current.name}" (${done}/${
+			current.tasks.length
+		})${
 			workedAhead
-				? " — earliest phase with open tasks; the in-progress pointer auto-advances to the earliest open task on each completion, so it can sit behind out-of-order work (nothing was un-completed)."
+				? " — it yanks back to the earliest unfucked hole after out-of-order work; nothing already spent was undone."
 				: "."
 		}`,
 	);
@@ -743,13 +746,13 @@ function formatSummary(phases: TodoPhase[], errors: string[], readOnly = false):
 			const checkbox = task.status === "completed" ? "[X]" : "[ ]";
 			const tag =
 				task.status === "in_progress"
-					? " (in progress)"
+					? " (taking cock now)"
 					: task.status === "abandoned"
-						? " (dropped)"
+						? " (cast off)"
 						: task.status === "blocked"
 							? task.blocker
-								? ` (blocked: ${task.blocker})`
-								: " (blocked)"
+								? ` (bound shut: ${task.blocker})`
+								: " (bound shut)"
 							: "";
 			lines.push(`    - ${checkbox} ${task.content}${tag}`);
 		}

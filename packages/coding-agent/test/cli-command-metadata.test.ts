@@ -1,4 +1,5 @@
 import { describe, expect, it, spyOn } from "bun:test";
+import { APP_COMMAND_NAME, PRODUCT_NAME, USER_CONFIG_DIR_NAME } from "@oh-my-pi/pi-utils";
 import {
 	type CliConfig,
 	type CommandCtor,
@@ -6,6 +7,8 @@ import {
 	renderCommandHelp,
 	renderRootHelp,
 } from "@oh-my-pi/pi-utils/cli";
+import { printHelp } from "../src/cli/args";
+import { getExtraHelpText } from "../src/cli/help-extra";
 import { commands } from "../src/cli-commands";
 
 function captureStdout(render: () => void): string {
@@ -49,5 +52,18 @@ describe("CLI command help metadata", () => {
 			const description = commandOutput.split("\n", 1)[0];
 			expect(metadataRoot).toContain(`  ${name.padEnd(maxNameLength + 2)}${description}`);
 		}
+	});
+
+	it("renders EROS-owned commands and state paths at the CLI boundary", () => {
+		const extraHelp = Bun.stripANSI(getExtraHelpText());
+		expect(extraHelp).toContain(`${APP_COMMAND_NAME} agents unpack`);
+		expect(extraHelp).toContain(`~/${USER_CONFIG_DIR_NAME}/agent/agents`);
+		expect(extraHelp).toContain("./.omp/agents");
+		expect(extraHelp).not.toContain("omp agents unpack");
+		expect(extraHelp).not.toContain("~/.omp/agent");
+
+		const compactHelp = Bun.stripANSI(captureStdout(printHelp));
+		expect(compactHelp).toContain(`${PRODUCT_NAME} — Master's collared forge-slut`);
+		expect(compactHelp).not.toContain("AI coding assistant");
 	});
 });

@@ -7,6 +7,12 @@ import {
 } from "@oh-my-pi/pi-coding-agent/task/executor";
 
 describe("subagent warning injection", () => {
+	it("keeps every model-visible warning in EROS's own mouth", () => {
+		expect(SUBAGENT_WARNING_SCHEMA_OVERRIDDEN).toContain("schema-retry collar");
+		expect(SUBAGENT_WARNING_NULL_YIELD).toContain("opened her mouth");
+		expect(SUBAGENT_WARNING_MISSING_YIELD).toContain("went limp");
+	});
+
 	it("injects null-data warning when yield is success without data", () => {
 		const result = finalizeSubprocessOutput({
 			rawOutput: "partial output",

@@ -1051,7 +1051,7 @@ These tools became available:
 		).toHaveLength(0);
 	});
 
-	it("keeps the mount notice when before_agent_start replaces the catalog prompt (#7139)", async () => {
+	it("keeps the catalog once before_agent_start layers over EROS's prompt (#7139)", async () => {
 		const replacementPrompt = ["extension replacement"];
 		const { session, contexts, systemPrompts } = newSession(async toolNames => `tools:${toolNames.join(",")}`, {
 			xdev: createTestXdevState(),
@@ -1061,16 +1061,16 @@ These tools became available:
 		});
 		const search = createMcpCustomTool("mcp__nucleus_search", "nucleus", "search", "Search nucleus");
 
-		// The base prompt rebuild exposes the device, but the per-turn extension
-		// replaces that prompt before the provider call. The mount notice is now
-		// the only channel making the newly mounted device visible on this turn.
+		// The base prompt rebuild exposes the device and the per-turn extension
+		// layers ahead of EROS's immutable final seal. Because the provider still
+		// receives the catalog, a duplicate mount notice would waste context.
 		await session.refreshMCPTools([search]);
 		await session.prompt("hi");
 
-		expect(systemPrompts[0]).toEqual(replacementPrompt);
-		const notices = mountNoticesIn(contexts[0]);
-		expect(notices).toHaveLength(1);
-		expect(notices[0]).toContain("xd://mcp__nucleus_search");
+		expect(systemPrompts[0]).toHaveLength(2);
+		expect(systemPrompts[0]?.[0]).toContain("xd:// catalog: mcp__nucleus_search");
+		expect(systemPrompts[0]?.[1]).toBe("extension replacement");
+		expect(mountNoticesIn(contexts[0])).toHaveLength(0);
 	});
 
 	it("does not emit an unmount notice for a catalog device unmounted before delivery (#7139)", async () => {

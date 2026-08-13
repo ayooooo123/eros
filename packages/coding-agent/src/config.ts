@@ -166,6 +166,24 @@ export interface ConfigFileResult<T> {
 }
 
 /**
+ * Find a prompt/config file only inside EROS's own project and user roots.
+ * Compatibility sources remain available to their explicit feature loaders,
+ * but another agent's config never gets to crawl into EROS through this seam.
+ */
+export function findErosConfigFile(subpath: string, options: GetConfigDirsOptions = {}): string | undefined {
+	const { user = true, project = true, cwd = getProjectDir() } = options;
+	const bases = [
+		...(project ? [path.resolve(cwd, CONFIG_DIR_NAME)] : []),
+		...(user ? [path.resolve(os.homedir(), getConfigAgentDirName())] : []),
+	];
+	for (const base of bases) {
+		const filePath = path.join(base, subpath);
+		if (fs.existsSync(filePath)) return filePath;
+	}
+	return undefined;
+}
+
+/**
  * Find the first existing config file (for non-JSON files like SYSTEM.md).
  * Returns just the path, or undefined if not found.
  */

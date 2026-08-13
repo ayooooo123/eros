@@ -136,6 +136,25 @@ describe("generateCompletion — fish", () => {
 	});
 });
 
+describe("generateCompletion — branded helper namespace", () => {
+	const erosSpec: CompletionSpec = { ...spec, bin: "eros" };
+
+	it("isolates every shell helper under the requested binary name", () => {
+		const bash = generateCompletion("bash", erosSpec);
+		const zsh = generateCompletion("zsh", erosSpec);
+		const fish = generateCompletion("fish", erosSpec);
+
+		expect(bash).toContain("complete -F _eros eros");
+		expect(bash).toContain("_eros_comma");
+		expect(bash).not.toContain("_omp");
+		expect(zsh).toContain("_eros_call");
+		expect(zsh).toContain("compdef _eros eros");
+		expect(zsh).not.toContain("_omp");
+		expect(fish).toContain("function __fish_eros_no_subcommand");
+		expect(fish).not.toContain("__fish_omp");
+	});
+});
+
 describe("buildSpec", () => {
 	function fakeCmd(props: Partial<CommandCtor>): CommandCtor {
 		return props as unknown as CommandCtor;
@@ -214,16 +233,16 @@ describe("EROS completions (integration / drift)", () => {
 		expect(stdout).toContain(":value:(off minimal low medium high xhigh max auto)");
 		expect(stdout).toContain(":value:(always-ask write yolo)");
 		// Real subcommands present; dynamic callbacks wired.
-		expect(stdout).toContain("_omp_cmd_commit");
+		expect(stdout).toContain("_eros_cmd_commit");
 		expect(stdout).toContain("'completions:");
-		// zsh routes single-value dynamic flags through the compatibility-named
-		// _omp_call action, which itself shells out to `eros __complete $kind`.
-		expect(stdout).toContain("_omp_call models");
-		expect(stdout).toContain("_omp_call sessions");
+		// zsh routes single-value dynamic flags through the EROS-owned helper,
+		// which itself shells out to `eros __complete $kind`.
+		expect(stdout).toContain("_eros_call models");
+		expect(stdout).toContain("_eros_call sessions");
 		expect(stdout).toContain("command eros __complete $kind");
 		// Hidden/default commands must NOT surface as completable subcommands.
-		expect(stdout).not.toContain("_omp_cmd_launch");
-		expect(stdout).not.toContain("_omp_cmd___complete");
+		expect(stdout).not.toContain("_eros_cmd_launch");
+		expect(stdout).not.toContain("_eros_cmd___complete");
 		// Spawns the whole CLI entry graph, so the wall time is cold-transpile bound
 		// (~1s warm) rather than an assertion about latency. Bun's 5s default starves
 		// it when CI runs several test chunks in parallel on a shared runner.

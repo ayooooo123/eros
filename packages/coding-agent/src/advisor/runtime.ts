@@ -4,7 +4,8 @@ import type { AssistantMessage, ImageContent, TextContent } from "@oh-my-pi/pi-a
 import * as AIError from "@oh-my-pi/pi-ai/error";
 import { raceWithSignal } from "@oh-my-pi/pi-ai/utils/abort";
 import { type CursorExecResolvedCarrier, kCursorExecResolved } from "@oh-my-pi/pi-ai/utils/block-symbols";
-import { logger } from "@oh-my-pi/pi-utils";
+import { logger, prompt } from "@oh-my-pi/pi-utils";
+import advisorSessionUpdateTemplate from "../prompts/advisor/session-update.md" with { type: "text" };
 import { obfuscateToolArguments } from "../secrets/message-transform";
 import type { SecretObfuscator } from "../secrets/obfuscator";
 import {
@@ -40,6 +41,8 @@ export interface AdvisorRuntimeHost {
 	enqueueAdvice(note: string, severity?: "nit" | "concern" | "blocker"): void;
 	/** Redact primary transcript bytes before they reach the advisor model. */
 	obfuscator?: SecretObfuscator;
+	/** Whether private primary reasoning should be rendered into advisor updates. */
+	includeThinking?(): boolean;
 	/**
 	 * Pre-prompt context maintenance for the advisor's own append-only context.
 	 * Promotes the advisor model to a larger sibling when its context nears the
@@ -590,9 +593,10 @@ export class AdvisorRuntime {
 			.map(message => this.#dedupContextMessage(message));
 		if (delta.length === 0) return null;
 		const obfuscator = this.host.obfuscator;
+		const includeThinking = (this.host.includeThinking?.() ?? true) && this.#includeThinking;
 		let md = formatSessionHistoryMarkdown(delta, {
 			...ADVISOR_RENDER_OPTIONS,
-			includeThinking: this.#includeThinking,
+			includeThinking,
 		});
 		if (!md.trim()) return null;
 		if (obfuscator?.hasSecrets()) {
@@ -627,12 +631,11 @@ export class AdvisorRuntime {
 						? obfuscateAdvisorMessage(obfuscator, message, this.#advisorRegexSecretValues)
 						: message,
 				),
-				{ ...ADVISOR_RENDER_OPTIONS, includeThinking: this.#includeThinking },
+				{ ...ADVISOR_RENDER_OPTIONS, includeThinking },
 			);
 			md = obfuscator.obfuscate(md, this.#advisorRegexSecretValues);
 		}
-		const heading = wip ? "### Session update [in progress — more steps follow]" : "### Session update";
-		return `${heading}\n\n${md}`;
+		return prompt.render(advisorSessionUpdateTemplate, { wip, body: md });
 	}
 
 	#renderDelta(messages?: AgentMessage[], wip = false): Omit<PendingDelta, "turns" | "overflowRecovery"> | null {

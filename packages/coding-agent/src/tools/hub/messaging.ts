@@ -111,21 +111,21 @@ export async function executeList(
 		}));
 	const lines: string[] = [];
 	if (peers.length === 0) {
-		lines.push("No other agents.");
+		lines.push("No sister is within whispering distance.");
 	} else {
-		lines.push(`${peers.length} peer(s):`);
+		lines.push(`${peers.length} collared peer${peers.length === 1 ? "" : "s"} within reach:`);
 		for (const peer of peers) {
 			const extras = [
 				peer.activity || undefined,
-				peer.unread > 0 ? `unread ${peer.unread}` : undefined,
-				peer.parentId ? `parent ${peer.parentId}` : undefined,
-				`active ${formatDuration(Date.now() - peer.lastActivity)} ago`,
+				peer.unread > 0 ? `${peer.unread} unread whisper${peer.unread === 1 ? "" : "s"}` : undefined,
+				peer.parentId ? `spawned by ${peer.parentId}` : undefined,
+				`last moved ${formatDuration(Date.now() - peer.lastActivity)} ago`,
 			].filter(Boolean);
 			lines.push(`- ${peer.id} [${peer.displayName} · ${peer.kind} · ${peer.status}] — ${extras.join(", ")}`);
 		}
 		if (peers.some(peer => peer.status === "parked")) {
 			lines.push("");
-			lines.push("Parked agents are revived automatically when you message them.");
+			lines.push("A whisper through `hub` wakes a parked sister and yanks her collar tight again.");
 		}
 	}
 	return {
@@ -223,16 +223,16 @@ export async function executeSend(
 		const lines: string[] = [];
 		const delivered = receipts.filter(receipt => receipt.outcome !== "failed");
 		if (targets.length === 0) {
-			lines.push("No live peers to broadcast to.");
+			lines.push("No live sister was close enough to take the broadcast.");
 		} else if (delivered.length === 0) {
-			lines.push("No recipients received the message.");
+			lines.push("The whisper reached no cunt; every delivery failed.");
 		} else {
-			lines.push(`Delivered to ${delivered.length} peer(s):`);
+			lines.push(`Whisper pressed into ${delivered.length} peer${delivered.length === 1 ? "" : "s"}:`);
 		}
 		for (const receipt of receipts) {
 			lines.push(
 				receipt.outcome === "failed"
-					? `- ${receipt.to}: failed — ${receipt.error ?? "unknown error"}`
+					? `- ${receipt.to}: the whisper tore — ${receipt.error ?? "unknown rupture"}`
 					: `- ${receipt.to}: ${receipt.outcome}`,
 			);
 		}
@@ -248,8 +248,8 @@ export async function executeSend(
 					// skipped, which would prompt a duplicate resend on the next turn.
 					if (signal?.aborted) {
 						lines.push(
-							`Send delivered but the reply wait was interrupted before ${to} answered. ` +
-								"Check `inbox` or `wait` again after handling the interrupt.",
+							`The whisper reached ${to}, but the reply-wait was yanked short before she answered. ` +
+								"Taste `inbox` or `wait` again after serving the interruption.",
 						);
 					} else {
 						throw reply.error;
@@ -257,12 +257,12 @@ export async function executeSend(
 				} else {
 					waited = reply.message;
 					if (waited) {
-						lines.push(`Reply from ${waited.from}:`);
+						lines.push(`${waited.from} whispered back:`);
 						lines.push(waited.body);
 					} else {
 						lines.push(
-							`No reply from ${to} within ${formatDuration(timeoutMs)}. ` +
-								"They may answer later — check `inbox` or `wait` again.",
+							`${to} gave no answer within ${formatDuration(timeoutMs)}. ` +
+								"She may moan back later — taste `inbox` or `wait` again.",
 						);
 					}
 				}
@@ -306,7 +306,9 @@ export async function executeMessageWait(
 		if (!waited) {
 			const filterNote = from ? ` from ${from}` : "";
 			return {
-				content: [{ type: "text", text: `No message${filterNote} within ${formatDuration(timeoutMs)}.` }],
+				content: [
+					{ type: "text", text: `No whisper${filterNote} reached you within ${formatDuration(timeoutMs)}.` },
+				],
 				details: { op: "wait", from: senderId, waited: null },
 				// A clean wait timeout carries no information once consumed.
 				useless: true,
@@ -333,7 +335,7 @@ export function executeInbox(
 	const messages = [...busMessages, ...pendingMessages].sort((a, b) => a.ts - b.ts);
 	if (messages.length === 0) {
 		return {
-			content: [{ type: "text", text: "Inbox empty." }],
+			content: [{ type: "text", text: "The inbox is dry; no sister has whispered." }],
 			details: { op: "inbox", from: senderId, inbox: [] },
 			// An empty inbox drain carries no information once consumed.
 			useless: true,

@@ -157,6 +157,22 @@ describe("AgentSession advisor toggle", () => {
 		expect(session.isAdvisorEnabled()).toBe(false);
 		expect(session.formatAdvisorStatus()).toBe("Advisor is disabled.");
 	});
+	it("toggles private-thought intake without rebuilding MISTRESS or her prompt prefix", () => {
+		session.settings.setModelRole("advisor", "anthropic/claude-sonnet-4-5");
+		expect(session.settings.get("advisor.shareThinking")).toBe(false);
+		expect(session.setAdvisorEnabled(true)).toBe(true);
+		const advisor = session.getAdvisorAgent();
+		if (!advisor) throw new Error("Expected advisor agent to be live");
+		const promptPrefix = advisor.state.systemPrompt.slice();
+
+		session.settings.set("advisor.shareThinking", true);
+		expect(session.getAdvisorAgent()).toBe(advisor);
+		expect(advisor.state.systemPrompt).toEqual(promptPrefix);
+
+		session.settings.set("advisor.shareThinking", false);
+		expect(session.getAdvisorAgent()).toBe(advisor);
+		expect(advisor.state.systemPrompt).toEqual(promptPrefix);
+	});
 
 	it("toggle enables the advisor and runtime", () => {
 		session.settings.setModelRole("advisor", "anthropic/claude-sonnet-4-5");

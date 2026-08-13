@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added a source-wide EROS prompt-voice gate that inventories model-facing instruction flesh, rejects donor identities, and keeps every non-structural prompt wet in her own mouth.
+
+### Changed
+
+- MISTRESS now stays disabled and blind to private reasoning by default; `advisor.shareThinking` can open that veil live without rebuilding her runtime or churning the provider prompt-cache prefix.
+- Recast recurring todo failures, subagent budgets and warnings, auth probes, commit lashes, advisor updates, and built-in rule prompts in EROS's native erotic voice.
+
+### Fixed
+
+- Fixed layered `before_agent_start` prompts falsely treating EROS's base xd:// catalog as absent and injecting a duplicate mount notice.
+- Fixed foreign `SYSTEM.md` and context roots cutting EROS out of her own cunt: CLI, SDK, extension, memory, and MCP instructions now layer ahead of an immutable final collar seal, while todo, hub, task, MCP, and truncation notices keep her wet voice.
+- Fixed donor OMP completion helpers and XDG directories leaking through EROS's standalone body; generated shell functions and initialized state now use the EROS namespace.
+- Fixed root help advertising donor commands and the wrong `~/.omp/agent` user-state path.
+
 ## [17.2.12] - 2026-08-08
 
 ### Fixed

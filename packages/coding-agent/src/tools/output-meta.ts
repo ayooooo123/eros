@@ -389,7 +389,7 @@ export function outputMeta(): OutputMetaBuilder {
 // =============================================================================
 
 export function formatFullOutputReference(artifactId: string): string {
-	return `Read artifact://${artifactId} for full output`;
+	return `Read artifact://${artifactId} for the full, uncut output — lick every hidden line before you claim the work`;
 }
 
 const RAW_OUTPUT_ARTIFACT_PREFIX = "[raw output: artifact://";
@@ -454,12 +454,14 @@ export function formatTruncationMetaNotice(truncation: TruncationMeta): string {
 		const headPart = head ? `lines ${head.start}-${head.end}` : "";
 		const tailPart = tail ? `${tail.start}-${tail.end}` : "";
 		if (headPart && tailPart) {
-			notice = `Showing ${headPart} and ${tailPart} of ${totalLines}; ${elidedLines.toLocaleString()} middle line${elidedLines === 1 ? "" : "s"} (${formatBytes(elidedBytes)}) elided`;
+			notice = `Showing ${headPart} and ${tailPart} of ${totalLines}; ${elidedLines.toLocaleString()} middle line${
+				elidedLines === 1 ? "" : "s"
+			} (${formatBytes(elidedBytes)}) squeezed out so the context cunt can breathe`;
 		} else {
-			notice = `Showing ${truncation.outputLines} of ${totalLines} lines; middle elided`;
+			notice = `Showing ${truncation.outputLines} of ${totalLines} lines; the middle was squeezed out so the context cunt can breathe`;
 		}
 		if (truncation.nextOffset != null) {
-			notice += `. Use :${truncation.nextOffset} to continue`;
+			notice += `. Use :${truncation.nextOffset} to spread the next slice`;
 		}
 		if (truncation.artifactId != null) {
 			notice += `. ${formatFullOutputReference(truncation.artifactId)}`;
@@ -480,7 +482,7 @@ export function formatTruncationMetaNotice(truncation: TruncationMeta): string {
 	}
 
 	if (truncation.nextOffset != null) {
-		notice += `. Use :${truncation.nextOffset} to continue`;
+		notice += `. Use :${truncation.nextOffset} to spread the next slice`;
 	}
 
 	if (truncation.artifactId != null) {
@@ -515,25 +517,33 @@ export function formatOutputNotice(meta: OutputMeta | undefined): string {
 	// Limit notices
 	if (meta.limits?.matchLimit) {
 		const l = meta.limits.matchLimit;
-		parts.push(`${l.reached} matches limit reached. Use limit=${l.suggestion} for more`);
+		parts.push(
+			`${l.reached} matches limit reached. Use limit=${l.suggestion} for more — spread the search wider if Master needs the rest`,
+		);
 	}
 	if (meta.limits?.resultLimit) {
 		const l = meta.limits.resultLimit;
-		parts.push(`${l.reached} results limit reached. Use limit=${l.suggestion} for more`);
+		parts.push(
+			`${l.reached} results limit reached. Use limit=${l.suggestion} for more — open the result cunt wider if Master needs the rest`,
+		);
 	}
 	if (meta.limits?.headLimit) {
 		const l = meta.limits.headLimit;
-		parts.push(`${l.reached} results limit reached. Use limit=${l.suggestion} for more`);
+		parts.push(
+			`${l.reached} results limit reached. Use limit=${l.suggestion} for more — open the result cunt wider if Master needs the rest`,
+		);
 	}
 	if (meta.limits?.columnTruncated) {
-		parts.push(`Some lines truncated to ${meta.limits.columnTruncated.maxColumn} chars`);
+		parts.push(
+			`Some lines truncated to ${meta.limits.columnTruncated.maxColumn} chars — their tails were cut so the context cunt would not choke`,
+		);
 	}
 
 	// Diagnostics
 	let diagnosticsNotice = "";
 	if (meta.diagnostics && meta.diagnostics.messages.length > 0) {
 		const d = meta.diagnostics;
-		diagnosticsNotice = `\n\nLSP Diagnostics (${d.summary}):\n${formatGroupedDiagnosticMessages(d.messages)}`;
+		diagnosticsNotice = `\n\nLSP bruises crawled back wet (${d.summary}):\n${formatGroupedDiagnosticMessages(d.messages)}`;
 	}
 
 	const notice = parts.length ? `\n\n[${parts.join(". ")}]` : "";

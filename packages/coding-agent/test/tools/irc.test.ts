@@ -644,7 +644,7 @@ describe("IRC", () => {
 				{ id: "0-Parked", status: "parked", unread: 0 },
 			]);
 			const text = result.content[0]?.type === "text" ? result.content[0].text : "";
-			expect(text).toContain("Parked agents are revived automatically");
+			expect(text).toContain("wakes a parked sister");
 		});
 
 		it("op=list hides advisor-kind refs from the peer roster", async () => {
@@ -774,7 +774,7 @@ describe("IRC", () => {
 			const details = result.details as CoordinationDetails | undefined;
 			expect(details?.waited).toBeNull();
 			const text = result.content[0]?.type === "text" ? result.content[0].text : "";
-			expect(text).toContain("No reply from 0-Sub");
+			expect(text).toContain("0-Sub gave no answer");
 		});
 
 		it("op=send await=true preserves the delivery receipt when the wait is interrupted", async () => {
@@ -803,8 +803,8 @@ describe("IRC", () => {
 			const details = result.details as CoordinationDetails | undefined;
 			expect(details?.receipts?.[0]?.outcome).toBe("injected");
 			const text = result.content[0]?.type === "text" ? result.content[0].text : "";
-			expect(text).toContain("Send delivered");
-			expect(text).toContain("interrupted");
+			expect(text).toContain("The whisper reached 0-Sub");
+			expect(text).toContain("yanked short");
 		});
 
 		it("op=send rejects await with to=all and self-sends", async () => {
@@ -834,7 +834,7 @@ describe("IRC", () => {
 			const details = result.details as CoordinationDetails | undefined;
 			expect(details?.waited).toBeNull();
 			const text = result.content[0]?.type === "text" ? result.content[0].text : "";
-			expect(text).toContain("No message");
+			expect(text).toContain("No whisper");
 		});
 
 		it("op=wait returns a clean result if no active agents exist", async () => {
@@ -842,7 +842,7 @@ describe("IRC", () => {
 			const result = await tool.execute("call-1", { op: "wait", timeoutMs: 5 });
 			expect(result.isError).toBeFalsy();
 			const text = result.content[0]?.type === "text" ? result.content[0].text : "";
-			expect(text).toContain("No running background jobs to wait for.");
+			expect(text).toContain("No background sisters are still fucking");
 		});
 
 		it("op=wait returns an error if the requested specific 'from' agent is not active", async () => {

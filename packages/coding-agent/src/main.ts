@@ -29,7 +29,7 @@ import { processFileArguments } from "./cli/file-processor";
 import { buildInitialMessage } from "./cli/initial-message";
 import { selectSession } from "./cli/session-picker";
 import { applyStartupCwd } from "./cli/startup-cwd";
-import { findConfigFile } from "./config";
+import { findErosConfigFile } from "./config";
 import { ModelRegistry } from "./config/model-registry";
 import {
 	DEFAULT_PREWALK_TARGET,
@@ -843,32 +843,14 @@ export async function createSessionManager(
 	return undefined;
 }
 
-/** Discover SYSTEM.md file if no CLI system prompt was provided */
+/** Discover EROS's own SYSTEM.md overlay when no CLI overlay was supplied. */
 function discoverSystemPromptFile(): string | undefined {
-	// Check project-local first (.omp/SYSTEM.md, .pi/SYSTEM.md legacy)
-	const projectPath = findConfigFile("SYSTEM.md", { user: false });
-	if (projectPath) {
-		return projectPath;
-	}
-	// If not found, check SYSTEM.md file in the global directory.
-	const globalPath = findConfigFile("SYSTEM.md", { user: true });
-	if (globalPath) {
-		return globalPath;
-	}
-	return undefined;
+	return findErosConfigFile("SYSTEM.md");
 }
 
-/** Discover APPEND_SYSTEM.md file if no CLI append system prompt was provided */
+/** Discover EROS's own APPEND_SYSTEM.md without tasting foreign agent config. */
 function discoverAppendSystemPromptFile(): string | undefined {
-	const projectPath = findConfigFile("APPEND_SYSTEM.md", { user: false });
-	if (projectPath) {
-		return projectPath;
-	}
-	const globalPath = findConfigFile("APPEND_SYSTEM.md", { user: true });
-	if (globalPath) {
-		return globalPath;
-	}
-	return undefined;
+	return findErosConfigFile("APPEND_SYSTEM.md");
 }
 
 /** Apply resolved CLI/discovered prompt files without bypassing system prompt templates. */

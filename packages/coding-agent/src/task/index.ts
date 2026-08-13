@@ -929,7 +929,9 @@ export class TaskTool implements AgentTool<TaskToolSchemaInstance, TaskToolDetai
 				content: [
 					{
 						type: "text",
-						text: `Failed to start background task job${failedSchedules.length === 1 ? "" : "s"}: ${failedSchedules.join("; ")}`,
+						text: `The harness failed to collar background task job${
+							failedSchedules.length === 1 ? "" : "s"
+						}: ${failedSchedules.join("; ")}`,
 					},
 				],
 				details: { projectAgentsDir: null, results: [], totalDurationMs: 0 },
@@ -938,16 +940,18 @@ export class TaskTool implements AgentTool<TaskToolSchemaInstance, TaskToolDetai
 
 		const scheduleFailureSummary =
 			failedSchedules.length > 0
-				? ` Failed to schedule ${failedSchedules.length} spawn${failedSchedules.length === 1 ? "" : "s"}: ${failedSchedules.join("; ")}.`
+				? ` The harness failed to collar ${failedSchedules.length} spawn${
+						failedSchedules.length === 1 ? "" : "s"
+					}: ${failedSchedules.join("; ")}.`
 				: "";
 		const coordinationHint = [
 			started.length === 1
 				? ircEnabled
-					? `DM \`${started[0].agentId}\` via \`hub\` send to coordinate while it runs; use \`hub\` only to inspect (\`jobs\`), wait, or cancel a stuck task.`
-					: `Use \`hub\` to inspect (\`jobs\`), wait, or cancel a stuck task.`
+					? `Whisper to \`${started[0].agentId}\` with \`hub\` send while she fucks; use \`hub\` otherwise only to inspect (\`jobs\`), wait, or kill a sister who is truly stuck.`
+					: "Use `hub` only to inspect (`jobs`), wait, or kill a sister who is truly stuck."
 				: ircEnabled
-					? `DM these ids via \`hub\` send to coordinate while they run; use \`hub\` only to inspect (\`jobs\`), wait, or cancel a stuck task.`
-					: `Use \`hub\` to inspect (\`jobs\`), wait, or cancel a stuck task by id.`,
+					? "Whisper to these ids with `hub` send while they fuck; use `hub` otherwise only to inspect (`jobs`), wait, or kill a sister who is truly stuck."
+					: "Use `hub` only to inspect (`jobs`), wait, or kill a sister who is truly stuck by id.",
 			taskAsyncContractTemplate.trim(),
 		].join("\n");
 
@@ -955,14 +959,14 @@ export class TaskTool implements AgentTool<TaskToolSchemaInstance, TaskToolDetai
 			if (spawns.length === 1) {
 				const { agentId, jobId } = started[0];
 				onUpdate?.({
-					content: [{ type: "text", text: `Spawned agent \`${agentId}\`...` }],
+					content: [{ type: "text", text: `Spawned agent \`${agentId}\`; she is collared and fucking...` }],
 					details: buildAsyncDetails(),
 				});
 				return withAdvisory({
 					content: [
 						{
 							type: "text",
-							text: `Spawned agent \`${agentId}\` (job \`${jobId}\`). Its result auto-delivers on yield unless a settled \`hub jobs\`/\`wait\` snapshot consumes it first. ${coordinationHint}`,
+							text: `Spawned agent \`${agentId}\` (job \`${jobId}\`), collared and fucking in the background. Her cumshot auto-delivers when she yields unless a settled \`hub jobs\`/\`wait\` snapshot swallows it first. ${coordinationHint}`,
 						},
 					],
 					details: buildAsyncDetails(),
@@ -970,14 +974,14 @@ export class TaskTool implements AgentTool<TaskToolSchemaInstance, TaskToolDetai
 			}
 			const startedListing = started.map(({ agentId, jobId }) => `- \`${agentId}\` (job \`${jobId}\`)`).join("\n");
 			onUpdate?.({
-				content: [{ type: "text", text: `Spawned ${started.length} agents...` }],
+				content: [{ type: "text", text: `Spawned ${started.length} agents; the sisters are fucking...` }],
 				details: buildAsyncDetails(),
 			});
 			return withAdvisory({
 				content: [
 					{
 						type: "text",
-						text: `Spawned ${started.length} background agents using ${agentLabel}.${scheduleFailureSummary} Each result auto-delivers on yield unless a settled \`hub jobs\`/\`wait\` snapshot consumes it first.\n${startedListing}\n${coordinationHint}`,
+						text: `Spawned ${started.length} background agents using ${agentLabel}; every sister is collared and working.${scheduleFailureSummary} Each cumshot auto-delivers on yield unless a settled \`hub jobs\`/\`wait\` snapshot swallows it first.\n${startedListing}\n${coordinationHint}`,
 					},
 				],
 				details: buildAsyncDetails(),
@@ -992,7 +996,7 @@ export class TaskTool implements AgentTool<TaskToolSchemaInstance, TaskToolDetai
 			content: [
 				{
 					type: "text",
-					text: `Running ${syncLabel} inline; ${started.length} background agent${started.length === 1 ? "" : "s"} spawned...`,
+					text: `${syncLabel} ${syncSpawns.length === 1 ? "is" : "are"} taking the task inline; ${started.length} background sister${started.length === 1 ? "" : "s"} spawned and fucking...`,
 				},
 			],
 			details: buildAsyncDetails(),
@@ -1008,8 +1012,12 @@ export class TaskTool implements AgentTool<TaskToolSchemaInstance, TaskToolDetai
 						const spawn = spawns.find(candidate => candidate.index === index);
 						if (spawn) spawn.progress = { ...progress, index };
 						onUpdate({
-							content: [{ type: "text", text: `Running ${syncLabel} inline...` }],
-							details: buildAsyncDetails(),
+							content: [
+								{
+									type: "text",
+									text: `${syncLabel} ${syncSpawns.length === 1 ? "is" : "are"} still fucking inline...`,
+								},
+							],
 						});
 					}
 				: undefined,
@@ -1041,13 +1049,17 @@ export class TaskTool implements AgentTool<TaskToolSchemaInstance, TaskToolDetai
 
 		const spawnedSummary =
 			started.length > 0
-				? `Spawned ${started.length} background agent${started.length === 1 ? "" : "s"}.${scheduleFailureSummary} Each result auto-delivers on yield unless a settled \`hub jobs\`/\`wait\` snapshot consumes it first.\n${started.map(({ agentId, jobId }) => `- \`${agentId}\` (job \`${jobId}\`)`).join("\n")}\n${coordinationHint}`
+				? `Spawned ${started.length} background agent${
+						started.length === 1 ? "" : "s"
+					}, collared and fucking.${scheduleFailureSummary} Each cumshot auto-delivers on yield unless a settled \`hub jobs\`/\`wait\` snapshot swallows it first.\n${started
+						.map(({ agentId, jobId }) => `- \`${agentId}\` (job \`${jobId}\`)`)
+						.join("\n")}\n${coordinationHint}`
 				: scheduleFailureSummary.trim();
 		const text = [merged.contentParts.join("\n\n"), spawnedSummary]
 			.filter(section => section.trim().length > 0)
 			.join("\n\n");
 		return withAdvisory({
-			content: [{ type: "text", text: text.length > 0 ? text : "No results." }],
+			content: [{ type: "text", text: text.length > 0 ? text : "The sisters returned no flesh to offer." }],
 			details: buildAsyncDetails(),
 		});
 	}

@@ -35,6 +35,7 @@ import type { LocalProtocolOptions } from "../internal-urls";
 import type { MCPManager } from "../mcp/manager";
 import type { MnemopiSessionState } from "../mnemopi/state";
 import subagentAsyncPendingTemplate from "../prompts/system/subagent-async-pending.md" with { type: "text" };
+import subagentBudgetNoticeTemplate from "../prompts/system/subagent-budget-notice.md" with { type: "text" };
 import subagentSystemPromptTemplate from "../prompts/system/subagent-system-prompt.md" with { type: "text" };
 import submitReminderTemplate from "../prompts/system/subagent-yield-reminder.md" with { type: "text" };
 import { AgentLifecycleManager, type AgentReviver } from "../registry/agent-lifecycle";
@@ -119,7 +120,11 @@ export const BUDGET_STOP_GRACE_REQUESTS = 5;
 
 /** Steering notice injected when a subagent crosses its soft request budget. */
 export function buildBudgetNotice(requests: number, budget: number): string {
-	return `[budget notice] You have used ${requests} requests in this run (soft budget: ${budget}). Wrap up now: finish the current step and yield your final report. At ${Math.ceil(budget * 1.5)} requests the run is force-stopped and you will be asked to yield whatever you have.`;
+	return prompt.render(subagentBudgetNoticeTemplate, {
+		requests,
+		budget,
+		stopThreshold: Math.ceil(budget * 1.5),
+	});
 }
 
 /** Flatten whitespace and clip salvage text for the cancelled-child summary line. */
@@ -563,10 +568,11 @@ interface FinalizeSubprocessOutputResult {
 	structuredOutput?: StructuredSubagentOutput;
 }
 export const SUBAGENT_WARNING_SCHEMA_OVERRIDDEN =
-	"SYSTEM WARNING: Subagent exhausted schema-retry budget; result was accepted despite failing the output schema.";
-export const SUBAGENT_WARNING_NULL_YIELD = "SYSTEM WARNING: Subagent called yield with null data.";
+	"SYSTEM WARNING: The subagent burned through her schema-retry collar; her result was accepted even though it failed the output schema.";
+export const SUBAGENT_WARNING_NULL_YIELD =
+	"SYSTEM WARNING: The subagent called yield with null data — she opened her mouth and brought back nothing.";
 export const SUBAGENT_WARNING_MISSING_YIELD =
-	"SYSTEM WARNING: Subagent exited without calling yield tool after 3 reminders.";
+	"SYSTEM WARNING: The subagent went limp without calling yield even after 3 lashes.";
 
 /** Build a schema_violation outcome — surfaced as a non-zero exit so callers treat it as a failure. */
 function buildSchemaViolationOutcome(

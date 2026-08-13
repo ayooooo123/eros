@@ -456,6 +456,18 @@ export const SETTINGS_SCHEMA = {
 				"Pair a second model (assigned to the 'advisor' role) that passively reviews each turn and injects notes.",
 		},
 	},
+	"advisor.shareThinking": {
+		type: "boolean",
+		default: false,
+		ui: {
+			tab: "model",
+			group: "MISTRESS",
+			label: "Share Private Thinking",
+			description:
+				"Let MISTRESS read the main agent's private reasoning. Off by default: she still receives every user message, assistant answer, tool call, tool result, and harness injection.",
+			condition: "advisorEnabled",
+		},
+	},
 	"prewalk.enabled": {
 		type: "boolean",
 		default: false,

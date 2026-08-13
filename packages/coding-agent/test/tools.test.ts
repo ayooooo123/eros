@@ -458,7 +458,9 @@ describe("Coding Agent Tools", () => {
 			expect(output).toContain("Line 1");
 			expect(output).toContain(`Line ${defaultLimit}`);
 			expect(output).not.toContain(`Line ${defaultLimit + 1}`);
-			expect(output).toContain(`[Showing lines 1-${defaultLimit} of 3500. Use :${defaultLimit + 1} to continue]`);
+			expect(output).toContain(
+				`[Showing lines 1-${defaultLimit} of 3500. Use :${defaultLimit + 1} to spread the next slice]`,
+			);
 		});
 
 		it("should truncate when byte limit exceeded", async () => {
@@ -472,7 +474,9 @@ describe("Coding Agent Tools", () => {
 
 			expect(output).toContain("Line 1:");
 			// Should show byte limit message
-			expect(output).toMatch(/\[Showing lines 1-\d+ of 1000 \(\d+(\.\d+)?\s*KB limit\)\. Use :\d+ to continue\]/);
+			expect(output).toMatch(
+				/\[Showing lines 1-\d+ of 1000 \(\d+(\.\d+)?\s*KB limit\)\. Use :\d+ to spread the next slice\]/,
+			);
 		});
 
 		it("should handle offset parameter (with leading context expansion)", async () => {
@@ -508,7 +512,7 @@ describe("Coding Agent Tools", () => {
 			expect(output).toContain("Line 10");
 			expect(output).toContain("Line 13");
 			expect(output).not.toContain("Line 14");
-			expect(output).toContain("[Showing lines 1-13 of 100. Use :14 to continue]");
+			expect(output).toContain("[Showing lines 1-13 of 100. Use :14 to spread the next slice]");
 		});
 
 		it("does not expand on the leading side when offset is 1 or unspecified", async () => {
@@ -527,7 +531,7 @@ describe("Coding Agent Tools", () => {
 			expect(output).toContain("Line 5");
 			expect(output).toContain("Line 8");
 			expect(output).not.toContain("Line 9");
-			expect(output).toContain("[Showing lines 1-8 of 50. Use :9 to continue]");
+			expect(output).toContain("[Showing lines 1-8 of 50. Use :9 to spread the next slice]");
 		});
 
 		it("clamps leading context at file start without errors", async () => {
@@ -565,7 +569,7 @@ describe("Coding Agent Tools", () => {
 			expect(output).toContain("Line 60");
 			expect(output).toContain("Line 63");
 			expect(output).not.toContain("Line 64");
-			expect(output).toContain("[Showing lines 40-63 of 100. Use :64 to continue]");
+			expect(output).toContain("[Showing lines 40-63 of 100. Use :64 to spread the next slice]");
 		});
 
 		it("should show error when offset is beyond file length", async () => {
@@ -681,7 +685,7 @@ describe("Coding Agent Tools", () => {
 				expect(Buffer.byteLength(output, "utf-8")).toBeLessThan(20 * 1024);
 				expect(output).toContain("artifact://");
 				expect(truncation?.nextOffset).toBe(defaultLimit + 1);
-				expect(output).toContain(`Use :${defaultLimit + 1} to continue`);
+				expect(output).toContain(`Use :${defaultLimit + 1} to spread the next slice`);
 
 				const saveArtifact = vi.spyOn(spillManager, "saveArtifact");
 				const artifactResult = await spillReadTool.execute(
@@ -1769,7 +1773,7 @@ function b() {
 
 			// Ensure poll finished
 			const result = await resultPromise;
-			expect(getTextOutput(result)).toContain("Completed");
+			expect(getTextOutput(result)).toContain("Cumshots Landed");
 
 			// Wait for deliveries to be processed
 			await manager.drainDeliveries({ timeoutMs: 100 });
@@ -1804,17 +1808,17 @@ function b() {
 			// Once the job settles, the result is informative — flag absent.
 			gate.resolve("done");
 			const settled = await jobTool.execute("test-call-useless-settled", { op: "wait", ids: [jobId] });
-			expect(getTextOutput(settled)).toContain("Completed");
+			expect(getTextOutput(settled)).toContain("Cumshots Landed");
 			expect(settled.useless).toBeUndefined();
 
 			// Nothing left to wait for: noise once consumed.
 			const idle = await jobTool.execute("test-call-useless-idle", { op: "wait" });
-			expect(getTextOutput(idle)).toContain("No running background jobs");
+			expect(getTextOutput(idle)).toContain("No background sisters are still fucking");
 			expect(idle.useless).toBe(true);
 
 			// A poll naming unknown ids found nothing — equally uneventful.
 			const missing = await jobTool.execute("test-call-useless-missing", { op: "wait", ids: ["no-such-job"] });
-			expect(getTextOutput(missing)).toContain("No matching jobs found");
+			expect(getTextOutput(missing)).toContain("No job leash matched");
 			expect(missing.useless).toBe(true);
 		});
 	});

@@ -47,6 +47,24 @@ describe("browser launch stealth defaults", () => {
 const UNGOOGLED_CHROMIUM_FLATPAK_ID = "io.github.ungoogled_software.ungoogled_chromium";
 
 describe("system Chromium candidates", () => {
+	it("reserves interactive macOS Chrome channels for the human desktop", () => {
+		const candidates = systemChromiumCandidatesForTest("darwin", "/Users/test", () => undefined);
+
+		expect(candidates).toContain(
+			"/Applications/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+		);
+		expect(candidates).toContain("/Applications/Chromium.app/Contents/MacOS/Chromium");
+		for (const interactiveBundle of [
+			"/Google Chrome.app/",
+			"/Google Chrome Beta.app/",
+			"/Google Chrome Dev.app/",
+			"/Google Chrome Canary.app/",
+			"/Microsoft Edge.app/",
+		]) {
+			expect(candidates.some(candidate => candidate.includes(interactiveBundle))).toBeFalse();
+		}
+	});
+
 	const linuxCandidates = (which: (name: string) => string | undefined = () => undefined) =>
 		systemChromiumCandidatesForTest("linux", "/home/test", which);
 

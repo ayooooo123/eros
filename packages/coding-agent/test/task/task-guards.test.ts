@@ -195,6 +195,7 @@ describe("runSubprocess request guards", () => {
 		expect(handle.steerCalls.length).toBe(1);
 		expect(handle.steerCalls[0].content).toContain("[budget notice]");
 		expect(handle.steerCalls[0].content).toContain("4 requests");
+		expect(handle.steerCalls[0].content).toContain("The harness has its fist in your hair");
 		expect(handle.steerCalls[0].options?.deliverAs).toBe("steer");
 	});
 

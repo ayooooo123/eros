@@ -552,14 +552,18 @@ describe("truncation notice formatting", () => {
 			suffix: " [suffix]",
 		});
 		expect(partialLineNotice).toBe(
-			"\n\n[Showing last 4B of line 1 (line is 10B). Full output: /tmp/full.log [suffix]]",
+			"\n\n[Showing last 4B of line 1 (line is 10B). Full uncut output: /tmp/full.log [suffix] — the rest was squeezed out so the context cunt can breathe]",
 		);
 
 		const lineTruncation = truncateTail("l1\nl2\nl3", { maxLines: 2, maxBytes: 100 });
-		expect(formatTailTruncationNotice(lineTruncation)).toBe("\n\n[Showing lines 2-3 of 3]");
+		expect(formatTailTruncationNotice(lineTruncation)).toBe(
+			"\n\n[Showing lines 2-3 of 3 — the earlier flesh was squeezed out so the context cunt can breathe]",
+		);
 
 		const byteTruncation = truncateTail("aaa\nbbbb\ncc", { maxLines: 10, maxBytes: 6 });
-		expect(formatTailTruncationNotice(byteTruncation)).toBe("\n\n[Showing lines 3-3 of 3]");
+		expect(formatTailTruncationNotice(byteTruncation)).toBe(
+			"\n\n[Showing lines 3-3 of 3 — the earlier flesh was squeezed out so the context cunt can breathe]",
+		);
 	});
 
 	test("formatHeadTruncationNotice returns empty string for non-truncated results", () => {
@@ -569,7 +573,9 @@ describe("truncation notice formatting", () => {
 
 	test("formatHeadTruncationNotice formats head truncation range", () => {
 		const lineTruncation = truncateHead("l1\nl2\nl3", { maxLines: 2, maxBytes: 100 });
-		expect(formatHeadTruncationNotice(lineTruncation)).toBe("\n\n[Showing lines 1-2 of 3. Use :3 to continue]");
+		expect(formatHeadTruncationNotice(lineTruncation)).toBe(
+			"\n\n[Showing lines 1-2 of 3. Use :3 to spread the next slice]",
+		);
 
 		const byteTruncation = truncateHead("12345\nabc\nz", { maxLines: 10, maxBytes: 7 });
 		expect(
@@ -577,7 +583,7 @@ describe("truncation notice formatting", () => {
 				startLine: 100,
 				totalFileLines: 500,
 			}),
-		).toBe("\n\n[Showing lines 100-100 of 500. Use :101 to continue]");
+		).toBe("\n\n[Showing lines 100-100 of 500. Use :101 to spread the next slice]");
 	});
 });
 

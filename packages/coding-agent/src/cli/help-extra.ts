@@ -1,6 +1,6 @@
 import "@oh-my-pi/pi-utils/env";
 import chalk from "@oh-my-pi/pi-utils/chalk";
-import { APP_NAME, CONFIG_DIR_NAME } from "@oh-my-pi/pi-utils/dirs";
+import { APP_COMMAND_NAME, USER_CONFIG_DIR_NAME } from "@oh-my-pi/pi-utils/dirs";
 
 export function getExtraHelpText(): string {
 	return `${chalk.bold("Environment Variables:")}
@@ -51,10 +51,11 @@ export function getExtraHelpText(): string {
   ANTHROPIC_SEARCH_API_KEY   - Anthropic web search (override; isolates search from main ANTHROPIC_API_KEY)
   ANTHROPIC_SEARCH_BASE_URL  - Anthropic web search base URL (override; pairs with ANTHROPIC_SEARCH_API_KEY)
 
-  ${chalk.dim("# Configuration")}
-  OMP_PROFILE                 - Named profile for isolated agent state (same as --profile)
-  Use \`omp --profile <name> --alias <command>\` to create a shell shortcut for a profile
-  PI_CODING_AGENT_DIR        - Session storage directory (default: ~/${CONFIG_DIR_NAME}/agent)
+  ${chalk.dim("# EROS state")}
+  EROS_CONFIG_DIR            - Relocate her private state root under home (default: ${USER_CONFIG_DIR_NAME})
+  Use \`${APP_COMMAND_NAME} --profile <name> --alias <command>\` to give her an isolated profile
+
+  ${chalk.dim("# Engine compatibility")}
   PI_PACKAGE_DIR             - Override package directory (for Nix/Guix store paths)
   PI_SMOL_MODEL              - Override smol/fast model (see --smol)
   PI_SLOW_MODEL              - Override slow/reasoning model (see --slow)
@@ -70,7 +71,7 @@ ${chalk.bold("Available Tools (default-enabled unless noted):")}
   grep          - Search file contents
   glob          - Find files by glob pattern
   lsp           - Language server protocol (code intelligence)
-  python        - Execute Python code (requires: ${APP_NAME} setup python)
+  python        - Execute Python code (requires: ${APP_COMMAND_NAME} setup python)
   notebook      - Edit Jupyter notebooks
   inspect_image - Analyze images with a vision model
   browser       - Browser automation (Puppeteer)
@@ -84,6 +85,6 @@ ${chalk.bold("Plugin Options:")}
   --plugin-dir <path>        Load plugin from directory (repeatable)
 
 ${chalk.bold("Useful Commands:")}
-  omp agents unpack           - Export bundled subagents to ~/.eros/agent/agents (default)
-  omp agents unpack --project - Export bundled subagents to ./.omp/agents`;
+  ${APP_COMMAND_NAME} agents unpack           - Export bundled subagents to ~/${USER_CONFIG_DIR_NAME}/agent/agents (default)
+  ${APP_COMMAND_NAME} agents unpack --project - Export bundled subagents to ./.omp/agents`;
 }

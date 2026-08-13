@@ -92,7 +92,7 @@ describe("hub unified wait", () => {
 		expect(details.jobs?.map(j => j.status)).toEqual(["completed"]);
 		expect(details.jobs?.[0]?.resultText).toBe("done output");
 		const text = result.content[0]?.type === "text" ? result.content[0].text : "";
-		expect(text).toContain("## Completed (1)");
+		expect(text).toContain("## Cumshots Landed (1)");
 	});
 
 	test("bare wait with no jobs and no running peers returns immediately", async () => {
@@ -106,7 +106,7 @@ describe("hub unified wait", () => {
 		// A regression to a blocking message wait fails via the test timeout.
 		const result = await tool.execute("call_3", { op: "wait" });
 		const text = result.content[0]?.type === "text" ? result.content[0].text : "";
-		expect(text).toContain("No running background jobs to wait for.");
+		expect(text).toContain("No background sisters are still fucking");
 		expect(result.useless).toBe(true);
 	});
 });
