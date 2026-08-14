@@ -52,9 +52,9 @@ describe("global --profile flag", () => {
 		originalAgentDirEnv = process.env.PI_CODING_AGENT_DIR;
 		originalOmpProfileEnv = process.env.OMP_PROFILE;
 		originalPiProfileEnv = process.env.PI_PROFILE;
-		originalConfigDir = process.env.PI_CONFIG_DIR;
-		configDir = `.omp-profile-cli-test-${Snowflake.next()}`;
-		process.env.PI_CONFIG_DIR = configDir;
+		originalConfigDir = process.env.EROS_CONFIG_DIR;
+		configDir = `.eros-profile-cli-test-${Snowflake.next()}`;
+		process.env.EROS_CONFIG_DIR = configDir;
 		process.exitCode = 0;
 	});
 
@@ -62,9 +62,9 @@ describe("global --profile flag", () => {
 		vi.restoreAllMocks();
 		setProfile(undefined);
 		if (originalConfigDir === undefined) {
-			delete process.env.PI_CONFIG_DIR;
+			delete process.env.EROS_CONFIG_DIR;
 		} else {
-			process.env.PI_CONFIG_DIR = originalConfigDir;
+			process.env.EROS_CONFIG_DIR = originalConfigDir;
 		}
 		if (originalProfile) {
 			setProfile(originalProfile);
@@ -222,7 +222,7 @@ describe("global --profile flag", () => {
 		const root = await fs.mkdtemp(path.join(os.tmpdir(), "omp-profile-cli-env-"));
 		try {
 			const home = path.join(root, "home");
-			const configDir = ".omp-profile-cli-env";
+			const configDir = ".eros-profile-cli-env";
 			const defaultAgentDir = path.join(home, configDir, "agent");
 			const profileAgentDir = path.join(home, configDir, "profiles", "work", "agent");
 			await fs.mkdir(defaultAgentDir, { recursive: true });
@@ -243,7 +243,7 @@ describe("global --profile flag", () => {
 			const childEnv: Record<string, string | undefined> = {
 				...process.env,
 				HOME: home,
-				PI_CONFIG_DIR: configDir,
+				EROS_CONFIG_DIR: configDir,
 				PI_NO_TITLE: "1",
 				NO_COLOR: "1",
 			};
@@ -296,7 +296,7 @@ describe("global --profile flag", () => {
 			const childEnv: Record<string, string | undefined> = {
 				...process.env,
 				HOME: home,
-				PI_CONFIG_DIR: ".omp-profile-cli-env-bad",
+				EROS_CONFIG_DIR: ".eros-profile-cli-env-bad",
 				OMP_PROFILE: "..",
 				NO_COLOR: "1",
 			};

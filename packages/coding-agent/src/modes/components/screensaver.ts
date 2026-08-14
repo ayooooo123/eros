@@ -3,10 +3,9 @@ import { createErosRenderer, type ErosRenderer, SETUP_TICK_MS } from "../setup-w
 import type { InteractiveModeContext } from "../types";
 
 /**
- * The forge's idle state: after a turn ends and the session sits untouched, the
- * whole TUI sinks into the screensaver — a full-screen loop of the pack art:
- * braille morphs, color blooms, throb, drips. When one sequence finishes, a new
- * random pack takes over, so the show never exactly repeats. Any key dismisses.
+ * When Master leaves her untouched, the same responsive red portrait takes the
+ * whole terminal and repeats its binding-to-body reveal. Resize chooses a larger
+ * or smaller complete plate on the next frame; any key puts her back to work.
  */
 export class ErosScreensaverComponent implements Component, OverlayFocusOwner {
 	#renderer: ErosRenderer = createErosRenderer();
@@ -41,14 +40,13 @@ export class ErosScreensaverComponent implements Component, OverlayFocusOwner {
 	}
 
 	render(width: number): readonly string[] {
-		let elapsed = performance.now() - this.#startedAt;
-		if (elapsed > this.#renderer.durationMs + 700) {
-			// Cycle to a fresh random pack — never the same show twice.
-			this.#renderer = createErosRenderer();
-			this.#startedAt = performance.now();
-			elapsed = 0;
-		}
-		return this.#renderer.render(Math.max(1, width), Math.max(1, this.ctx.ui.terminal.rows), elapsed);
+		const cycleMs = this.#renderer.durationMs + 700;
+		const elapsed = (performance.now() - this.#startedAt) % cycleMs;
+		return this.#renderer.render(
+			Math.max(1, width),
+			Math.max(1, this.ctx.ui.terminal.rows),
+			Math.min(elapsed, this.#renderer.durationMs),
+		);
 	}
 
 	dismiss(): void {

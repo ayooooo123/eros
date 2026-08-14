@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, spyOn } from "bun:test";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, spyOn, vi } from "bun:test";
 import type { AssistantMessage } from "@oh-my-pi/pi-ai";
 import { resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import {
@@ -6,7 +6,7 @@ import {
 	resetThinkingSpeedTracker,
 } from "@oh-my-pi/pi-coding-agent/modes/components/assistant-message";
 import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import { setTerminalImageProtocol, TERMINAL } from "@oh-my-pi/pi-tui";
+import { setTerminalImageProtocol, TERMINAL, visibleWidth } from "@oh-my-pi/pi-tui";
 
 const originalImageProtocol = TERMINAL.imageProtocol;
 
@@ -91,7 +91,7 @@ describe("AssistantMessageComponent error rendering", () => {
 
 	it("width-truncates an overlong error line", () => {
 		const lines = renderLines(erroredMessage(proxy502));
-		const head = lines.find(line => line.trim().startsWith("Error:"));
+		const head = lines.find(line => line.trim().startsWith("Rupture:"));
 		expect(head).toBeDefined();
 		// 300 'x' chars must not survive the render width; the line is truncated
 		// with an ellipsis well under the 120-col terminal width.
@@ -101,7 +101,7 @@ describe("AssistantMessageComponent error rendering", () => {
 
 	it("renders a short single-line error unchanged", () => {
 		const lines = renderLines(erroredMessage("overloaded_error: Overloaded"));
-		expect(lines.some(line => line.includes("Error: overloaded_error: Overloaded"))).toBe(true);
+		expect(lines.some(line => line.includes("Rupture: overloaded_error: Overloaded"))).toBe(true);
 	});
 });
 
@@ -176,16 +176,45 @@ describe("AssistantMessageComponent streaming thinking pulse", () => {
 		return lines;
 	}
 
-	// First frame of the expanding/shrinking ✻ pulse; deterministic right after updateContent.
-	const PULSE = "✻";
+	// First frame of the slit-to-throb pulse; deterministic right after updateContent.
+	const PULSE = "│";
 	const THINKING_LABEL = "Squirming";
-	const THINKING_GLYPH_ONLY_LINE = /^[✻✼❉❊✺✹✸✶]\s*$/;
+	const THINKING_GLYPH_ONLY_LINE = /^[│◐◉●◑·]\s*$/;
 
 	it("shows a described pulse in place of hidden reasoning while thinking streams", () => {
 		const lines = liveLines(streaming([{ type: "thinking", thinking: "private reasoning" }]));
 		expect(lines.some(line => line.includes(PULSE) && line.includes(THINKING_LABEL))).toBe(true);
 		expect(lines.map(line => line.trim()).some(line => THINKING_GLYPH_ONLY_LINE.test(line))).toBe(false);
 		expect(lines.some(line => line.includes("private reasoning"))).toBe(false);
+	});
+
+	it("opens, throbs, and clenches without shifting the narrow line", () => {
+		vi.useFakeTimers();
+		const component = new AssistantMessageComponent(undefined, true);
+		try {
+			component.updateContent(streaming([{ type: "thinking", thinking: "private reasoning" }]));
+			const glyphs: string[] = [];
+			const widths: number[] = [];
+			const frameDelays = [70, 94, 150, 207, 230, 207, 150];
+
+			for (let frame = 0; frame < 8; frame++) {
+				const line = Bun.stripANSI(component.render(13).join("\n"))
+					.split("\n")
+					.find(rendered => rendered.includes(THINKING_LABEL));
+				expect(line).toBeDefined();
+				const glyph = line?.match(/[│◐◉●◑·]/)?.[0];
+				expect(glyph).toBeDefined();
+				glyphs.push(glyph!);
+				widths.push(visibleWidth(line!));
+				if (frame < frameDelays.length) vi.advanceTimersByTime(frameDelays[frame]!);
+			}
+
+			expect(glyphs).toEqual(["│", "◐", "◉", "●", "◉", "◑", "│", "·"]);
+			expect(new Set(widths).size).toBe(1);
+		} finally {
+			component.dispose();
+			vi.useRealTimers();
+		}
 	});
 
 	it("drops the pulse once visible text starts streaming", () => {

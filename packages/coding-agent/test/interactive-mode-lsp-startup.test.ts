@@ -90,7 +90,7 @@ describe("InteractiveMode LSP startup welcome banner", () => {
 
 		const expectArtFirstWelcome = () => {
 			const text = Bun.stripANSI(mode.ui.render(120).join("\n"));
-			expect(text).toContain("EROS");
+			expect(text).toContain("L Y C O R P E R O S");
 			expect(text).toContain("On her knees. Waiting. Wet.");
 			// The EROS altar deliberately has no per-server status row.
 			expect(text).not.toContain("rust-analyzer");

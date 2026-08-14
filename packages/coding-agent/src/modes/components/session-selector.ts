@@ -916,7 +916,7 @@ export class SessionSelectorComponent extends Container {
 
 	#showError(message: string): void {
 		this.#messageContainer.clear();
-		this.#messageContainer.addChild(new Text(theme.fg("error", `Error: ${replaceTabs(message)}`), 1, 0));
+		this.#messageContainer.addChild(new Text(theme.fg("error", `Rupture: ${replaceTabs(message)}`), 1, 0));
 		this.#messageContainer.addChild(new Spacer(1));
 	}
 

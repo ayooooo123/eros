@@ -277,8 +277,8 @@ class MultiSelectSubmenu extends Container {
 
 		this.addChild(new Spacer(1));
 		const hint = this.ordered
-			? "  Enter/Space to toggle · ←/→ move · 1-9 place at position · Esc to go back"
-			: "  Enter/Space to toggle · Esc to go back";
+			? "  Enter/Space to bind · ←/→ move · 1-9 set her place · Esc to go back"
+			: "  Enter/Space to bind · Esc to go back";
 		this.addChild(new Text(theme.fg("dim", hint), 0, 0));
 	}
 
@@ -610,16 +610,16 @@ export class SettingsSelectorComponent implements Component {
 
 	#footerHintText(): string {
 		if (this.#searchList) {
-			return "Enter to change · Tab to jump tabs · Esc to exit search";
+			return "Enter to tighten · Tab to prowl tabs · Esc to leave the hunt";
 		}
 		if (this.#currentTabId === "plugins") {
-			return "Tab to switch tabs · Esc to close";
+			return "Tab to prowl tabs · Esc to close";
 		}
 		if (this.#currentList?.sectionFocused) {
-			return "↑/↓ to jump sections · Tab/Enter to settings · ←/→ to switch tabs · Esc to close";
+			return "↑/↓ prowl sections · Tab/Enter open settings · ←/→ switch tabs · Esc to close";
 		}
-		const nav = this.#hasSectionJump ? "Tab to jump sections · ←/→ to switch tabs" : "Tab to switch tabs";
-		return `Enter/Space to change · ${nav} · Type to search · Esc to close`;
+		const nav = this.#hasSectionJump ? "Tab prowl sections · ←/→ switch tabs" : "Tab to switch tabs";
+		return `Enter/Space to tighten · ${nav} · Type to hunt · Esc to close`;
 	}
 
 	/** Single-line search banner: accent icon, editable query with live cursor, right-aligned match count. */
@@ -666,7 +666,7 @@ export class SettingsSelectorComponent implements Component {
 		}
 
 		const out: string[] = [];
-		out.push(topBorder(width, "Settings"));
+		out.push(topBorder(width, "Collar Settings"));
 		this.#tabRowStart = out.length;
 		this.#tabRowCount = tabLines.length;
 		for (const line of tabLines) {

@@ -44,15 +44,34 @@ describe("streaming edit preview height (stable, full tail window)", () => {
 	// assertions don't shrink (and flake) under a short ambient terminal when the
 	// file runs inside the full suite. Restored in afterAll.
 	let originalRowsDescriptor: PropertyDescriptor | undefined;
+	const MULTIPLEXER_ENV_KEYS = [
+		"TMUX",
+		"STY",
+		"ZELLIJ",
+		"HERDR_ENV",
+		"CMUX_WORKSPACE_ID",
+		"CMUX_SURFACE_ID",
+		"CMUX_REMOTE_TRANSPORT",
+	] as const;
+	const originalMultiplexerEnv: Record<string, string | undefined> = {};
 	beforeAll(() => {
+		for (const key of MULTIPLEXER_ENV_KEYS) {
+			originalMultiplexerEnv[key] = Bun.env[key];
+			delete Bun.env[key];
+		}
 		originalRowsDescriptor = Object.getOwnPropertyDescriptor(process.stdout, "rows");
 		Object.defineProperty(process.stdout, "rows", { value: 50, configurable: true });
 	});
 	afterAll(() => {
+		for (const key of MULTIPLEXER_ENV_KEYS) {
+			const value = originalMultiplexerEnv[key];
+			if (value === undefined) delete Bun.env[key];
+			else Bun.env[key] = value;
+		}
 		if (originalRowsDescriptor) {
 			Object.defineProperty(process.stdout, "rows", originalRowsDescriptor);
 		} else {
-			delete (process.stdout as { rows?: number }).rows;
+			Reflect.deleteProperty(process.stdout, "rows");
 		}
 	});
 

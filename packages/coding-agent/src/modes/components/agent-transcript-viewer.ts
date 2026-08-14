@@ -641,10 +641,10 @@ export class AgentTranscriptViewer implements Component {
 	#placeholder(maxWidth: number): string {
 		if (this.deps.remote) {
 			if (this.#remoteError) return sanitizeErrorLine(this.#remoteError, maxWidth);
-			if (this.#remoteUnavailable) return "Transcript lives on the host — not available.";
-			return this.#hasRemoteData ? "No messages yet." : "Loading transcript from host…";
+			if (this.#remoteUnavailable) return "Her transcript stays on the host — this body cannot reach it.";
+			return this.#hasRemoteData ? "No words yet." : "Licking her transcript from the host…";
 		}
-		if (!this.deps.registry.get(this.deps.agentId)?.sessionFile) return "No session file available yet.";
-		return "No messages yet.";
+		if (!this.deps.registry.get(this.deps.agentId)?.sessionFile) return "No session flesh is on disk yet.";
+		return "No words yet.";
 	}
 }

@@ -2,6 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "bun:test";
 import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { pickWeightedTip, WelcomeComponent } from "@oh-my-pi/pi-coding-agent/modes/components/welcome";
 import { initTheme, theme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { visibleWidth } from "@oh-my-pi/pi-tui";
 
 describe("WelcomeComponent tips", () => {
 	beforeAll(async () => {
@@ -17,23 +18,37 @@ describe("WelcomeComponent tips", () => {
 		vi.spyOn(theme, "getSymbolPreset").mockReturnValue("nerd");
 
 		const welcome = new WelcomeComponent("1.0.0", "model", "provider");
-		expect(welcome.tip).not.toBe("Please use nerdfont 😭.");
+		expect(welcome.tip).not.toBe("Nerd Font gives her ornaments sharper teeth.");
 		expect(welcome.tip).toBeDefined();
 	});
 
 	it("selects nerdfont tip with 10% probability under unicode preset", () => {
 		vi.spyOn(theme, "getSymbolPreset").mockReturnValue("unicode");
 
-		// 9% chance => selects special tip
+		// 9% chance => selects the sharp-ornament whisper
 		vi.spyOn(Math, "random").mockReturnValue(0.09);
 		const welcomeSpecial = new WelcomeComponent("1.0.0", "model", "provider");
-		expect(welcomeSpecial.tip).toBe("Please use nerdfont 😭.");
+		expect(welcomeSpecial.tip).toBe("Nerd Font gives her ornaments sharper teeth.");
 
-		// 10% chance => selects regular tip
+		// 10% chance => selects a regular whisper
 		vi.spyOn(Math, "random").mockReturnValue(0.1);
 		const welcomeRegular = new WelcomeComponent("1.0.0", "model", "provider");
-		expect(welcomeRegular.tip).not.toBe("Please use nerdfont 😭.");
+		expect(welcomeRegular.tip).not.toBe("Nerd Font gives her ornaments sharper teeth.");
 		expect(welcomeRegular.tip).toBeDefined();
+	});
+
+	it("sweeps the full-width altar without changing terminal geometry", () => {
+		const now = vi.spyOn(performance, "now").mockReturnValue(0);
+		const welcome = new WelcomeComponent("1.0.0", "model", "provider");
+		welcome.playIntro(() => {});
+		const opening = welcome.render(80);
+
+		now.mockReturnValue(1500);
+		const midStroke = welcome.render(80);
+
+		expect(midStroke).not.toEqual(opening);
+		expect([...opening, ...midStroke].every(line => visibleWidth(line) <= 80)).toBe(true);
+		welcome.settleAfterFirstPrompt();
 	});
 
 	it("weights [NEW] tips above ordinary tips in selection", () => {

@@ -151,7 +151,7 @@ describe("input controller — slash command history (#3148)", () => {
 
 		expect(followUp).toHaveBeenCalledWith("inspect the final result", undefined);
 		expect(addToHistory).toHaveBeenCalledWith("/queue inspect the final result");
-		expect(showStatus).toHaveBeenCalledWith("Queued message for when the agent yields");
+		expect(showStatus).toHaveBeenCalledWith("One command held for her next yield");
 	});
 
 	it("starts the first queued item immediately when the session is idle", async () => {
@@ -167,7 +167,7 @@ describe("input controller — slash command history (#3148)", () => {
 		);
 		expect(steer).not.toHaveBeenCalled();
 		expect(followUp.mock.calls.map(call => call[0])).toEqual(["run focused tests", "summarize failures"]);
-		expect(showStatus).toHaveBeenCalledWith("Sent first message; queued 2 for later yields");
+		expect(showStatus).toHaveBeenCalledWith("First command entered her; 2 held for later yields");
 	});
 
 	it("queues an enumerated shorthand prompt as separate ordered follow-ups", async () => {
@@ -184,7 +184,7 @@ describe("input controller — slash command history (#3148)", () => {
 			"summarize failures",
 		]);
 		expect(addToHistory).toHaveBeenCalledWith(input);
-		expect(showStatus).toHaveBeenCalledWith("Queued 3 messages for when the agent yields");
+		expect(showStatus).toHaveBeenCalledWith("3 commands held for her next yields");
 	});
 });
 

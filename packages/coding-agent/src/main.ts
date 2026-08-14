@@ -11,6 +11,7 @@ import { EventLoopKeepalive } from "@oh-my-pi/pi-agent-core";
 import type { ImageContent } from "@oh-my-pi/pi-ai";
 import {
 	$env,
+	APP_COMMAND_NAME,
 	directoryExists,
 	getLogPath,
 	getProjectDir,
@@ -29,6 +30,7 @@ import { processFileArguments } from "./cli/file-processor";
 import { buildInitialMessage } from "./cli/initial-message";
 import { selectSession } from "./cli/session-picker";
 import { applyStartupCwd } from "./cli/startup-cwd";
+import { getLatestRelease } from "./cli/update-cli";
 import { findErosConfigFile } from "./config";
 import { ModelRegistry } from "./config/model-registry";
 import {
@@ -74,6 +76,7 @@ import {
 	loadSessionExtensions,
 } from "./sdk";
 import type { AgentSession } from "./session/agent-session";
+import { describeAuthBrokerStartupError } from "./session/auth-broker-config";
 import type { AuthStorage } from "./session/auth-storage";
 import { describePendingToolCalls } from "./session/exit-diagnostics";
 import {
@@ -94,7 +97,6 @@ import { concreteThinkingLevel, parseConfiguredThinkingLevel } from "./thinking"
 import type { LspStartupServerInfo } from "./tools";
 import { getChangelogPath, resolveStartupChangelogForDisplay, type StartupChangelogSelection } from "./utils/changelog";
 import { EventBus } from "./utils/event-bus";
-import { withTimeoutSignal } from "./utils/fetch-timeout";
 
 type RunAcpMode = (createSession: AcpSessionFactory) => Promise<never>;
 type RunPrintMode = (session: AgentSession, options: PrintModeOptions) => Promise<void>;
@@ -114,19 +116,8 @@ async function checkForNewVersion(currentVersion: string): Promise<string | unde
 		return;
 	}
 	try {
-		const response = await fetch("https://registry.npmjs.org/@oh-my-pi/pi-coding-agent/latest", {
-			signal: withTimeoutSignal(5_000),
-		});
-		if (!response.ok) return undefined;
-
-		const data = (await response.json()) as { version?: string };
-		const latestVersion = data.version;
-
-		if (latestVersion && Bun.semver.order(latestVersion, currentVersion) > 0) {
-			return latestVersion;
-		}
-
-		return undefined;
+		const release = await getLatestRelease({ timeoutMs: 5_000 });
+		return Bun.semver.order(release.version, currentVersion) > 0 ? release.version : undefined;
 	} catch {
 		return undefined;
 	}
@@ -146,6 +137,7 @@ const HOST_DEFAULTED_SETTING_PATHS: SettingPath[] = [
 	"task.disabledAgents",
 	"task.agentModelOverrides",
 	"task.agentPrewalk",
+	"task.agentAdvisor",
 	// Memory subsystems are off-by-default for RPC/ACP hosts; embedders that want
 	// memory should opt in explicitly through their own settings layer.
 	"memory.backend",
@@ -154,7 +146,6 @@ const HOST_DEFAULTED_SETTING_PATHS: SettingPath[] = [
 	// instead of inheriting a user's globally-enabled local preference, and when
 	// they do opt in they get the default tuning rather than the user's local tuning.
 	"advisor.enabled",
-	"advisor.subagents",
 	"advisor.syncBacklog",
 	"advisor.immuneTurns",
 	"advisor.wipNotes",
@@ -502,23 +493,24 @@ async function runInteractiveMode(
 		await setupWizard.runSetupWizard(mode, setupScenes);
 	}
 
-	versionCheckPromise
-		.then(newVersion => {
-			if (!settings.get("startup.checkUpdate")) {
-				return;
-			}
-			if (newVersion) {
-				mode.showNewVersionNotification(newVersion);
-			}
-		})
-		.catch(() => {});
+	// Consume failures immediately, but defer any banner until the transcript is stable.
+	const checkedVersionPromise = versionCheckPromise.catch(() => undefined);
 
 	// Cold-launch cleanup: the first paint already clears native history, and this
 	// replay replaces the welcome/startup frame with the resumed/new transcript.
 	// Every in-process session load also uses `clearTerminalHistory`; cold launch
 	// follows the same clean-cutover path instead of preserving a previous run's
 	// transcript above the fresh one.
-	mode.renderInitialMessages({ preserveExistingChat: true, clearTerminalHistory: true });
+	await mode.renderInitialMessages({ preserveExistingChat: true, clearTerminalHistory: true });
+	// A resolved version check must not insert its banner into a partial transcript.
+	checkedVersionPromise.then(newVersion => {
+		if (!settings.get("startup.checkUpdate")) {
+			return;
+		}
+		if (newVersion) {
+			mode.showNewVersionNotification(newVersion);
+		}
+	});
 
 	for (const notify of notifs) {
 		if (!notify) {
@@ -765,7 +757,7 @@ export async function createSessionManager(
 		if (!match) {
 			throw new SessionResolutionError(
 				`Session "${forkSource}" not found.`,
-				"Run `omp --resume` without an argument to pick from recent sessions, or `omp` to start a new one.",
+				`Run \`${APP_COMMAND_NAME} --resume\` without an argument to pick from recent sessions, or \`${APP_COMMAND_NAME}\` to start a new one.`,
 			);
 		}
 		return await SessionManager.forkFrom(match.session.path, cwd, parsed.sessionDir);
@@ -785,7 +777,7 @@ export async function createSessionManager(
 		if (!match) {
 			throw new SessionResolutionError(
 				`Session "${sessionArg}" not found.`,
-				"Run `omp --resume` without an argument to pick from recent sessions, or `omp` to start a new one.",
+				`Run \`${APP_COMMAND_NAME} --resume\` without an argument to pick from recent sessions, or \`${APP_COMMAND_NAME}\` to start a new one.`,
 			);
 		}
 		if (match.scope === "local") {
@@ -843,12 +835,12 @@ export async function createSessionManager(
 	return undefined;
 }
 
-/** Discover EROS's own SYSTEM.md overlay when no CLI overlay was supplied. */
+/** Discover SYSTEM.md file if no CLI system prompt was provided */
 function discoverSystemPromptFile(): string | undefined {
 	return findErosConfigFile("SYSTEM.md");
 }
 
-/** Discover EROS's own APPEND_SYSTEM.md without tasting foreign agent config. */
+/** Discover APPEND_SYSTEM.md file if no CLI append system prompt was provided */
 function discoverAppendSystemPromptFile(): string | undefined {
 	return findErosConfigFile("APPEND_SYSTEM.md");
 }
@@ -1259,8 +1251,18 @@ export async function runRootCommand(
 	// tree; declare it so headless subagent optimizations (e.g. skipping replan
 	// title refresh) can tell a focusable process from a print/RPC/eval one.
 	setInteractiveHost(isInteractive);
-	// Create AuthStorage and ModelRegistry upfront
-	const authStorage = await logger.time("discoverAuthStorage", deps.discoverAuthStorage ?? discoverAuthStorage);
+	// Create AuthStorage and ModelRegistry upfront. A configured-but-unreachable
+	// auth broker throws here; convert it to an actionable stderr message + clean
+	// exit instead of a raw uncaught stack trace (issue #8096).
+	let authStorage: AuthStorage;
+	try {
+		authStorage = await logger.time("discoverAuthStorage", deps.discoverAuthStorage ?? discoverAuthStorage);
+	} catch (error) {
+		const message = await describeAuthBrokerStartupError(error);
+		if (message === null) throw error;
+		process.stderr.write(`${chalk.red(`Error: ${message}`)}\n`);
+		process.exit(1);
+	}
 	const modelRegistry = logger.time("modelRegistry:init", () => new ModelRegistry(authStorage));
 
 	const settingsInstance =
@@ -1315,6 +1317,10 @@ export async function runRootCommand(
 	// Apply --advisor CLI flag (ephemeral, not persisted)
 	if (parsedArgs.advisor) {
 		settingsInstance.override("advisor.enabled", true);
+	}
+	// Apply --external-thinking CLI flag (ephemeral, not persisted)
+	if (parsedArgs.externalThinking) {
+		settingsInstance.override("externalThinking", true);
 	}
 
 	await logger.time(
@@ -1766,6 +1772,7 @@ export async function runRootCommand(
 				initialMessage,
 				initialImages,
 				printThoughts: initialArgs.printThoughts,
+				planYolo: parsedArgs.planYolo,
 			});
 			if ($env.PI_TIMING) {
 				logger.printTimings();

@@ -110,7 +110,7 @@ describe("CustomEditor restored image drafts", () => {
 
 describe("CustomEditor queue shorthand decoration", () => {
 	beforeAll(async () => {
-		await initTheme();
+		await initTheme(false, "unicode");
 	});
 
 	it("reserves the first line as soon as either queue prefix is completed", () => {
@@ -129,18 +129,36 @@ describe("CustomEditor queue shorthand decoration", () => {
 		}
 	});
 
-	it("renders the reserved line as a dim Queueing header", () => {
+	it("renders the reserved line as EROS's next-thrust header", () => {
 		for (const prefix of ["->", "=>"]) {
 			const editor = new CustomEditor(getEditorTheme());
 			editor.setText(`${prefix}\nqueue this`);
 
-			expect(editor.decorateText(prefix)).toBe(theme.fg("dim", `Queueing ${theme.nav.selected}`));
+			expect(editor.decorateText(prefix)).toBe(theme.fg("dim", `Next thrust ${theme.nav.selected}`));
 			editor.focused = true;
 			const rendered = editor.render(40).map(line => Bun.stripANSI(line.replace(CURSOR_MARKER, "")));
-			expect(rendered.some(line => line.includes(`Queueing ${theme.nav.selected}`))).toBe(true);
+			expect(rendered.some(line => line.includes(`Next thrust ${theme.nav.selected}`))).toBe(true);
 			expect(rendered.every(line => Bun.stringWidth(line) === 40)).toBe(true);
 			expect(rendered.some(line => line.includes("queue this"))).toBe(true);
 		}
+	});
+
+	it("breathes a fixed-width heart gutter only when the main composer mounts it", async () => {
+		await initTheme(false, "unicode");
+		const now = vi.spyOn(Date, "now");
+		const editor = new CustomEditor(getEditorTheme());
+		editor.setErosComposerChrome(true);
+		editor.focused = true;
+
+		now.mockReturnValue(CustomEditor.COMPOSER_PULSE_FRAME_MS);
+		const open = editor.render(40).map(line => Bun.stripANSI(line.replace(CURSOR_MARKER, "")));
+		now.mockReturnValue(0);
+		const resting = editor.render(40).map(line => Bun.stripANSI(line.replace(CURSOR_MARKER, "")));
+
+		expect(open.some(line => line.includes("♥"))).toBe(true);
+		expect(resting.some(line => line.includes("♡"))).toBe(true);
+		expect([...open, ...resting].every(line => Bun.stringWidth(line) === 40)).toBe(true);
+		now.mockRestore();
 	});
 
 	it("highlights dot and parenthesis markers only for detected queue lists", () => {

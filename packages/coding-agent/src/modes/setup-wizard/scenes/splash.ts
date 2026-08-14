@@ -1,322 +1,67 @@
 import { padding, truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
-import { gradientEscape, gradientLogo, PI_LOGO, type ShineConfig, setSplashPalette } from "../../components/welcome";
 import { type ThemeColor, theme } from "../../theme/theme";
-import erosBrailleFrames from "./eros-braille.txt" with { type: "text" };
-import erosDrips from "./eros-drips.txt" with { type: "text" };
-import erosHeroPunch0 from "./eros-hero-punch-0.txt" with { type: "text" };
-import erosHeroPunch1 from "./eros-hero-punch-1.txt" with { type: "text" };
-import erosHeroPunch2 from "./eros-hero-punch-2.txt" with { type: "text" };
-import erosHeroWide0 from "./eros-hero-wide-0.txt" with { type: "text" };
-import erosHeroWide1 from "./eros-hero-wide-1.txt" with { type: "text" };
-import erosHeroWide2 from "./eros-hero-wide-2.txt" with { type: "text" };
+import erosChafaHeroFull from "./eros-chafa-hero-full.txt" with { type: "text" };
+import erosChafaHeroNarrow from "./eros-chafa-hero-narrow.txt" with { type: "text" };
+import erosChafaHeroStandard from "./eros-chafa-hero-standard.txt" with { type: "text" };
+import erosChafaHeroUltrawide from "./eros-chafa-hero-ultrawide.txt" with { type: "text" };
+import erosChafaHeroWide from "./eros-chafa-hero-wide.txt" with { type: "text" };
 import { type LoadedPack, loadIntroPack } from "./pack-loader";
 
-function themePaint(key: string, ch: string, fallbackRgb = "180;140;150"): string {
-	try {
-		return theme.fg(key as ThemeColor, ch);
-	} catch {
-		return `\x1b[38;2;${fallbackRgb}m${ch}\x1b[0m`;
-	}
-}
+export const EROS_TITLE = "L Y C O R P E R O S";
+export const SETUP_SPLASH_MS = 9_000;
+export const SETUP_TICK_MS = 32;
 
-/**
- * Proven terminal-art methods only:
- *   - Braille (2x4 dots) + ordered Bayer for stable animation (no FS crawl)
- *   - Truecolor half-block for the color hold (max terminal color fidelity)
- *   - Bayer-ordered bloom for the monochrome→color reveal (stable, no flicker)
- *   - Prebaked throb levels + drip anchors from the pack (no runtime guesswork)
- *
- * Beat sheet (pack can override ms):
- *   BRAILLE — she is already there, writhing across pose variants in blood ink
- *   BLOOM   — Bayer fire into truecolor + first squirt off every fluid anchor
- *   WIDE    — full-body hold, throbbing and running wet
- *   PUNCH   — camera sinks into her; second squirt; wordmark brands the floor
- */
-const BRAILLE_MS = 16000;
-const MORPH_MS = 4000;
-const BLOOM_MS = 900;
-const WIDE_MS = 2800;
-const PUNCH_MS = 2200;
-const BRAILLE_TOTAL_MS = BRAILLE_MS + MORPH_MS;
-const BLOOM_START = BRAILLE_TOTAL_MS;
-const WIDE_START = BLOOM_START + BLOOM_MS;
-const PUNCH_START = WIDE_START + WIDE_MS;
-export const SETUP_SPLASH_MS = PUNCH_START + PUNCH_MS;
-export const SETUP_TICK_MS = 16;
-/** Skip nothing — packs open on a full clear pose (emerge=0). */
-const BRAILLE_PLAY_OFFSET = 0;
-/** Gravity drips only — no upward squirt bursts. */
-
-const RESET = "\x1b[0m";
-/** Stage is ours: near-black red-brown behind every cell. */
-const STAGE = "\x1b[48;2;6;2;5m";
 const SKIP_HINT = "enter · take her";
-const DEFAULT_WORDMARK = "L Y C O R P E R O S";
-const DEFAULT_WORDMARK_SUB = "o n   h e r   k n e e s";
-
-/** Brand mark at 2x for the compact fallback: glyphs doubled both ways. */
-const LARGE_LOGO = PI_LOGO.flatMap(line => {
-	let wide = "";
-	for (const char of line) {
-		wide += char === " " ? "  " : `${char}${char}`;
-	}
-	return [wide, wide];
-});
-
-/** One truecolor half-block cell: own fg+bg codes and reset, safe to slice/paint alone. */
-const HERO_CELL = /(?:\x1b\[38;2;\d+;\d+;\d+m\x1b\[48;2;\d+;\d+;\d+m)▀(?:\x1b\[0m)?/g;
-function tokenizeHero(text: string): readonly (readonly string[])[] {
-	return text
-		.trimEnd()
-		.split("\n")
-		.filter(line => line.length > 0)
-		.map(line => (line.match(HERO_CELL) ?? []).map(cell => (cell.endsWith(RESET) ? cell : cell + RESET)));
-}
-
-/** A fluid source lifted from the art: where cum and blood actually run from. */
-interface Drip {
-	readonly x: number;
-	readonly y: number;
-	readonly rgb: readonly [number, number, number];
-	/** cells the head falls per cycle; orifice-role specific when set */
-	readonly fall?: number;
-	/** ms per drip cycle; orifice-role specific when set */
-	readonly periodMs?: number;
-	/** anatomy role: pussy | asshole | cock | mouth | nipple */
-	readonly role?: string;
-	/** center stream of an orifice — only these pulse at the source */
-	readonly primary?: boolean;
-	/** visual weight: heavy | pour | veil | bead */
-	readonly weight?: string;
-}
-
-interface PoseHold {
-	readonly frame: number;
-	readonly holdMs: number;
-	readonly drips: readonly Drip[];
-	readonly throbPeriodMs: number;
-	readonly throbAmp: number;
-	readonly dripPeriodMs: number;
-	readonly dripFall: number;
-	readonly squirtEveryMs: number;
-	readonly squirtLenMs: number;
-	readonly breathPeriodMs: number;
-}
-
-/** Everything a sequence render needs, resolved from one pack (or the embedded default). */
-interface ErosAssets {
-	readonly brailleFrames: readonly (readonly string[])[];
-	readonly heroWide: readonly (readonly (readonly string[])[])[];
-	readonly heroPunch: readonly (readonly (readonly string[])[])[];
-	readonly dripsWide: readonly Drip[];
-	readonly dripsPunch: readonly Drip[];
-	readonly artWidth: number;
-	readonly artHeight: number;
-	readonly throbPeriodMs: number;
-	readonly dripPeriodMs: number;
-	readonly dripFallCells: number;
-	readonly wordmark: string;
-	readonly subtitle: string;
-	readonly brailleTotalMs: number;
-	readonly bloomMs: number;
-	readonly wideMs: number;
-	readonly punchMs: number;
-	readonly totalMs: number;
-	readonly colorFirst: boolean;
-	readonly poses: readonly PoseHold[];
-	readonly morphMsBetween: number;
-}
-
-function numParam(params: Record<string, unknown> | undefined, key: string, fallback: number): number {
-	const v = params?.[key];
-	return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : fallback;
-}
-
-function beatMs(params: Record<string, unknown> | undefined, key: string, fallback: number): number {
-	const beats = params?.beats;
-	if (beats && typeof beats === "object" && beats !== null) {
-		const v = (beats as Record<string, unknown>)[key];
-		if (typeof v === "number" && Number.isFinite(v) && v >= 0) return v;
-	}
-	return fallback;
-}
-
-function parseDripText(text: string, tag: string): readonly Drip[] {
-	const out: Drip[] = [];
-	for (const line of text.split("\n")) {
-		const parts = line.split(",");
-		if (parts.length !== 6 || parts[0] !== tag) continue;
-		const [, x, y, r, g, b] = parts.map((value, index) => (index === 0 ? 0 : Number(value)));
-		if ([x, y, r, g, b].some(value => !Number.isFinite(value))) continue;
-		out.push({ x: x as number, y: y as number, rgb: [r as number, g as number, b as number] });
-	}
-	return out;
-}
-
-function buildErosAssets(pack: LoadedPack | null): ErosAssets {
-	const brailleFrames = (pack?.brailleText || erosBrailleFrames)
-		.split("\f")
-		.map(frame => frame.split("\n").filter(line => line.length > 0))
-		.filter(frame => frame.length > 0);
-	const heroWide: readonly (readonly (readonly string[])[])[] = pack
-		? [
-				tokenizeHero(pack.heroWide0Text || pack.heroWideText),
-				tokenizeHero(pack.heroWide1Text || pack.heroWideText),
-				tokenizeHero(pack.heroWide2Text || pack.heroWideText),
-			]
-		: [tokenizeHero(erosHeroWide0), tokenizeHero(erosHeroWide1), tokenizeHero(erosHeroWide2)];
-	const heroPunch: readonly (readonly (readonly string[])[])[] = pack
-		? [
-				tokenizeHero(pack.heroPunch0Text || pack.heroPunchText),
-				tokenizeHero(pack.heroPunch1Text || pack.heroPunchText),
-				tokenizeHero(pack.heroPunch2Text || pack.heroPunchText),
-			]
-		: [tokenizeHero(erosHeroPunch0), tokenizeHero(erosHeroPunch1), tokenizeHero(erosHeroPunch2)];
-	const dripSource = pack ? pack.dripsText : erosDrips;
-	const dripsWide = parseDripText(dripSource, "wide");
-	const dripsPunch = parseDripText(dripSource, "punch");
-	const earlyParams = pack?.params;
-	const brailleW = Math.max(1, ...brailleFrames.map(frame => Math.max(1, ...frame.map(line => line.length))));
-	const brailleH = Math.max(1, brailleFrames[0]?.length ?? 0);
-	const wantColorFirst = earlyParams?.mode === "color-first" || earlyParams?.colorFirst === true;
-	// Braille-first: art size is the FULL braille frame only. Do not inflate from
-	// half-block heroes — that made viewports 200-wide and center-cropped 120 braille.
-	const artWidth = wantColorFirst ? Math.max(brailleW, ...heroWide[1]!.map(row => row.length)) : brailleW;
-	const artHeight = wantColorFirst ? Math.max(brailleH, heroWide[1]!.length) : brailleH;
-	const params = pack?.params;
-	const brailleMs = beatMs(params, "braille_ms", BRAILLE_MS);
-	const morphMs = beatMs(params, "morph_ms", MORPH_MS);
-	const bloomMs = beatMs(params, "bloom_ms", BLOOM_MS);
-	const wideMs = beatMs(params, "wide_ms", WIDE_MS);
-	const punchMs = beatMs(params, "punch_ms", PUNCH_MS);
-	const poseHolds: PoseHold[] = [];
-	const rawPoses = pack?.poses;
-	if (Array.isArray(rawPoses)) {
-		for (const rp of rawPoses) {
-			if (!rp || typeof rp !== "object") continue;
-			const o = rp as Record<string, unknown>;
-			const frame = typeof o.frame === "number" ? o.frame : -1;
-			const holdMs = typeof o.holdMs === "number" ? o.holdMs : 5000;
-			if (frame < 0) continue;
-			const dripsRaw = Array.isArray(o.drips) ? o.drips : [];
-			const drips: Drip[] = [];
-			for (const d of dripsRaw) {
-				if (!d || typeof d !== "object") continue;
-				const dd = d as Record<string, unknown>;
-				const x = Number(dd.x);
-				const y = Number(dd.y);
-				// Accept rgb:[r,g,b] (pack craft) or flat r/g/b (legacy drips.txt)
-				let r = Number(dd.r);
-				let g = Number(dd.g);
-				let b = Number(dd.b);
-				if (Array.isArray(dd.rgb) && dd.rgb.length >= 3) {
-					r = Number(dd.rgb[0]);
-					g = Number(dd.rgb[1]);
-					b = Number(dd.rgb[2]);
-				}
-				if (![x, y, r, g, b].every(Number.isFinite)) continue;
-				const fall = Number(dd.fall);
-				const period = Number(dd.period ?? dd.periodMs);
-				const role = typeof dd.role === "string" ? dd.role : undefined;
-				const primary = dd.primary === true || dd.throb === true;
-				const weight = typeof dd.weight === "string" ? dd.weight : undefined;
-				drips.push({
-					x,
-					y,
-					rgb: [r, g, b],
-					fall: Number.isFinite(fall) && fall > 0 ? fall : undefined,
-					periodMs: Number.isFinite(period) && period > 0 ? period : undefined,
-					role,
-					primary,
-					weight,
-				});
-			}
-			// Sparse ambient: primaries first, max 8 — never center hose.
-			{
-				const primaries = drips.filter(d => d.primary);
-				const rest = drips.filter(d => !d.primary);
-				const picked = (primaries.length ? primaries : drips).slice(0, 8);
-				for (const d of rest) {
-					if (picked.length >= 8) break;
-					if (picked.some(p => Math.abs(p.x - d.x) <= 1 && Math.abs(p.y - d.y) <= 1)) continue;
-					picked.push(d);
-				}
-				drips.length = 0;
-				for (const d of picked) {
-					drips.push({
-						...d,
-						fall: d.fall !== undefined ? Math.min(d.fall, 14) : d.fall,
-					});
-				}
-			}
-			// Ambient: top-level pose fields OR nested ambient{}
-			const amb = (o.ambient && typeof o.ambient === "object" ? o.ambient : {}) as Record<string, unknown>;
-			const num = (k: string, fb: number) => {
-				if (typeof o[k] === "number") return o[k] as number;
-				if (typeof amb[k] === "number") return amb[k] as number;
-				return fb;
-			};
-			poseHolds.push({
-				frame,
-				holdMs,
-				drips,
-				throbPeriodMs: num("throbPeriodMs", 560),
-				throbAmp: num("throbAmp", 0.28),
-				dripPeriodMs: num("dripPeriodMs", 600),
-				dripFall: Math.min(12, num("dripFall", 10) || 10),
-				squirtEveryMs: 0,
-				squirtLenMs: 0,
-				breathPeriodMs: num("breathPeriodMs", 2000),
-			});
-		}
-	}
-	// If pack declares pose holds, braille duration = sum(holds) + morphs between
-	const morphMsBetween = typeof params?.morphSec === "number" ? Math.round((params.morphSec as number) * 1000) : 800;
-	let brailleTotalMs = brailleMs + morphMs;
-	if (poseHolds.length > 0) {
-		const holdSum = poseHolds.reduce((a, p) => a + p.holdMs, 0);
-		const morphSum = Math.max(0, poseHolds.length - 1) * morphMsBetween;
-		brailleTotalMs = holdSum + morphSum;
-	}
-	const totalMs = brailleTotalMs + bloomMs + wideMs + punchMs;
-	return {
-		brailleFrames,
-		heroWide,
-		heroPunch,
-		dripsWide,
-		dripsPunch,
-		artWidth,
-		artHeight,
-		throbPeriodMs: numParam(params, "throbPeriod", 760),
-		dripPeriodMs: numParam(params, "dripPeriod", 1050),
-		dripFallCells: numParam(params, "dripFall", 10),
-		wordmark: typeof params?.wordmark === "string" ? String(params.wordmark) : DEFAULT_WORDMARK,
-		subtitle: typeof params?.subtitle === "string" ? String(params.subtitle) : DEFAULT_WORDMARK_SUB,
-		brailleTotalMs,
-		bloomMs,
-		wideMs,
-		punchMs,
-		totalMs,
-		colorFirst: params?.mode === "color-first" || params?.colorFirst === true,
-		poses: poseHolds,
-		morphMsBetween,
-	};
-}
-
-const DEFAULT_PACK = loadIntroPack();
-setSplashPalette(DEFAULT_PACK?.palette);
-const DEFAULT_ASSETS = buildErosAssets(DEFAULT_PACK);
-
-/** Bayer 4x4 (0..15) — proven stable reveal order for the color bloom. */
-const BAYER4 = [
-	[0, 8, 2, 10],
-	[12, 4, 14, 6],
-	[3, 11, 1, 9],
-	[15, 7, 13, 5],
-];
-
 const MIN_SCENE_WIDTH = 48;
-const MIN_SCENE_HEIGHT = 18;
+const MIN_SCENE_HEIGHT = 14;
+
+type Rgb = readonly [number, number, number];
+
+/** One authored Braille canvas. A responsive family carries several exact sizes. */
+export interface BraillePlate {
+	readonly frames: readonly (readonly string[])[];
+	readonly colors: readonly (readonly (readonly (Rgb | null)[])[])[];
+	readonly width: number;
+	readonly height: number;
+}
+
+interface ArtCell {
+	readonly glyph: string;
+	readonly rgb: Rgb;
+}
+
+interface ErosAssets {
+	readonly brailleVariants: readonly BraillePlate[];
+	readonly title: string;
+}
+
+function themePaint(key: ThemeColor, text: string): string {
+	try {
+		return theme.fg(key, text);
+	} catch {
+		return text;
+	}
+}
+
+function bold(text: string): string {
+	try {
+		return theme.bold(text);
+	} catch {
+		return text;
+	}
+}
+
+function isAscii(): boolean {
+	try {
+		return theme.getSymbolPreset() === "ascii";
+	} catch {
+		return false;
+	}
+}
+
+function rgbPaint(rgb: Rgb, text: string): string {
+	return `\x1b[38;2;${rgb[0]};${rgb[1]};${rgb[2]}m${text}\x1b[39m`;
+}
 
 function clampLine(line: string, width: number): string {
 	const truncated = truncateToWidth(line, width);
@@ -330,11 +75,328 @@ function centerLine(line: string, width: number): string {
 	return padding(left) + line + padding(width - left - lineWidth);
 }
 
+function isBlankGlyph(glyph: string | undefined): boolean {
+	return glyph === undefined || glyph === " " || glyph === "⠀";
+}
+
+function lineCells(line: string | undefined): readonly string[] {
+	return Array.from(line ?? "");
+}
+
+const SGR_PATTERN = /\x1b\[([0-9;]*)m/g;
+
+function parseAnsiLine(line: string): { glyphs: string[]; colors: (Rgb | null)[] } {
+	const glyphs: string[] = [];
+	const colors: (Rgb | null)[] = [];
+	let current: Rgb | null = null;
+	let offset = 0;
+	const append = (text: string): void => {
+		for (const glyph of Array.from(text)) {
+			glyphs.push(glyph);
+			colors.push(glyph === " " ? null : current);
+		}
+	};
+	for (const match of line.matchAll(SGR_PATTERN)) {
+		append(line.slice(offset, match.index));
+		const params = (match[1] ?? "").split(";").map(value => (value === "" ? 0 : Number(value)));
+		for (let index = 0; index < params.length; index++) {
+			const code = params[index];
+			if (code === 0 || code === 39) {
+				current = null;
+			} else if (code === 38 && params[index + 1] === 2 && params.length > index + 4) {
+				current = [params[index + 2] ?? 0, params[index + 3] ?? 0, params[index + 4] ?? 0];
+				index += 4;
+			}
+		}
+		offset = (match.index ?? 0) + match[0].length;
+	}
+	append(line.slice(offset));
+	return { glyphs, colors };
+}
+
+/** Parse plain or truecolor Braille without swallowing intentional canvas rows. */
+export function parseBraillePlate(text: string): BraillePlate {
+	const parsed = text
+		.replaceAll("\r\n", "\n")
+		.split("\f")
+		.map(frame => {
+			const lines = frame.split("\n");
+			if (lines[lines.length - 1] === "") lines.pop();
+			return lines.map(parseAnsiLine);
+		})
+		.filter(frame => frame.some(line => line.glyphs.some(glyph => !isBlankGlyph(glyph))));
+	const frames = parsed.map(frame => frame.map(line => line.glyphs.join("")));
+	const colors = parsed.map(frame => frame.map(line => line.colors));
+	return {
+		frames,
+		colors,
+		width: Math.max(1, ...parsed.map(frame => Math.max(1, ...frame.map(line => line.glyphs.length)))),
+		height: Math.max(1, ...parsed.map(frame => Math.max(1, frame.length))),
+	};
+}
+
+const BUILTIN_BRAILLE_PLATES: readonly BraillePlate[] = [
+	parseBraillePlate(erosChafaHeroNarrow),
+	parseBraillePlate(erosChafaHeroStandard),
+	parseBraillePlate(erosChafaHeroWide),
+	parseBraillePlate(erosChafaHeroUltrawide),
+	parseBraillePlate(erosChafaHeroFull),
+];
+
+export function getBuiltInBraillePlates(): readonly BraillePlate[] {
+	return BUILTIN_BRAILLE_PLATES;
+}
+
+/** Resolve a pack's responsive family, falling back to its single legacy plate. */
+export function getErosBraillePlates(pack: LoadedPack | null): readonly BraillePlate[] {
+	if (!pack) return BUILTIN_BRAILLE_PLATES;
+	const responsive = [
+		pack.brailleNarrowText,
+		pack.brailleStandardText,
+		pack.brailleWideText,
+		pack.brailleUltrawideText,
+		pack.brailleFullText,
+	]
+		.filter((text): text is string => typeof text === "string" && text.length > 0)
+		.map(parseBraillePlate)
+		.filter(plate => plate.frames.length > 0);
+	if (responsive.length > 0) return responsive;
+	const legacy = parseBraillePlate(pack.brailleText);
+	return legacy.frames.length > 0 ? [legacy] : BUILTIN_BRAILLE_PLATES;
+}
+
+/** Choose the largest complete plate that fits both terminal axes. */
+export function selectBraillePlate(
+	plates: readonly BraillePlate[],
+	availableWidth: number,
+	availableHeight: number,
+): BraillePlate | null {
+	let selected: BraillePlate | null = null;
+	for (const plate of plates) {
+		if (plate.frames.length === 0 || plate.width > availableWidth || plate.height > availableHeight) continue;
+		if (!selected || plate.width * plate.height > selected.width * selected.height) selected = plate;
+	}
+	return selected;
+}
+
+function packTitle(pack: LoadedPack | null): string {
+	const title = pack?.params?.wordmark;
+	return typeof title === "string" && title.length > 0 ? title : EROS_TITLE;
+}
+
+function buildErosAssets(pack: LoadedPack | null): ErosAssets {
+	return { brailleVariants: getErosBraillePlates(pack), title: packTitle(pack) };
+}
+
+const DEFAULT_PACK = loadIntroPack(process.env.EROS_INTRO ?? "default");
+const DEFAULT_ASSETS = buildErosAssets(DEFAULT_PACK);
+
+function clamp01(value: number): number {
+	return value <= 0 ? 0 : value >= 1 ? 1 : value;
+}
+
+function smoothstep(value: number): number {
+	const t = clamp01(value);
+	return t * t * (3 - 2 * t);
+}
+
+function stageArc(progress: number, start: number, end: number): number {
+	if (progress <= start || progress >= end) return 0;
+	return Math.sin(Math.PI * ((progress - start) / (end - start)));
+}
+
+function hashUnit(x: number, y: number, salt: number): number {
+	let hash = 0x811c9dc5;
+	hash = Math.imul(hash ^ x, 0x01000193);
+	hash = Math.imul(hash ^ y, 0x01000193);
+	hash = Math.imul(hash ^ salt, 0x01000193);
+	hash ^= hash >>> 15;
+	return ((hash >>> 0) % 100_000) / 100_000;
+}
+
+function brailleDots(glyph: string): number | null {
+	if (glyph === "" || glyph === " ") return 0;
+	const code = glyph.codePointAt(0) ?? 0;
+	return code >= 0x2800 && code <= 0x28ff ? code - 0x2800 : null;
+}
+
+function dotDensity(glyph: string): number {
+	const dots = brailleDots(glyph);
+	if (dots === null) return 0.72;
+	let count = 0;
+	for (let bit = dots; bit > 0; bit >>>= 1) count += bit & 1;
+	return count / 8;
+}
+
+function revealGlyph(glyph: string, reveal: number, order: number, x: number, y: number): string {
+	if (reveal >= 1) return glyph;
+	const dots = brailleDots(glyph);
+	if (dots === null) return reveal >= order ? glyph : " ";
+	let visible = 0;
+	for (let dot = 0; dot < 8; dot++) {
+		const mask = 1 << dot;
+		if ((dots & mask) === 0) continue;
+		const threshold = Math.min(0.985, order + hashUnit(x, y, dot + 17) * 0.2);
+		if (reveal >= threshold) visible |= mask;
+	}
+	return visible === 0 ? " " : String.fromCodePoint(0x2800 + visible);
+}
+
+function revealOrder(x: number, y: number, width: number, height: number, rgb: Rgb | null): number {
+	const nx = x / Math.max(1, width - 1);
+	const ny = y / Math.max(1, height - 1);
+	const distance = Math.min(1, Math.hypot((nx - 0.37) / 0.78, (ny - 0.3) / 0.92));
+	const luminance = rgb ? Math.max(...rgb) / 255 : 0.62;
+	return distance * 0.5 + (1 - luminance) * 0.14 + hashUnit(x, y, 71) * 0.15;
+}
+
+const BLOOD_STOPS: readonly Rgb[] = [
+	[92, 0, 15],
+	[132, 3, 24],
+	[178, 8, 36],
+	[222, 16, 52],
+	[255, 38, 76],
+];
+
+function bloodRgb(energy: number): Rgb {
+	const scaled = clamp01(energy) * (BLOOD_STOPS.length - 1);
+	const leftIndex = Math.floor(scaled);
+	const rightIndex = Math.min(BLOOD_STOPS.length - 1, leftIndex + 1);
+	const mix = scaled - leftIndex;
+	const left = BLOOD_STOPS[leftIndex] ?? BLOOD_STOPS[0]!;
+	const right = BLOOD_STOPS[rightIndex] ?? left;
+	return [
+		Math.round(left[0] + (right[0] - left[0]) * mix),
+		Math.round(left[1] + (right[1] - left[1]) * mix),
+		Math.round(left[2] + (right[2] - left[2]) * mix),
+	];
+}
+
+function putCell(cells: (ArtCell | null)[][], x: number, y: number, cell: ArtCell): void {
+	const row = cells[y];
+	if (row && x >= 0 && x < row.length && row[x] === null) row[x] = cell;
+}
+
+/** A restrained blood-red binding pulse lives behind her rather than bleaching her body. */
+function addBindingPulse(
+	cells: (ArtCell | null)[][],
+	width: number,
+	height: number,
+	frame: number,
+	energy: number,
+): void {
+	const centerX = Math.floor(width * 0.39);
+	const centerY = Math.max(2, Math.round(height * 0.2));
+	const swell = (1 + Math.sin(frame * 0.11)) / 2;
+	const armReach = Math.round((0.08 + 0.05 * swell + 0.16 * energy) * width);
+	const riseReach = Math.max(1, Math.round((0.06 + 0.04 * swell + 0.1 * energy) * height));
+	const fallReach = Math.round((0.13 + 0.06 * swell + 0.16 * energy) * height);
+	const heavy = swell > 0.62 || energy > 0.42;
+	const ascii = isAscii();
+	const vertical = ascii ? "|" : heavy ? "┃" : "│";
+	const horizontal = ascii ? "-" : heavy ? "━" : "─";
+	const crossing = ascii ? "+" : heavy ? "╋" : "┼";
+	const rgb = bloodRgb(0.54 + energy * 0.38 + swell * 0.08);
+	for (let dy = -riseReach; dy <= fallReach; dy++) {
+		const y = centerY + dy;
+		if (y < 0 || y >= height) continue;
+		putCell(cells, centerX, y, { glyph: dy === 0 ? crossing : vertical, rgb });
+	}
+	for (let dx = -armReach; dx <= armReach; dx++) {
+		if (dx === 0) continue;
+		const x = centerX + dx;
+		if (x < 0 || x >= width) continue;
+		putCell(cells, x, centerY, { glyph: horizontal, rgb });
+	}
+	if (energy < 0.3) return;
+	const rayReach = Math.round((energy - 0.3) * 0.34 * height);
+	for (let step = 1; step <= rayReach; step++) {
+		for (const signX of [-1, 1] as const) {
+			for (const signY of [-1, 1] as const) {
+				const x = centerX + signX * step * 2;
+				const y = centerY + signY * step;
+				if (x < 0 || x >= width || y < 0 || y >= height) continue;
+				const glyph = ascii ? (signX * signY < 0 ? "/" : "\\") : signX * signY < 0 ? "╱" : "╲";
+				putCell(cells, x, y, { glyph, rgb: bloodRgb(0.68 + energy * 0.24) });
+			}
+		}
+	}
+}
+
+interface HeroField {
+	readonly reveal: number;
+	readonly bindingEnergy: number;
+	readonly sweep: number;
+	readonly sweepX: number;
+}
+
+function cinematicHeroField(progress: number): HeroField {
+	const p = clamp01(progress);
+	const reveal = smoothstep((p - 0.03) / 0.68);
+	const binding = stageArc(p, 0.08, 0.82);
+	const settle = smoothstep((p - 0.8) / 0.2);
+	return {
+		reveal,
+		bindingEnergy: (0.48 * (1 - reveal) + binding * 0.9) * (1 - settle),
+		sweep: binding * (1 - settle),
+		sweepX: -0.15 + smoothstep((p - 0.05) / 0.7) * 1.3,
+	};
+}
+
+function ambientHeroField(frame: number): HeroField {
+	const breath = (1 + Math.sin(frame * 0.055)) / 2;
+	return {
+		reveal: 1,
+		bindingEnergy: 0.05 + breath * 0.08,
+		sweep: 0.04 + breath * 0.035,
+		sweepX: 0.18 + ((1 + Math.sin(frame * 0.025)) / 2) * 0.66,
+	};
+}
+
+function paintHero(plate: BraillePlate, frame: number, field: HeroField): string[] {
+	const width = plate.width;
+	const height = plate.height;
+	const sourceRows = (plate.frames[0] ?? []).map(lineCells);
+	const sourceColors = plate.colors[0] ?? [];
+	const cells: (ArtCell | null)[][] = Array.from({ length: height }, () =>
+		new Array<ArtCell | null>(width).fill(null),
+	);
+	for (let y = 0; y < height; y++) {
+		for (let x = 0; x < width; x++) {
+			let glyph = sourceRows[y]?.[x] ?? " ";
+			if (isBlankGlyph(glyph)) continue;
+			const sourceRgb = sourceColors[y]?.[x] ?? null;
+			if (field.reveal < 1) {
+				glyph = revealGlyph(glyph, field.reveal, revealOrder(x, y, width, height, sourceRgb), x, y);
+				if (isBlankGlyph(glyph)) continue;
+			}
+			const distanceFromSweep = Math.abs(x / Math.max(1, width - 1) - field.sweepX);
+			const sweepLight = field.sweep * Math.max(0, 1 - distanceFromSweep / 0.09) * 0.48;
+			const sourceLight = sourceRgb ? Math.max(...sourceRgb) / 255 : dotDensity(glyph);
+			const breath = (1 + Math.sin(frame * 0.05 + x * 0.014 - y * 0.02)) / 2;
+			const energy = 0.27 + sourceLight * 0.54 + breath * 0.08 + sweepLight;
+			putCell(cells, x, y, { glyph, rgb: bloodRgb(energy) });
+		}
+	}
+	addBindingPulse(cells, width, height, frame, field.bindingEnergy);
+	return cells.map(row => row.map(cell => (cell ? rgbPaint(cell.rgb, cell.glyph) : " ")).join(""));
+}
+
+/** The persistent altar keeps the selected portrait breathing in blood red. */
+export function renderAnimatedBraillePlate(plate: BraillePlate, frame: number, _sourceFrameIndex = 0): string[] {
+	return paintHero(plate, frame, ambientHeroField(frame));
+}
+
+/** One binding-to-portrait reveal with no half-block or white ANSI swap. */
+export function renderCinematicBraillePlate(plate: BraillePlate, frame: number, progress: number): string[] {
+	return paintHero(plate, frame, cinematicHeroField(progress));
+}
+
 function starAt(x: number, y: number, frame: number): string {
 	const hash = (x * 73856093) ^ (y * 19349663) ^ (frame * 83492791);
-	const bucket = Math.abs(hash) % 97;
-	if (bucket === 0) return theme.fg("accent", "✦");
-	if (bucket === 1) return theme.fg("muted", "·");
+	const bucket = Math.abs(hash) % 113;
+	if (bucket === 0) return rgbPaint(bloodRgb(0.48), isAscii() ? "*" : "✦");
+	if (bucket === 1) return rgbPaint(bloodRgb(0.24), "·");
 	return " ";
 }
 
@@ -342,138 +404,19 @@ export function renderStarfield(width: number, height: number, frame: number): s
 	const lines: string[] = [];
 	for (let y = 0; y < height; y++) {
 		let line = "";
-		for (let x = 0; x < width; x++) {
-			line += starAt(x, y, frame >> 3);
-		}
+		for (let x = 0; x < width; x++) line += starAt(x, y, frame >> 3);
 		lines.push(line);
 	}
 	return lines;
 }
 
-/** Sparse embers around the art — heat, not Christmas lights. */
-function skyGlyph(x: number, y: number, frame: number): string | null {
-	const hash = (x * 73856093) ^ (y * 19349663) ^ (frame * 83492791);
-	const bucket = Math.abs(hash) % 140;
-	if (bucket > 2) return null;
-	const paint = (key: string, ch: string, fallback: string): string => {
-		try {
-			return theme.fg(key as ThemeColor, ch);
-		} catch {
-			return fallback + ch + "\x1b[0m";
-		}
-	};
-	if (bucket === 0) return paint("accent", "✦", "\x1b[38;2;255;80;120m");
-	if (bucket === 1) return paint("border", "✧", "\x1b[38;2;120;60;80m");
-	return paint("border", "·", "\x1b[38;2;90;50;70m");
-}
-
-/** Continuous diagonal gradient position (bottom-left → top-right). */
-function screenGradientT(x: number, y: number, width: number, height: number, phase: number): number {
-	const span = Math.max(1, width + height - 1);
-	const base = (x + (height - 1 - y)) / span;
-	const wrapped = (((base + phase) % 1) + 1) % 1;
-	// Keep body ink hot and readable on black — ride the top of the blood palette.
-	return 0.72 + wrapped * 0.28;
-}
-
-/** Brightness ping-pong into the throb variants: a slow, wet heartbeat. */
-function throbIndex(elapsedMs: number, periodMs: number): number {
-	return Math.round(1 + Math.sin((elapsedMs * Math.PI * 2) / periodMs));
-}
-
-/** Gravity pours. Primary orifice pulse. Weight picks glyph bulk. */
-function paintDrips(
-	put: (x: number, y: number, glyph: string) => void,
-	drips: readonly Drip[],
-	elapsedMs: number,
-	dripPeriodMs: number,
-	dripFallCells: number,
-	srcX: number,
-	srcY: number,
-	dstX: number,
-	dstY: number,
-	viewW: number,
-	viewH: number,
-	artHeight: number,
-): void {
-	for (let i = 0; i < drips.length; i++) {
-		const drip = drips[i];
-		if (!drip) continue;
-		const period = drip.periodMs && drip.periodMs > 0 ? drip.periodMs : dripPeriodMs;
-		const fall = drip.fall && drip.fall > 0 ? drip.fall : dripFallCells;
-		const weight = drip.weight ?? "pour";
-		const cycle = ((elapsedMs + i * 97) % period) / period;
-		const head = drip.y + cycle * fall;
-		const [r, g, b] = drip.rgb;
-
-		// Primary orifice throb — hot and present
-		if (drip.primary && drip.y >= 6) {
-			const pulse = 0.55 + 0.45 * Math.sin((elapsedMs * Math.PI * 2) / Math.max(320, period * 0.9) + i * 0.35);
-			const ox = drip.x - srcX;
-			const oy = drip.y - srcY;
-			if (oy >= 0 && oy < viewH && ox >= 0 && ox < viewW) {
-				const pr = Math.round(Math.min(255, r * (0.72 + pulse * 0.5)));
-				const pg = Math.round(Math.min(255, g * (0.5 + pulse * 0.28)));
-				const pb = Math.round(Math.min(255, b * (0.5 + pulse * 0.28)));
-				const core = weight === "bead" ? "•" : weight === "curtain" || weight === "heavy" ? "●" : "●";
-				put(dstX + ox, dstY + oy, `\x1b[38;2;${pr};${pg};${pb}m${core}${RESET}`);
-				// single under-dot for heavy blood mouths / flood
-				if ((weight === "heavy" || weight === "curtain") && oy + 1 < viewH) {
-					put(
-						dstX + ox,
-						dstY + oy + 1,
-						`\x1b[38;2;${Math.round(pr * 0.55)};${Math.round(pg * 0.4)};${Math.round(pb * 0.4)}m░${RESET}`,
-					);
-				}
-			}
-		}
-
-		// Tail bulk by weight
-		let tailLen: number;
-		if (weight === "bead") tailLen = Math.max(2, Math.min(5, Math.round(fall * 0.4) + 1));
-		else if (weight === "veil") tailLen = Math.max(3, Math.min(8, Math.round(fall * 0.45) + 2));
-		else if (weight === "heavy" || weight === "curtain" || weight === "flood" || weight === "rope")
-			tailLen = Math.max(5, Math.min(14, Math.round(fall * 0.7) + 3));
-		else tailLen = Math.max(4, Math.min(10, Math.round(fall * 0.55) + 2));
-
-		for (let tail = 0; tail < tailLen; tail++) {
-			const cellY = Math.round(head) - tail;
-			if (cellY < drip.y || cellY >= artHeight) continue;
-			const row = cellY - srcY;
-			const col = drip.x - srcX;
-			if (row < 0 || row >= viewH || col < 0 || col >= viewW) continue;
-			const t = tail / Math.max(1, tailLen - 1);
-			const fade = tail === 0 ? 1 : Math.max(0.08, 0.82 - t * 0.75);
-			let glyph: string;
-			if (weight === "bead") {
-				glyph = tail === 0 ? "•" : tail === 1 ? "·" : "˙";
-			} else if (weight === "veil") {
-				glyph = tail === 0 ? "▄" : tail < 3 ? "▖" : "·";
-			} else if (weight === "rope") {
-				glyph = tail === 0 ? "█" : tail === 1 ? "▓" : tail < 4 ? "▄" : "·";
-			} else {
-				// heavy / curtain / flood / pour
-				glyph = tail === 0 ? "█" : tail === 1 ? "▓" : tail === 2 ? "▄" : tail < 6 ? "▖" : "·";
-			}
-			put(
-				dstX + col,
-				dstY + row,
-				`\x1b[38;2;${Math.round(r * fade)};${Math.round(g * fade)};${Math.round(b * fade)}m${glyph}${RESET}`,
-			);
-		}
-	}
-}
-
-/** Force terminal default bg/fg dark for the splash (OSC 11/10). Ghostty light themes
- *  otherwise paint empty cells white and kill braille contrast. */
+/** Keep light terminal defaults from bleaching the red portrait during startup. */
 export function applyErosDarkTerminal(write: (s: string) => void = s => process.stdout.write(s)): void {
-	// OSC 11 = background, OSC 10 = foreground, OSC 12 = cursor
 	write("\x1b]11;#060205\x07");
 	write("\x1b]10;#ffb0c0\x07");
 	write("\x1b]12;#ff5078\x07");
 }
 
-/** Restore default colors (OSC 11/10/12 reset to terminal defaults). */
 export function restoreTerminalColors(write: (s: string) => void = s => process.stdout.write(s)): void {
 	write("\x1b]111\x07");
 	write("\x1b]110\x07");
@@ -481,314 +424,70 @@ export function restoreTerminalColors(write: (s: string) => void = s => process.
 }
 
 export function getStartupSplashDuration(): number {
-	return DEFAULT_ASSETS.totalMs || SETUP_SPLASH_MS;
+	return SETUP_SPLASH_MS;
 }
 
 export function renderSetupSplash(width: number, height: number, elapsedMs: number): string[] {
 	return renderErosSequence(DEFAULT_ASSETS, width, height, elapsedMs);
 }
 
-export function renderErosSequence(assets: ErosAssets, width: number, height: number, elapsedMs: number): string[] {
-	const w = Math.max(1, width);
-	const h = Math.max(1, height);
-	// Color-first packs: NEVER show braille. Timeline is wide-hold then punch,
-	// both fully bloomed truecolor from the first paint.
-	let tMs = elapsedMs;
-	if (assets.colorFirst) {
-		const bloomDone = assets.brailleTotalMs + assets.bloomMs; // fully revealed
-		const colorDur = Math.max(1, assets.wideMs + assets.punchMs);
-		const u = Math.max(0, Math.min(1, elapsedMs / Math.max(1, assets.totalMs)));
-		tMs = bloomDone + u * colorDur;
-	}
-	const totalMs = assets.totalMs || SETUP_SPLASH_MS;
-	const progress = Math.max(0, Math.min(1, elapsedMs / totalMs));
-	const phase = progress * 1.8;
-	const shine: ShineConfig = { pos: (progress * 2.8) % 1, strength: Math.max(0.35, 1 - progress * 0.18) };
-
-	if (w < MIN_SCENE_WIDTH || h < MIN_SCENE_HEIGHT) return renderCompactSplash(w, h, phase, shine, assets);
-
-	const frame = Math.floor(elapsedMs / SETUP_TICK_MS);
-	// Every cell owns the dark stage bg — never leave bare spaces for a light
-	// terminal theme to shine through (Ghostty Flexoki Light was washing braille).
-	const EMPTY = STAGE + " " + RESET;
-	const cells: string[][] = Array.from({ length: h }, () => new Array<string>(w).fill(EMPTY));
-	const put = (x: number, y: number, glyph: string): void => {
-		if (y >= 0 && y < h && x >= 0 && x < w) {
-			// Strip trailing reset then wrap with STAGE so bg always wins
-			const body = glyph.endsWith(RESET) ? glyph.slice(0, -RESET.length) : glyph;
-			cells[y][x] = STAGE + body + RESET;
-		}
-	};
-
-	const { brailleFrames, heroWide, heroPunch, dripsWide, dripsPunch, artWidth, artHeight } = assets;
-	const bloomStart = assets.brailleTotalMs;
-	const punchStart = bloomStart + assets.bloomMs + assets.wideMs;
-	// FULL FRAME only — never center-crop the composed braille art.
-	// Paint the entire artWidth×artHeight; center in the terminal. If the
-	// terminal is smaller than the art, edges clip (terminal limit) rather than
-	// silently windowing into the torso.
-	const viewW = artWidth;
-	const viewH = artHeight;
-	const srcX = 0;
-	const srcY = 0;
-	const dstX = Math.max(0, Math.floor((w - viewW) / 2));
-	const dstY = Math.max(0, Math.floor((h - viewH - 1) / 2));
-
-	// Embers behind everything — constant, sparse heat.
-	for (let y = 0; y < h; y++) {
-		for (let x = 0; x < w; x++) {
-			const star = skyGlyph(x, y, frame >> 3);
-			if (star) put(x, y, star);
-		}
-	}
-
-	if (tMs < bloomStart) {
-		// Pose holds + morph crossfade. Gravity drips only.
-		const poses = assets.poses;
-		let artIndex = 0;
-		let active: PoseHold | null = poses[0] ?? null;
-		let prevPose: PoseHold | null = null;
-		let nextPose: PoseHold | null = null;
-		let holdLocalMs = tMs;
-		let inMorph = false;
-		let morphT = 0;
-
-		if (poses.length > 0) {
-			let cursor = 0;
-			for (let i = 0; i < poses.length; i++) {
-				const pose = poses[i]!;
-				const holdEnd = cursor + pose.holdMs;
-				if (tMs < holdEnd) {
-					active = pose;
-					prevPose = pose;
-					nextPose = null;
-					artIndex = pose.frame;
-					holdLocalMs = tMs - cursor;
-					inMorph = false;
-					break;
-				}
-				cursor = holdEnd;
-				if (i + 1 < poses.length) {
-					const morphEnd = cursor + assets.morphMsBetween;
-					if (tMs < morphEnd) {
-						const a = pose.frame;
-						const b = poses[i + 1]!.frame;
-						morphT = (tMs - cursor) / Math.max(1, assets.morphMsBetween);
-						artIndex = Math.min(b, a + Math.max(1, Math.floor(morphT * Math.max(1, b - a))));
-						prevPose = pose;
-						nextPose = poses[i + 1]!;
-						// active used for throb/ambient — blend toward next after midpoint
-						active = morphT < 0.5 ? pose : poses[i + 1]!;
-						holdLocalMs = morphT < 0.5 ? pose.holdMs * (1 - morphT) : morphT * 200;
-						inMorph = true;
-						break;
-					}
-					cursor = morphEnd;
-				}
-				if (i === poses.length - 1) {
-					active = pose;
-					prevPose = pose;
-					artIndex = pose.frame;
-					holdLocalMs = pose.holdMs;
-				}
-			}
-		} else {
-			const n = brailleFrames.length;
-			const u = Math.min(0.999, tMs / Math.max(1, assets.brailleTotalMs));
-			artIndex = Math.min(n - 1, Math.floor(u * n));
-		}
-
-		const art = brailleFrames[Math.min(brailleFrames.length - 1, Math.max(0, artIndex))] ?? [];
-		const throbPeriod = active?.throbPeriodMs ?? assets.throbPeriodMs;
-		const throbAmp = active?.throbAmp ?? 0.28;
-		const breathPeriod = active?.breathPeriodMs ?? 2000;
-		const throb = 1 - throbAmp + throbAmp * (0.5 + 0.5 * Math.sin((holdLocalMs * Math.PI * 2) / throbPeriod));
-		const breath = 0.5 + 0.5 * Math.sin((holdLocalMs * Math.PI * 2) / breathPeriod);
-		const pulse2 = 0.5 + 0.5 * Math.sin((holdLocalMs * Math.PI * 2) / Math.max(320, throbPeriod * 0.55));
-		const brailleShine: ShineConfig = {
-			pos: (0.1 + breath * 0.8 + (inMorph ? morphT * 0.25 : 0) + pulse2 * 0.05) % 1,
-			strength: Math.min(1, 0.55 + throb * 0.5 + pulse2 * 0.15 + (inMorph ? 0.12 : 0)),
-		};
-		for (let row = 0; row < viewH; row++) {
-			const line = art[srcY + row];
-			if (line === undefined) continue;
-			for (let col = 0; col < viewW; col++) {
-				const glyph = line[srcX + col];
-				if (glyph === undefined || glyph === "⠀") continue;
-				const t = screenGradientT(dstX + col, dstY + row, w, h, phase);
-				const localShine: ShineConfig = {
-					pos: brailleShine.pos,
-					strength: Math.min(1, brailleShine.strength * throb),
-				};
-				put(dstX + col, dstY + row, gradientEscape(t, localShine) + glyph + RESET);
-			}
-		}
-
-		// Gravity drips: during morph paint BOTH pose streams so the pour never dies.
-		const dripPeriod = active?.dripPeriodMs ?? assets.dripPeriodMs;
-		const dripFall = active?.dripFall ?? assets.dripFallCells;
-		if (inMorph && prevPose && nextPose) {
-			// outgoing pour stays until ~70%; incoming fades in from 30%
-			if (morphT < 0.72 && prevPose.drips.length) {
-				paintDrips(
-					put,
-					prevPose.drips,
-					prevPose.holdMs + morphT * 400,
-					prevPose.dripPeriodMs || dripPeriod,
-					prevPose.dripFall || dripFall,
-					srcX,
-					srcY,
-					dstX,
-					dstY,
-					viewW,
-					viewH,
-					artHeight,
-				);
-			}
-			if (morphT > 0.28 && nextPose.drips.length) {
-				paintDrips(
-					put,
-					nextPose.drips,
-					morphT * 800,
-					nextPose.dripPeriodMs || dripPeriod,
-					nextPose.dripFall || dripFall,
-					srcX,
-					srcY,
-					dstX,
-					dstY,
-					viewW,
-					viewH,
-					artHeight,
-				);
-			}
-		} else {
-			const poseDrips = active?.drips?.length ? active.drips : dripsWide;
-			paintDrips(
-				put,
-				poseDrips,
-				holdLocalMs + (active ? 0 : tMs),
-				dripPeriod,
-				dripFall,
-				srcX,
-				srcY,
-				dstX,
-				dstY,
-				viewW,
-				viewH,
-				artHeight,
-			);
-		}
-		// Gravity drips only — no upward squirt/explode bursts.
-	} else {
-		// Braille-first: stay on the last braille pose. Full frame only.
-		const art = brailleFrames[brailleFrames.length - 1] ?? [];
-		const holdLocalMs = tMs - bloomStart;
-		const throb = 1 - 0.18 + 0.18 * (0.5 + 0.5 * Math.sin((holdLocalMs * Math.PI * 2) / assets.throbPeriodMs));
-		const brailleShine: ShineConfig = {
-			pos: (holdLocalMs / 2800) % 1,
-			strength: Math.min(1, 0.5 + throb * 0.35),
-		};
-		for (let row = 0; row < viewH; row++) {
-			const line = art[srcY + row];
-			if (line === undefined) continue;
-			for (let col = 0; col < viewW; col++) {
-				const glyph = line[srcX + col];
-				if (glyph === undefined || glyph === "⠀") continue;
-				const t = screenGradientT(dstX + col, dstY + row, w, h, phase);
-				const localShine: ShineConfig = {
-					pos: brailleShine.pos,
-					strength: Math.min(1, brailleShine.strength * throb),
-				};
-				put(dstX + col, dstY + row, gradientEscape(t, localShine) + glyph + RESET);
-			}
-		}
-		paintDrips(
-			put,
-			dripsWide,
-			tMs,
-			assets.dripPeriodMs,
-			assets.dripFallCells,
-			srcX,
-			srcY,
-			dstX,
-			dstY,
-			viewW,
-			viewH,
-			artHeight,
-		);
-	}
-
-	// Wordmark brands the floor under the art as the color lands, and stays.
-	const markStart = bloomStart + assets.bloomMs * 0.35;
-	if (tMs > markStart) {
-		const reveal = Math.min(1, (tMs - markStart) / 520);
-		const markRow = Math.min(h - 2, dstY + viewH);
-		const wordmark = assets.wordmark;
-		const subtitle = assets.subtitle;
-		const shown = Math.max(1, Math.round(wordmark.length * reveal));
-		const text = wordmark.slice(0, shown);
-		let col = Math.floor((w - wordmark.length) / 2);
-		for (const ch of text) {
-			if (ch !== " ") {
-				const t = screenGradientT(col, markRow, w, h, phase);
-				put(col, markRow, gradientEscape(t, shine) + ch + RESET);
-			}
-			col++;
-		}
-		if (reveal >= 1 && markRow + 1 < h - 1) {
-			let subCol = Math.floor((w - subtitle.length) / 2);
-			for (const ch of subtitle) {
-				if (ch !== " ") put(subCol, markRow + 1, themePaint("muted", ch, "200;160;170"));
-				subCol++;
-			}
-		}
-	}
-
-	// Skip hint on a cleared strip at the bottom.
-	const hintWidth = visibleWidth(SKIP_HINT);
-	const hintStart = Math.floor((w - hintWidth) / 2);
-	const hintRow = h - 1;
-	for (let x = hintStart - 1; x <= hintStart + hintWidth; x++) put(x, hintRow, " ");
-	let hintCol = hintStart;
-	for (const ch of SKIP_HINT) put(hintCol++, hintRow, ch === " " ? " " : themePaint("dim", ch, "120;90;100"));
-
-	return cells.map(row => row.join(""));
+function redRail(left: string, fill: string, right: string, width: number): string {
+	return rgbPaint(bloodRgb(0.5), left) + rgbPaint(bloodRgb(0.3), fill.repeat(width)) + rgbPaint(bloodRgb(0.5), right);
 }
 
-/** A fresh sequence renderer bound to a freshly loaded (random) pack. */
+function renderErosSequence(assets: ErosAssets, width: number, height: number, elapsedMs: number): string[] {
+	const w = Math.max(1, width);
+	const h = Math.max(1, height);
+	const frame = Math.max(0, Math.floor(elapsedMs / SETUP_TICK_MS));
+	if (w < MIN_SCENE_WIDTH || h < MIN_SCENE_HEIGHT) return renderCompactSplash(w, h, assets.title);
+
+	const plate = selectBraillePlate(assets.brailleVariants, w - 4, h - 4);
+	if (!plate) return renderCompactSplash(w, h, assets.title);
+
+	const artRows = renderCinematicBraillePlate(plate, frame, clamp01(elapsedMs / SETUP_SPLASH_MS));
+	const outerLeft = Math.floor((w - plate.width - 2) / 2);
+	const outerRight = w - outerLeft - plate.width - 2;
+	const box = theme.boxRound;
+	const rail = (left: string, fill: string, right: string): string =>
+		padding(outerLeft) + redRail(left, fill, right, plate.width) + padding(outerRight);
+	const rows = Array.from({ length: h }, () => padding(w));
+
+	rows[0] = clampLine(centerLine(bold(rgbPaint(bloodRgb(0.9), assets.title)), w), w);
+	rows[1] = clampLine(rail(box.topLeft, box.horizontal, box.topRight), w);
+	for (let y = 0; y < plate.height; y++) {
+		rows[2 + y] = clampLine(
+			padding(outerLeft) +
+				rgbPaint(bloodRgb(0.34), box.vertical) +
+				(artRows[y] ?? padding(plate.width)) +
+				rgbPaint(bloodRgb(0.34), box.vertical) +
+				padding(outerRight),
+			w,
+		);
+	}
+	rows[2 + plate.height] = clampLine(rail(box.bottomLeft, box.horizontal, box.bottomRight), w);
+	rows[h - 1] = clampLine(centerLine(themePaint("dim", SKIP_HINT), w), w);
+	return rows;
+}
+
 export interface ErosRenderer {
 	readonly durationMs: number;
 	render(width: number, height: number, elapsedMs: number): string[];
 }
 
+/** Splash and screensaver share the same responsive portrait family and red reveal. */
 export function createErosRenderer(): ErosRenderer {
-	const pack = loadIntroPack();
-	setSplashPalette(pack?.palette);
-	const assets = buildErosAssets(pack);
+	const assets = buildErosAssets(loadIntroPack());
 	return {
-		durationMs: assets.totalMs,
+		durationMs: SETUP_SPLASH_MS,
 		render(width, height, elapsedMs) {
 			return renderErosSequence(assets, width, height, elapsedMs);
 		},
 	};
 }
 
-/** Centered fallback for windows too small to hold the art. */
-function renderCompactSplash(
-	width: number,
-	height: number,
-	phase: number,
-	shine: ShineConfig,
-	assets: ErosAssets,
-): string[] {
-	const art = height >= 14 ? LARGE_LOGO : PI_LOGO;
-	const content = [...gradientLogo(art, phase, shine), "", themePaint("accent", assets.wordmark, "255;80;120")];
-	const start = Math.max(0, Math.floor((height - content.length) / 2));
-	const lines: string[] = [];
-	for (let y = 0; y < height; y++) {
-		const item = content[y - start];
-		lines.push(clampLine(item !== undefined ? centerLine(item, width) : "", width));
-	}
-	if (height > 2) lines[height - 2] = clampLine(centerLine(themePaint("dim", SKIP_HINT, "120;90;100"), width), width);
-	return lines;
+function renderCompactSplash(width: number, height: number, title: string): string[] {
+	const rows = Array.from({ length: height }, () => padding(width));
+	rows[0] = clampLine(centerLine(bold(rgbPaint(bloodRgb(0.9), title)), width), width);
+	if (height > 2) rows[height - 1] = clampLine(centerLine(themePaint("dim", SKIP_HINT), width), width);
+	return rows;
 }

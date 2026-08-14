@@ -416,6 +416,30 @@ export class CustomEditor extends Editor {
 		if (args[0] instanceof TUI) this.tui = args[0];
 	}
 
+	/** Mount EROS's living composer gutter on the main prompt bar. Other editors
+	 * stay untouched until their host explicitly straps this chrome on. */
+	#erosComposerChrome = false;
+
+	setErosComposerChrome(enabled: boolean): void {
+		this.#erosComposerChrome = enabled;
+		if (!enabled) this.setPromptGutter(undefined);
+	}
+
+	override render(width: number): readonly string[] {
+		if (!this.#erosComposerChrome) return super.render(width);
+		let ascii = false;
+		try {
+			ascii = theme.getSymbolPreset() === "ascii";
+		} catch {}
+		const beat = Math.floor(Date.now() / CustomEditor.COMPOSER_PULSE_FRAME_MS) % 8;
+		const heart = ascii ? ">" : this.focused && (beat === 1 || beat === 2 || beat === 5) ? "♥" : "♡";
+		const color = !this.focused ? "dim" : beat < 3 ? "accent" : beat < 6 ? "borderAccent" : "mdLink";
+		this.setPromptGutter(`${fgOrPlain(color, heart)} `);
+		const lines = super.render(width);
+		if (this.focused && !ascii) this.#scheduleRepaintFrame(CustomEditor.COMPOSER_PULSE_FRAME_MS);
+		return lines;
+	}
+
 	/** Clear the composer draft: optionally commit `historyText` to history, then
 	 *  reset the editor text and all pending draft-image state. The shared tail of
 	 *  every "message submitted" path; pass no argument for a plain discard. */
@@ -448,11 +472,14 @@ export class CustomEditor extends Editor {
 	static readonly SHIMMER_FRAME_MS = 70;
 	/** Time for the gradient to sweep one full cycle across each keyword. */
 	static readonly SHIMMER_PERIOD_MS = 1800;
+	/** The whole composer breathes slower than keyword shimmer, keeping the pulse
+	 * carnal without making an idle terminal chew frames like a desperate cunt. */
+	static readonly COMPOSER_PULSE_FRAME_MS = 140;
 
 	/** Per-render scratch flag: did any layout line in this render contain a magic
 	 *  keyword that should shimmer? Reset by {@link #scheduleShimmerIfNeeded} each
 	 *  time a frame is queued. */
-	#shimmerTimer: Timer | undefined;
+	#repaintTimer: Timer | undefined;
 	/** Repaint hook the host wires once at construction. Called from the shimmer
 	 *  timer to request the next animation frame. Undefined when nobody is
 	 *  listening (tests, headless callers); the timer chain still self-cleans. */
@@ -461,14 +488,14 @@ export class CustomEditor extends Editor {
 	#queueShorthandActive = false;
 	#queueListActive = false;
 
-	/** Decorate magic keywords, attachments, and the queue-composer header/list markers.
-	 *  Queue shorthand reserves its first logical line as a dim `Queueing` label; sequential
-	 *  item markers use the accent color so separate follow-ups remain visible while composing. */
+	/** Decorate magic keywords, attachments, and the next-thrust header/list markers.
+	 * Queue shorthand reserves its first logical line as a dim `Next thrust` label; sequential
+	 * item markers take the accent so Master's follow-ups remain visibly separate. */
 	override decorateText = (text: string): string => {
 		const editorText = this.getText();
 		const animated = this.focused && this.#shimmerEnabled() && hasMagicKeyword(editorText);
 		const phase = animated ? (Date.now() % CustomEditor.SHIMMER_PERIOD_MS) / CustomEditor.SHIMMER_PERIOD_MS : 0;
-		if (animated) this.#scheduleShimmerFrame();
+		if (animated) this.#scheduleRepaintFrame(CustomEditor.SHIMMER_FRAME_MS);
 		if (this.#queueDecorationText !== editorText) {
 			this.#queueDecorationText = editorText;
 			const queueBody = parseQueueShorthand(editorText);
@@ -480,7 +507,7 @@ export class CustomEditor extends Editor {
 				const highlighted = highlightMagicKeywords(value, undefined, phase);
 				if (this.#queueShorthandActive && (value.startsWith("->") || value.startsWith("=>"))) {
 					const icon = typeof theme === "undefined" ? "➤" : theme.nav.selected;
-					return `${fgOrPlain("dim", `Queueing ${icon}`)}${highlighted.slice(2)}`;
+					return `${fgOrPlain("dim", `Next thrust ${icon}`)}${highlighted.slice(2)}`;
 				}
 				if (this.#queueListActive) {
 					const markerMatch = QUEUE_LIST_MARKER_RE.exec(value);
@@ -524,22 +551,21 @@ export class CustomEditor extends Editor {
 	 *  editor). Passing `undefined` clears any pending frame. */
 	setShimmerRepaintHandler(handler: (() => void) | undefined): void {
 		this.#requestShimmerRepaint = handler;
-		if (!handler && this.#shimmerTimer) {
-			clearTimeout(this.#shimmerTimer);
-			this.#shimmerTimer = undefined;
+		if (!handler && this.#repaintTimer) {
+			clearTimeout(this.#repaintTimer);
+			this.#repaintTimer = undefined;
 		}
 	}
 
-	/** Schedule one shimmer frame if none is already pending. The next render
-	 *  decides whether to schedule another, so the chain stops by itself when
-	 *  `focused` flips off or the keyword leaves the buffer. */
-	#scheduleShimmerFrame(): void {
-		if (this.#shimmerTimer || !this.#requestShimmerRepaint) return;
-		this.#shimmerTimer = setTimeout(() => {
-			this.#shimmerTimer = undefined;
+	/** Schedule one living composer frame if none is already waiting. The next
+	 * render decides whether another pulse is deserved, so unfocused holes go still. */
+	#scheduleRepaintFrame(delayMs: number): void {
+		if (this.#repaintTimer || !this.#requestShimmerRepaint) return;
+		this.#repaintTimer = setTimeout(() => {
+			this.#repaintTimer = undefined;
 			this.#requestShimmerRepaint?.();
-		}, CustomEditor.SHIMMER_FRAME_MS);
-		this.#shimmerTimer.unref?.();
+		}, delayMs);
+		this.#repaintTimer.unref?.();
 	}
 	onEscape?: () => void;
 	onClear?: () => void;

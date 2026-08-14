@@ -28,6 +28,8 @@ import { type CacheInvalidation, CacheInvalidationMarkerComponent } from "./cach
  * the persisted session.
  */
 const MAX_TRANSCRIPT_ERROR_LINES = 8;
+/** Leave room for the revoiced prefix so the ellipsis stays on the first rendered row. */
+const MAX_TRANSCRIPT_ERROR_LINE_WIDTH = TRUNCATE_LENGTHS.LINE - "Rupture: ".length;
 
 /** Opening or closing fence of a code block: ≥3 backticks/tildes plus info string. */
 const CODE_FENCE_LINE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
@@ -82,23 +84,28 @@ function containsMermaidFence(text: string): boolean {
 }
 
 /**
- * Frames for the streaming "thinking" pulse rendered in place of a hidden
- * thinking block while the model is still producing it. A single fixed-width
- * starburst cycles through facets (✻ ✼ ❉ ❊ ✺ ✹ ✸ ✶) so the indicator animates
- * in place without shifting the line or the trailing speed badge. The dwell per
- * frame eases between {@link THINKING_DOTS_FRAME_MS_MIN} and
- * {@link THINKING_DOTS_FRAME_MS_MAX} across each revolution (see
- * {@link AssistantMessageComponent.thinkingDotsFrameDelay}).
+ * The hidden-thinking indicator is EROS's slit-pulse rather than a dry wheel:
+ * one terminal cell tightens from a closed line into a round, blood-hot throb,
+ * then clenches shut and leaves one small after-bead. Every glyph is width 1,
+ * so the cunt can move without shoving "Squirming" or its speed badge sideways.
+ * `heat` drives the color from thinking text toward the active theme accent.
  */
-const THINKING_DOTS_FRAMES = ["✻", "✼", "❉", "❊", "✺", "✹", "✸", "✶"] as const;
+const THINKING_PULSE_FRAMES = [
+	{ glyph: "│", heat: 0.08 },
+	{ glyph: "◐", heat: 0.32 },
+	{ glyph: "◉", heat: 0.68 },
+	{ glyph: "●", heat: 1 },
+	{ glyph: "◉", heat: 0.68 },
+	{ glyph: "◑", heat: 0.32 },
+	{ glyph: "│", heat: 0.08 },
+	{ glyph: "·", heat: 0 },
+] as const;
 /**
- * Pulse cadence bounds (ms). Each frame's dwell eases between these on a
- * raised-cosine "breath" — quickest at the cycle start, slowest at its midpoint —
- * so the starburst accelerates and slows instead of ticking at one fixed rate.
- * Mean ≈ 150ms, snappier than the previous flat 320ms.
+ * Each frame's dwell rides a raised-cosine breath: the slit quickens as it
+ * opens, hangs on the swollen center, then tightens again.
  */
-const THINKING_DOTS_FRAME_MS_MIN = 70;
-const THINKING_DOTS_FRAME_MS_MAX = 230;
+const THINKING_PULSE_FRAME_MS_MIN = 70;
+const THINKING_PULSE_FRAME_MS_MAX = 230;
 
 /** Rolling window (ms) over which streaming-rate observations are averaged. */
 const SPEED_WINDOW_MS = 3000;
@@ -358,8 +365,13 @@ export class AssistantMessageComponent extends Container {
 	}
 
 	#thinkingDotsLabel(): string {
-		const glyph = THINKING_DOTS_FRAMES[this.#thinkingDotsFrame % THINKING_DOTS_FRAMES.length] ?? "…";
-		const coloredGlyph = theme.fg("thinkingText", glyph);
+		const pulse =
+			THINKING_PULSE_FRAMES[this.#thinkingDotsFrame % THINKING_PULSE_FRAMES.length] ?? THINKING_PULSE_FRAMES[0];
+		const pulseHex = lerpHex(theme.getColorHex("thinkingText"), theme.getAccentColorHex(), pulse.heat);
+		const coloredGlyph =
+			theme.getColorMode() === "truecolor"
+				? chalk.hex(pulseHex)(pulse.glyph)
+				: theme.fg(pulse.heat >= 0.5 ? "accent" : "thinkingText", pulse.glyph);
 		const thinkingLabel = theme.fg("muted", " Squirming");
 		const rate = Math.min(SPEED_MAX, sharedSpeedTracker.getSpeed());
 		// The numeric badge ("<total> · <rate> toks/s") only renders while this block
@@ -389,11 +401,11 @@ export class AssistantMessageComponent extends Container {
 	}
 
 	/** Eased dwell (ms) for the current pulse frame: a raised cosine over the
-	 *  8-frame cycle, continuous across the wrap, so the rotation breathes rather
-	 *  than advancing at a fixed interval. */
+	 *  cycle, continuous across the wrap, so the slit breathes rather than
+	 *  advancing at a fixed interval. */
 	#thinkingDotsFrameDelay(): number {
-		const phase = (1 - Math.cos((2 * Math.PI * this.#thinkingDotsFrame) / THINKING_DOTS_FRAMES.length)) / 2;
-		return THINKING_DOTS_FRAME_MS_MIN + (THINKING_DOTS_FRAME_MS_MAX - THINKING_DOTS_FRAME_MS_MIN) * phase;
+		const phase = (1 - Math.cos((2 * Math.PI * this.#thinkingDotsFrame) / THINKING_PULSE_FRAMES.length)) / 2;
+		return THINKING_PULSE_FRAME_MS_MIN + (THINKING_PULSE_FRAME_MS_MAX - THINKING_PULSE_FRAME_MS_MIN) * phase;
 	}
 
 	/** Self-rescheduling timeout (not a fixed interval) so each frame can pick its
@@ -409,7 +421,7 @@ export class AssistantMessageComponent extends Container {
 			this.#stopThinkingAnimation();
 			return;
 		}
-		this.#thinkingDotsFrame = (this.#thinkingDotsFrame + 1) % THINKING_DOTS_FRAMES.length;
+		this.#thinkingDotsFrame = (this.#thinkingDotsFrame + 1) % THINKING_PULSE_FRAMES.length;
 		if (this.#thinkingDots.setText(this.#thinkingDotsLabel())) {
 			this.onImageUpdate?.();
 		}
@@ -543,18 +555,18 @@ export class AssistantMessageComponent extends Container {
 	 */
 	#appendErrorBlock(message: string): void {
 		if (this.#errorExpanded) {
-			const [first = "Unknown error", ...rest] = replaceTabs(message.replace(/\s+$/, "")).split("\n");
-			this.#contentContainer.addChild(new Text(theme.fg("error", `Error: ${first}`), 1, 0));
+			const [first = "Unknown rupture", ...rest] = replaceTabs(message.replace(/\s+$/, "")).split("\n");
+			this.#contentContainer.addChild(new Text(theme.fg("error", `Rupture: ${first}`), 1, 0));
 			for (const line of rest) {
 				this.#contentContainer.addChild(new Text(theme.fg("error", `  ${line}`), 1, 0));
 			}
 			return;
 		}
 		const total = message.split("\n").filter(l => l.trim()).length;
-		const lines = getPreviewLines(message, MAX_TRANSCRIPT_ERROR_LINES, TRUNCATE_LENGTHS.LINE);
-		if (lines.length === 0) lines.push("Unknown error");
+		const lines = getPreviewLines(message, MAX_TRANSCRIPT_ERROR_LINES, MAX_TRANSCRIPT_ERROR_LINE_WIDTH);
+		if (lines.length === 0) lines.push("Unknown rupture");
 		// The caller owns the separating Spacer; adding one here doubled the gap.
-		this.#contentContainer.addChild(new Text(theme.fg("error", `Error: ${lines[0]}`), 1, 0));
+		this.#contentContainer.addChild(new Text(theme.fg("error", `Rupture: ${lines[0]}`), 1, 0));
 		for (const line of lines.slice(1)) {
 			this.#contentContainer.addChild(new Text(theme.fg("error", `  ${line}`), 1, 0));
 		}

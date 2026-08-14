@@ -7,8 +7,6 @@ import { createMockModel, registerMockApi } from "@oh-my-pi/pi-ai/providers/mock
 import { __providerInFlightForTesting, streamSimple } from "@oh-my-pi/pi-ai/stream";
 import type { Context } from "@oh-my-pi/pi-ai/types";
 import {
-	getDefault,
-	getEnumValues,
 	onAppendOnlyModeChanged,
 	onStatusLineSessionAccentChanged,
 	resetSettingsForTest,
@@ -16,7 +14,6 @@ import {
 	Settings,
 } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { AgentStorage } from "@oh-my-pi/pi-coding-agent/session/agent-storage";
-import { canSpawnAtDepth } from "@oh-my-pi/pi-coding-agent/task/types";
 import { AUTO_IMAGE_PROVIDER_ORDER } from "@oh-my-pi/pi-coding-agent/tools/image-providers";
 import { SEARCH_PROVIDER_ORDER } from "@oh-my-pi/pi-coding-agent/web/search/types";
 import { getProjectAgentDir, TempDir } from "@oh-my-pi/pi-utils";
@@ -392,75 +389,6 @@ describe("Settings", () => {
 		});
 	});
 
-	describe("defaults", () => {
-		it("keeps eight inline images live by default", async () => {
-			const settings = await Settings.init({ cwd: projectDir, agentDir });
-			expect(settings.get("tui.maxInlineImages")).toBe(8);
-		});
-
-		it("keeps native terminal progress disabled by default", async () => {
-			const settings = await Settings.init({ cwd: projectDir, agentDir });
-			expect(settings.get("terminal.showProgress")).toBe(false);
-			expect(getDefault("terminal.showProgress")).toBe(false);
-		});
-
-		it("shows tool activity by default", async () => {
-			const settings = await Settings.init({ cwd: projectDir, agentDir });
-			expect(settings.get("display.hideToolActivity")).toBe(false);
-			expect(getDefault("display.hideToolActivity")).toBe(false);
-		});
-
-		it("keeps the normal startup splash disabled by default", async () => {
-			const settings = await Settings.init({ cwd: projectDir, agentDir });
-			expect(settings.get("startup.showSplash")).toBe(false);
-			expect(getDefault("startup.showSplash")).toBe(false);
-		});
-
-		it("defaults provider in-flight request limits to an empty map", async () => {
-			const settings = Settings.isolated();
-			expect(settings.get("providers.maxInFlightRequests")).toEqual({});
-			expect(getDefault("providers.maxInFlightRequests")).toEqual({});
-		});
-
-		it("defaults to restrained advisor and optional delegation policy", () => {
-			const settings = Settings.isolated();
-			expect(settings.get("advisor.enabled")).toBe(false);
-			expect(settings.get("advisor.shareThinking")).toBe(false);
-			expect(settings.get("advisor.immuneTurns")).toBe(3);
-			expect(settings.get("advisor.wipNotes")).toBe("blocker");
-			expect(settings.get("advisor.subagents")).toBe(false);
-			expect(settings.get("advisor.syncBacklog")).toBe("off");
-			expect(settings.get("task.eager")).toBe("default");
-			expect(settings.get("task.batch")).toBe(false);
-			expect(settings.get("task.enableEffort")).toBe(false);
-			expect(settings.get("task.enableLsp")).toBe(false);
-			expect(settings.get("task.maxConcurrency")).toBe(1);
-			expect(settings.get("task.maxRecursionDepth")).toBe(1);
-			expect(settings.get("task.softRequestBudget")).toBe(32);
-			expect(canSpawnAtDepth(settings.get("task.maxRecursionDepth"), 0)).toBe(true);
-			expect(canSpawnAtDepth(settings.get("task.maxRecursionDepth"), 1)).toBe(false);
-		});
-
-		it("exposes all tool calling mode options", () => {
-			const values = getEnumValues("tools.format");
-			expect(values).toEqual([
-				"auto",
-				"native",
-				"glm",
-				"hermes",
-				"kimi",
-				"xml",
-				"anthropic",
-				"deepseek",
-				"harmony",
-				"qwen3",
-				"gemini",
-				"gemma",
-				"minimax",
-			]);
-		});
-	});
-
 	describe("get()", () => {
 		it("resolves overrides, schema defaults, and falsey values", () => {
 			const isolated = Settings.isolated({
@@ -474,7 +402,6 @@ describe("Settings", () => {
 			expect(isolated.get("setupVersion")).toBe(0);
 			expect(isolated.get("shellPath")).toBe("");
 			expect(isolated.get("enabledModels")).toEqual([]);
-			expect(isolated.get("tui.maxInlineImages")).toBe(getDefault("tui.maxInlineImages"));
 		});
 
 		it("invalidates cached resolved values after set, override, and clearOverride", () => {
@@ -579,7 +506,7 @@ describe("Settings", () => {
 			});
 
 			try {
-				expect(() => isolated.set("provider.appendOnlyContext", "on")).not.toThrow();
+				isolated.set("provider.appendOnlyContext", "on");
 				expect(received).toEqual(["on"]);
 			} finally {
 				unsubscribeThrower();

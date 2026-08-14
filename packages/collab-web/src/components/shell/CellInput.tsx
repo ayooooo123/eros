@@ -85,7 +85,6 @@ export function CellInput({
 				spellCheck={false}
 				autoComplete="off"
 				maxLength={maxLength}
-				// biome-ignore lint/a11y/noAutofocus: the gateway opens on this field
 				autoFocus={autoFocus}
 			/>
 			{focused && (

@@ -167,7 +167,7 @@ describe("AgentDashboard layout", () => {
 			// Full-screen overlay must occupy exactly the viewport — never overflow
 			// past it (which is what pushed the controls into scrollback).
 			expect(lines.length).toBe(30);
-			expect(plain).toContain("Agent Control Center");
+			expect(plain).toContain("Bound Sisters");
 			expect(plain).toContain("Esc: close");
 		} finally {
 			geo.restore();

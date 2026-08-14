@@ -54,8 +54,8 @@ export function createAdvisorMessageCard(
 ): Component {
 	const notes = details?.notes ?? [];
 	const blockers = notes.filter(note => note.severity === "blocker").length;
-	const meta: string[] = [`${notes.length} ${notes.length === 1 ? "note" : "notes"}`];
-	if (blockers > 0) meta.push(uiTheme.fg("error", `${blockers} blocker${blockers === 1 ? "" : "s"}`));
+	const meta: string[] = [`${notes.length} ${notes.length === 1 ? "lash" : "lashes"}`];
+	if (blockers > 0) meta.push(uiTheme.fg("error", `${blockers} hard stop${blockers === 1 ? "" : "s"}`));
 
 	return createCachedComponent(
 		getExpanded,
@@ -100,7 +100,7 @@ export function createAdvisorMessageCard(
 			const hidden = notes.length - shown.length;
 			if (hidden > 0) {
 				const rail = uiTheme.fg("dim", railGlyph);
-				lines.push(`  ${rail} ${uiTheme.fg("dim", `… +${hidden} more ${hidden === 1 ? "note" : "notes"}`)}`);
+				lines.push(`  ${rail} ${uiTheme.fg("dim", `… +${hidden} more ${hidden === 1 ? "lash" : "lashes"}`)}`);
 			}
 			return lines.map(line => truncateToWidth(line, width, Ellipsis.Unicode));
 		},

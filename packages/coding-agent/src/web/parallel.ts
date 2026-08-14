@@ -1,4 +1,5 @@
 import { type FetchImpl, getEnvApiKey } from "@oh-my-pi/pi-ai";
+import { APP_COMMAND_NAME } from "@oh-my-pi/pi-utils";
 import type { AgentStorage } from "../session/agent-storage";
 import { findCredential, withHardTimeout } from "./search/providers/utils";
 
@@ -143,6 +144,15 @@ export function parseParallelErrorResponse(statusCode: number, responseText: str
 		return createParallelApiError(statusCode, extractParallelErrorMessage(payload) ?? trimmedResponseText);
 	} catch {
 		return createParallelApiError(statusCode, trimmedResponseText);
+	}
+}
+
+export async function parseParallelJsonResponse(response: Response, operation: "search" | "extract"): Promise<unknown> {
+	try {
+		return await response.json();
+	} catch (err) {
+		const detail = err instanceof Error ? err.message : String(err);
+		throw new ParallelApiError(`Parallel ${operation} returned invalid JSON: ${detail}`);
 	}
 }
 
@@ -294,7 +304,7 @@ export async function searchWithParallel(
 	const apiKey = findParallelApiKey(storage);
 	if (!apiKey) {
 		throw new ParallelApiError(
-			"Parallel credentials not found. Set PARALLEL_API_KEY or login with 'omp /login parallel'.",
+			`Parallel credentials not found. Set PARALLEL_API_KEY or login with '${APP_COMMAND_NAME} /login parallel'.`,
 		);
 	}
 
@@ -316,7 +326,7 @@ export async function searchWithParallel(
 		throw parseParallelErrorResponse(response.status, await response.text());
 	}
 
-	const payload: unknown = await response.json();
+	const payload = await parseParallelJsonResponse(response, "search");
 	return parseParallelSearchPayload(payload);
 }
 
@@ -328,7 +338,7 @@ export async function extractWithParallel(
 	const apiKey = findParallelApiKey(storage);
 	if (!apiKey) {
 		throw new ParallelApiError(
-			"Parallel credentials not found. Set PARALLEL_API_KEY or login with 'omp /login parallel'.",
+			`Parallel credentials not found. Set PARALLEL_API_KEY or login with '${APP_COMMAND_NAME} /login parallel'.`,
 		);
 	}
 
@@ -349,6 +359,6 @@ export async function extractWithParallel(
 		throw parseParallelErrorResponse(response.status, await response.text());
 	}
 
-	const payload: unknown = await response.json();
+	const payload = await parseParallelJsonResponse(response, "extract");
 	return parseExtractPayload(payload);
 }

@@ -444,12 +444,16 @@ export class AgentDashboard extends Container {
 					if (sourceCmp !== 0) return sourceCmp;
 					return a.name.localeCompare(b.name);
 				})
-				.map(agent => ({
-					...agent,
-					disabled: disabled.has(agent.name),
-					overrideModel: overrides[agent.name]?.trim() || undefined,
-					prewalkOverride: prewalkOverrides[agent.name]?.trim() || undefined,
-				}));
+				.map(agent => {
+					const override = overrides[agent.name];
+					const overrideModel = (Array.isArray(override) ? override.join(",") : (override ?? "")).trim();
+					return {
+						...agent,
+						disabled: disabled.has(agent.name),
+						overrideModel: overrideModel || undefined,
+						prewalkOverride: prewalkOverrides[agent.name]?.trim() || undefined,
+					};
+				});
 
 			this.#tabs = this.#buildTabs(this.#allAgents);
 			const nextTabIndex = this.#tabs.findIndex(tab => tab.id === activeTabId);
@@ -1010,7 +1014,7 @@ export class AgentDashboard extends Container {
 	#buildLayout(): void {
 		this.clear();
 		this.addChild(new DynamicBorder());
-		this.addChild(new Text(theme.bold(theme.fg("accent", " Agent Control Center")), 0, 0));
+		this.addChild(new Text(theme.bold(theme.fg("accent", " Bound Sisters")), 0, 0));
 		this.addChild(new Text(this.#renderTabBar(), 0, 0));
 		this.addChild(new Spacer(1));
 
@@ -1020,10 +1024,12 @@ export class AgentDashboard extends Container {
 		}
 
 		if (this.#loading) {
-			this.addChild(new Text(theme.fg("muted", "Loading agents..."), 0, 0));
+			this.addChild(new Text(theme.fg("muted", "Gathering her sisters…"), 0, 0));
 			this.addChild(new Spacer(1));
 		} else if (this.#loadError) {
-			this.addChild(new Text(theme.fg("error", `Failed to load agents: ${replaceTabs(this.#loadError)}`), 0, 0));
+			this.addChild(
+				new Text(theme.fg("error", `The sister roster tore open: ${replaceTabs(this.#loadError)}`), 0, 0),
+			);
 			this.addChild(new Spacer(1));
 		} else if (this.#createSpec) {
 			this.#renderCreateReview();

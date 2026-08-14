@@ -460,10 +460,10 @@ describe("AgentTranscriptViewer", () => {
 					.map(l => Bun.stripANSI(l))
 					.join("\n");
 			const deadline = Date.now() + 5000;
-			while (body().includes("Loading transcript from host") && Date.now() < deadline) {
+			while (body().includes("Licking her transcript from the host") && Date.now() < deadline) {
 				await Bun.sleep(10);
 			}
-			expect(body()).toContain("No messages yet.");
+			expect(body()).toContain("No words yet.");
 		} finally {
 			viewer.dispose();
 		}

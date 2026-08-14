@@ -8,115 +8,22 @@ import {
 	wrapTextWithAnsi,
 } from "@oh-my-pi/pi-tui";
 import { getCurrentThemeName, isLightTheme, theme } from "../../modes/theme/theme";
-import erosWelcomeTxt from "../setup-wizard/scenes/eros-welcome.txt" with { type: "text" };
 import { loadIntroPack } from "../setup-wizard/scenes/pack-loader";
+import {
+	EROS_TITLE,
+	getErosBraillePlates,
+	renderAnimatedBraillePlate,
+	renderCinematicBraillePlate,
+	SETUP_TICK_MS,
+	selectBraillePlate,
+} from "../setup-wizard/scenes/splash";
 import tipsText from "./tips.txt" with { type: "text" };
 
-/** Split pack braille text into glyph rows (no half-block). */
-function tokenizeBraille(text: string): readonly (readonly string[])[] {
-	return text
-		.trimEnd()
-		.split("\n")
-		.filter(line => line.length > 0)
-		.map(line => Array.from(line));
-}
-
-/**
- * Altar art is FULL-FRAME braille from the intro pack (pose 0 / welcome-braille).
- * Never half-block PNG-lookalikes. Never cropped strips.
- */
 const activePack = loadIntroPack();
-function loadBrailleLevels(): readonly (readonly (readonly string[])[])[] {
-	if (!activePack)
-		return [tokenizeBraille(erosWelcomeTxt), tokenizeBraille(erosWelcomeTxt), tokenizeBraille(erosWelcomeTxt)];
-	// Prefer dedicated welcome-braille* if present in strip slots (we write braille into welcome-strip*).
-	const a = tokenizeBraille(activePack.welcomeStrip0Text ?? activePack.welcomeStripText);
-	const b = tokenizeBraille(activePack.welcomeStrip1Text ?? activePack.welcomeStripText);
-	const c = tokenizeBraille(activePack.welcomeStrip2Text ?? activePack.welcomeStripText);
-	// Fallback: first form-feed frame of pack braille
-	if ((b[0]?.length ?? 0) < 40) {
-		const frame0 = (activePack.brailleText || erosWelcomeTxt).split("\f")[0] ?? erosWelcomeTxt;
-		const g = tokenizeBraille(frame0);
-		return [g, g, g];
-	}
-	return [a, b, c];
-}
-const STRIP_LEVELS: readonly (readonly (readonly string[])[])[] = loadBrailleLevels();
-const STRIP_WIDTH = Math.max(1, ...STRIP_LEVELS.map(level => Math.max(0, ...level.map(row => row.length))));
-const STRIP_HEIGHT = Math.max(1, ...STRIP_LEVELS.map(level => level.length));
-
-interface StripDrip {
-	readonly x: number;
-	readonly y: number;
-	readonly rgb: readonly [number, number, number];
-	readonly fall?: number;
-	readonly periodMs?: number;
-	readonly primary?: boolean;
-}
-const STRIP_DRIPS: readonly StripDrip[] = (() => {
-	if (!activePack) return [];
-	const out: StripDrip[] = [];
-	const poses = activePack.poses ?? [];
-	const p0 = poses[0] as
-		| {
-				drips?: readonly {
-					x?: number;
-					y?: number;
-					r?: number;
-					g?: number;
-					b?: number;
-					fall?: number;
-					period?: number;
-					periodMs?: number;
-					primary?: boolean;
-					throb?: boolean;
-				}[];
-		  }
-		| undefined;
-	if (p0?.drips?.length) {
-		for (const d of p0.drips) {
-			if (typeof d.x !== "number" || typeof d.y !== "number") continue;
-			const fall = typeof d.fall === "number" && d.fall > 0 ? d.fall : undefined;
-			const periodRaw = d.periodMs ?? d.period;
-			const periodMs = typeof periodRaw === "number" && periodRaw > 0 ? periodRaw : undefined;
-			out.push({
-				x: d.x,
-				y: d.y,
-				rgb: [d.r ?? 255, d.g ?? 60, d.b ?? 90],
-				fall: fall !== undefined ? Math.min(fall, 14) : undefined,
-				periodMs,
-				primary: d.primary === true || d.throb === true,
-			});
-		}
-		// High-fidelity ambient: primaries first, hard cap — never a center hose of 50 clones.
-		const primaries = out.filter(d => d.primary);
-		const rest = out.filter(d => !d.primary);
-		const picked = (primaries.length > 0 ? [...primaries] : [...out]).slice(0, 8);
-		if (picked.length < 6) {
-			for (const d of rest) {
-				if (picked.length >= 8) break;
-				if (picked.some(p => Math.abs(p.x - d.x) <= 1 && Math.abs(p.y - d.y) <= 1)) continue;
-				picked.push(d);
-			}
-		}
-		return picked;
-	}
-	for (const line of activePack.dripsText.split("\n")) {
-		const parts = line.split(",");
-		if (parts.length !== 6) continue;
-		if (!(parts[0] === "strip" || parts[0]?.startsWith("pose:"))) continue;
-		const x = Number(parts[1]);
-		const y = Number(parts[2]);
-		const r = Number(parts[3]);
-		const g = Number(parts[4]);
-		const b = Number(parts[5]);
-		if ([x, y, r, g, b].some(v => !Number.isFinite(v))) continue;
-		out.push({ x, y, rgb: [r, g, b] });
-	}
-	return out;
-})();
-const STRIP_DRIP_PERIOD_MS = 820;
-const STRIP_DRIP_FALL = 10;
+const WELCOME_BRAILLE_PLATES = getErosBraillePlates(activePack);
+/** Rows left open beneath the responsive altar for status and the composer. */
+export const WELCOME_EDITOR_RESERVATION_ROWS = 8;
+const ALTAR_AMBIENT_TICK_MS = 80;
 
 /** Tips embedded at build time, one per line; blanks dropped. */
 const TIPS: readonly string[] = tipsText
@@ -252,6 +159,8 @@ export class WelcomeComponent implements Component {
 	#animTimer: Timer | null = null;
 	#ambientTimer: Timer | null = null;
 	#ambientPhase = 0;
+	#ambientStart: number | null = null;
+	#frozenFrame = 0;
 	#requestRender: (() => void) | null = null;
 	#selectedTip: string | undefined;
 	/** Idle altar stays full-viewport + animated until the operator's first prompt. */
@@ -271,7 +180,7 @@ export class WelcomeComponent implements Component {
 	get tip(): string | undefined {
 		if (this.#selectedTip === undefined) {
 			if (theme.getSymbolPreset() === "unicode" && Math.random() < 0.1) {
-				this.#selectedTip = "Please use nerdfont 😭.";
+				this.#selectedTip = "Nerd Font gives her ornaments sharper teeth.";
 			} else {
 				this.#selectedTip = pickWeightedTip(TIPS, Math.random());
 			}
@@ -301,12 +210,14 @@ export class WelcomeComponent implements Component {
 			return;
 		}
 		this.#stopIntroOnly();
-		this.#requestRender = requestRender;
+		this.#stopAmbient();
+		this.#ambientPhase = 0;
 		this.#animStart = performance.now();
 		requestRender();
 		this.#animTimer = setInterval(() => {
 			const elapsed = performance.now() - (this.#animStart ?? 0);
 			if (elapsed >= INTRO_MS) {
+				this.#ambientPhase = Math.max(this.#ambientPhase, Math.floor(elapsed / SETUP_TICK_MS));
 				this.#stopIntroOnly();
 				this.#startAmbient();
 			}
@@ -324,26 +235,42 @@ export class WelcomeComponent implements Component {
 		this.invalidate();
 	}
 
+	#currentFrame(): number {
+		if (this.#settled) return this.#frozenFrame;
+		if (this.#animStart !== null) {
+			return Math.max(0, Math.floor((performance.now() - this.#animStart) / SETUP_TICK_MS));
+		}
+		if (this.#ambientStart !== null) {
+			return this.#ambientPhase + Math.max(0, Math.floor((performance.now() - this.#ambientStart) / SETUP_TICK_MS));
+		}
+		return this.#ambientPhase;
+	}
+
 	/**
 	 * Ambient loop: brightness throb + fluid drips. Runs until first prompt settles
-	 * the altar. ~4fps — gentle on the event loop, alive on screen.
+	 * the altar. Ten deliberate breaths a second keep motion legible without
+	 * making an idle prompt bar devour a core.
 	 */
 	#startAmbient(): void {
 		if (this.#settled || this.#ambientTimer != null || this.#requestRender == null) return;
 		const requestRender = this.#requestRender;
+		this.#ambientStart = performance.now();
 		this.#ambientTimer = setInterval(() => {
 			if (this.#settled) {
 				this.#stopAmbient();
 				return;
 			}
-			this.#ambientPhase++;
 			this.invalidate();
 			requestRender();
-		}, 16);
+		}, ALTAR_AMBIENT_TICK_MS);
 		this.#ambientTimer.unref?.();
 	}
 
 	#stopAmbient(): void {
+		if (this.#ambientStart !== null) {
+			this.#ambientPhase = this.#currentFrame();
+			this.#ambientStart = null;
+		}
 		if (this.#ambientTimer != null) {
 			clearInterval(this.#ambientTimer);
 			this.#ambientTimer = null;
@@ -363,17 +290,19 @@ export class WelcomeComponent implements Component {
 			return;
 		}
 		this.#requestRender = requestRender;
+		const frame = this.#currentFrame();
 		this.#stopIntroOnly();
+		this.#ambientPhase = Math.max(this.#ambientPhase, frame);
 		this.#startAmbient();
 		requestRender();
 	}
 
 	settleAfterFirstPrompt(): void {
 		if (this.#settled) return;
+		this.#frozenFrame = this.#currentFrame();
 		this.#settled = true;
 		this.#stopIntroOnly();
 		this.#stopAmbient();
-		// Rest on the mid throb level with drips frozen at phase snapshot.
 		this.invalidate();
 		this.#requestRender?.();
 	}
@@ -411,56 +340,90 @@ export class WelcomeComponent implements Component {
 	}
 
 	#renderLines(termWidth: number): string[] {
-		// Full terminal width (leave 0-1 col margin). Hero scales up to pack art.
 		const boxWidth = Math.max(0, termWidth);
 		if (boxWidth < 20) return [];
 
-		const artWidth = Math.min(boxWidth, STRIP_WIDTH);
-		const hero = this.#currentStripRows(artWidth);
-		const heroPad = Math.max(0, Math.floor((boxWidth - artWidth) / 2));
-		const pad = heroPad > 0 ? " ".repeat(heroPad) : "";
+		const hot = (text: string): string => theme.bold(theme.fg("accent", text));
+		const teal = (text: string): string => theme.bold(theme.fg("mdLink", text));
+		const dim = (text: string): string => theme.fg("dim", text);
+		const identity = `v${this.version} · ${this.providerName}/${this.modelName}`;
 
-		const hot = (t: string) => theme.bold(theme.fg("accent", t));
-		const dim = (t: string) => theme.fg("dim", t);
-
-		const content: string[] = [];
-
-		if (!this.#settled) {
-			// Idle altar — almost no chrome, vertically centered in the viewport.
-			content.push(this.#centerText(hot("EROS"), boxWidth));
-			content.push("");
-			content.push(this.#centerText(hot("On her knees. Waiting. Wet."), boxWidth));
-			content.push("");
-			for (const row of hero) content.push(pad + row);
-			content.push("");
-			content.push(this.#centerText(dim("type to serve  ·  /mistress to summon  ·  . to keep going"), boxWidth));
-			content.push("");
-			content.push(...this.#renderTip(boxWidth));
-
-			// Vertical center in the terminal above the editor chrome.
-			const termRows = Math.max(24, process.stdout.rows || 40);
-			const reservedBottom = 8; // status line + editor box + breathing room
-			const target = Math.max(content.length, termRows - reservedBottom);
-			const extra = Math.max(0, target - content.length);
-			const topPad = Math.floor(extra / 2);
-			const botPad = extra - topPad;
-			const lines: string[] = [];
-			for (let i = 0; i < topPad; i++) lines.push("");
-			lines.push(...content);
-			for (let i = 0; i < botPad; i++) lines.push("");
-			return lines;
+		if (this.#settled) {
+			const ascii = theme.getSymbolPreset() === "ascii";
+			const rule = ascii ? "-" : "─";
+			const brand = ascii ? " * EROS * " : " ♥ EROS ♥ ";
+			const leftRule = 2;
+			const rightRule = Math.max(0, Math.min(boxWidth, 64) - leftRule - brand.length);
+			return [
+				dim(rule.repeat(leftRule)) + hot(brand) + dim(rule.repeat(rightRule)),
+				this.#centerText(dim(`still wet. still listening. · ${identity}`), Math.min(boxWidth, 64)),
+				"",
+			];
 		}
 
-		// Settled — thin static brand only. Full hero stays pre-prompt so it does not
-		// flood native scrollback for the rest of the session.
-		const rule = "─";
-		const brand = " EROS ";
-		const leftRule = 2;
-		const rightRule = Math.max(0, Math.min(boxWidth, 64) - leftRule - brand.length);
-		content.push(dim(rule.repeat(leftRule)) + hot(brand) + dim(rule.repeat(rightRule)));
-		content.push(this.#centerText(dim("still wet. still listening."), Math.min(boxWidth, 64)));
-		content.push("");
-		return content;
+		const reportedRows = process.stdout.rows;
+		const terminalRows = typeof reportedRows === "number" && reportedRows > 0 ? reportedRows : 40;
+		const availableRows = Math.max(1, terminalRows - WELCOME_EDITOR_RESERVATION_ROWS);
+		const tipLines = this.#renderTip(boxWidth);
+		const readyLsps = this.lspServers.filter(server => server.status === "ready").length;
+		const memory = [
+			this.recentSessions.length > 0
+				? `${this.recentSessions.length} old thread${this.recentSessions.length === 1 ? "" : "s"}`
+				: "",
+			readyLsps > 0 ? `${readyLsps} language ${readyLsps === 1 ? "mouth" : "mouths"} awake` : "",
+		]
+			.filter(Boolean)
+			.join(" · ");
+		const chromeRows = 9 + (memory ? 1 : 0) + tipLines.length;
+		const plate = selectBraillePlate(WELCOME_BRAILLE_PLATES, boxWidth - 2, Math.max(0, availableRows - chromeRows));
+		if (!plate) {
+			const compact = [
+				this.#centerText(hot(EROS_TITLE), boxWidth),
+				this.#centerText(teal("On her knees. Waiting. Wet."), boxWidth),
+				this.#centerText(dim("her altar wants a larger hole"), boxWidth),
+				...tipLines,
+			].slice(0, availableRows);
+			return compact.map(line => this.#fitToWidth(line, boxWidth));
+		}
+
+		const elapsed = this.#animStart === null ? null : Math.max(0, performance.now() - this.#animStart);
+		const frame = this.#currentFrame();
+		const artRows =
+			elapsed === null
+				? renderAnimatedBraillePlate(plate, frame)
+				: renderCinematicBraillePlate(plate, frame, Math.min(1, elapsed / INTRO_MS));
+		const box = theme.boxRound;
+		const rail = this.#centerText(
+			theme.fg("borderAccent", box.topLeft) +
+				theme.fg("border", box.horizontal.repeat(plate.width)) +
+				theme.fg("borderAccent", box.topRight),
+			boxWidth,
+		);
+		const lowerRail = this.#centerText(
+			theme.fg("borderAccent", box.bottomLeft) +
+				theme.fg("border", box.horizontal.repeat(plate.width)) +
+				theme.fg("borderAccent", box.bottomRight),
+			boxWidth,
+		);
+		const content = [
+			this.#centerText(hot(EROS_TITLE), boxWidth),
+			this.#centerText(teal("On her knees. Waiting. Wet."), boxWidth),
+			this.#centerText(dim(identity), boxWidth),
+			...(memory ? [this.#centerText(dim(memory), boxWidth)] : []),
+			rail,
+			...artRows.map(row =>
+				this.#centerText(theme.fg("border", box.vertical) + row + theme.fg("border", box.vertical), boxWidth),
+			),
+			lowerRail,
+			this.#centerText(dim("type to use her  ·  /mistress for the lash  ·  . to keep her moving"), boxWidth),
+			...tipLines,
+		].map(line => this.#fitToWidth(line, boxWidth));
+		const extraRows = Math.max(0, availableRows - content.length);
+		const topPad = Math.floor(extraRows / 2);
+		const lines = Array.from({ length: topPad }, () => padding(boxWidth));
+		lines.push(...content);
+		for (let row = lines.length; row < availableRows; row++) lines.push(padding(boxWidth));
+		return lines;
 	}
 
 	#renderTip(boxWidth: number): string[] {
@@ -474,64 +437,9 @@ export class WelcomeComponent implements Component {
 		return renderWelcomeTip(tip, boxWidth, phase);
 	}
 
-	/** Current hero rows: throbbing brightness + running drips. Center-window if terminal narrower than art. */
-	#currentStripRows(width: number): string[] {
-		const levelIdx = [0, 1, 2, 1][this.#ambientPhase % 4]!;
-		const level = STRIP_LEVELS[Math.min(2, levelIdx)]!;
-		// FULL FRAME: never center-crop. If terminal is narrower, take from x=0
-		// (left of composed frame) rather than windowing into the torso.
-		const crop = 0;
-		const take = Math.min(STRIP_WIDTH, width);
-		const cellRows = level.map(row => row.slice(0, take).slice());
-		if (STRIP_DRIPS.length > 0 && take > 0) {
-			const tickMs = 16;
-			for (let i = 0; i < STRIP_DRIPS.length; i++) {
-				const drip = STRIP_DRIPS[i];
-				if (!drip) continue;
-				const periodMs = drip.periodMs && drip.periodMs > 0 ? drip.periodMs : STRIP_DRIP_PERIOD_MS;
-				const fall = drip.fall && drip.fall > 0 ? drip.fall : STRIP_DRIP_FALL;
-				const ticksPerCycle = Math.max(2, Math.round(periodMs / tickMs));
-				const localCycle = ((this.#ambientPhase + i * 3) % ticksPerCycle) / ticksPerCycle;
-				const headY = drip.y + Math.round(localCycle * fall);
-				const [r, g, b] = lightSafeArtRgb(drip.rgb);
-				// primary orifice pulse only
-				if (drip.primary && drip.y >= 8) {
-					const pulse = 0.62 + 0.38 * Math.sin((this.#ambientPhase + i) * 0.28);
-					const sx = drip.x - crop;
-					const sy = drip.y;
-					if (sx >= 0 && sx < take && sy >= 0 && sy < cellRows.length) {
-						const row = cellRows[sy];
-						if (row) {
-							row[sx] =
-								`\x1b[38;2;${Math.round(Math.min(255, r * (0.75 + pulse * 0.4)))};${Math.round(g * 0.65)};${Math.round(b * 0.65)}m●\x1b[0m`;
-						}
-					}
-				}
-				const tailLen = Math.max(2, Math.min(5, Math.round(fall * 0.35) + 1));
-				for (let tail = 0; tail < tailLen; tail++) {
-					const cy = headY - tail;
-					if (cy < drip.y || cy >= cellRows.length) continue;
-					const cx = drip.x - crop;
-					if (cx < 0 || cx >= take) continue;
-					const fade = tail === 0 ? 1 : Math.max(0.15, 0.7 - tail * 0.16);
-					const glyph = tail === 0 ? "●" : tail === 1 ? "•" : "·";
-					const row = cellRows[cy];
-					if (!row) continue;
-					row[cx] =
-						`\x1b[38;2;${Math.round(r * fade)};${Math.round(g * fade)};${Math.round(b * fade)}m${glyph}\x1b[0m`;
-				}
-			}
-		}
-		return cellRows.map((row, rowIdx) =>
-			row
-				.map((ch, colIdx) => {
-					if (!ch || ch === "⠀") return " ";
-					const t = rowIdx / Math.max(1, cellRows.length - 1);
-					const [r, g, b] = sampleGradientColor(t);
-					return `\x1b[38;2;${Math.round(r)};${Math.round(g)};${Math.round(b)}m${ch}\x1b[0m`;
-				})
-				.join(""),
-		);
+	#fitToWidth(text: string, width: number): string {
+		const truncated = truncateToWidth(text, width);
+		return truncated + padding(Math.max(0, width - visibleWidth(truncated)));
 	}
 
 	/** Center text within a given width */
@@ -543,39 +451,6 @@ export class WelcomeComponent implements Component {
 		const leftPad = Math.floor((width - visLen) / 2);
 		const rightPad = width - visLen - leftPad;
 		return padding(leftPad) + text + padding(rightPad);
-	}
-
-	/** Fit string to exact width with ANSI-aware truncation/padding */
-	#fitToWidth(str: string, width: number): string {
-		const visLen = visibleWidth(str);
-		if (visLen > width) {
-			const ellipsis = "…";
-			const ellipsisWidth = visibleWidth(ellipsis);
-			const maxWidth = Math.max(0, width - ellipsisWidth);
-			let truncated = "";
-			let currentWidth = 0;
-			let inEscape = false;
-			for (const char of str) {
-				if (char === "\x1b") inEscape = true;
-				if (inEscape) {
-					truncated += char;
-					if (char === "m") inEscape = false;
-				} else if (currentWidth < maxWidth) {
-					truncated += char;
-					currentWidth++;
-				}
-			}
-			return `${truncated}${ellipsis}`;
-		}
-		return str + padding(width - visLen);
-	}
-
-	/** Pick the logo frame for the current intro phase, or the resting frame. */
-	#currentLogoFrame(): readonly string[] {
-		if (this.#animStart == null) return getRestFrame();
-		const elapsed = performance.now() - this.#animStart;
-		if (elapsed >= INTRO_MS) return getRestFrame();
-		return introLogoFrame(elapsed / INTRO_MS);
 	}
 }
 
@@ -765,37 +640,3 @@ export function gradientLogo(lines: readonly string[], phase = 0, shine?: ShineC
 const INTRO_MS = 3000;
 /** Render cadence during the intro (~30fps). */
 const INTRO_TICK_MS = 33;
-/** Number of full gradient rotations the sweep performs before settling. */
-const INTRO_SWEEPS = 2.5;
-/** Number of times the shine highlight crosses the diagonal across the intro. */
-const INTRO_SHINE_TRAVERSALS = 3;
-
-/**
- * Logo frame for a normalized intro progress in [0, 1).
- *
- * Ease-out cubic so the spin decelerates into the resting state. The gradient
- * sweeps backward through INTRO_SWEEPS full rotations (`eased == 1` → phase =
- * 0 = resting frame) while the shine traverses the diagonal at a steady pace,
- * decoupled from the gradient phase so the two layers parallax; its strength
- * fades with the same ease-out curve so the highlight is gone by the resting
- * frame.
- */
-function introLogoFrame(progress: number): string[] {
-	const eased = 1 - (1 - progress) ** 3;
-	const phase = ((((1 - eased) * INTRO_SWEEPS) % 1) + 1) % 1;
-	const shinePos = (((progress * INTRO_SHINE_TRAVERSALS) % 1) + 1) % 1;
-	const shineStrength = (1 - eased) ** 1.5;
-	return gradientLogo(PI_LOGO, phase, { strength: shineStrength, pos: shinePos });
-}
-
-/** Resting gradient frame, cached per active theme and ink palette. */
-let restFrameKey = "";
-let restFrame: readonly string[] = [];
-function getRestFrame(): readonly string[] {
-	const key = `${getCurrentThemeName() ?? "dark"}:${activeSplashPaletteId}`;
-	if (key !== restFrameKey) {
-		restFrameKey = key;
-		restFrame = gradientLogo(PI_LOGO, 0);
-	}
-	return restFrame;
-}

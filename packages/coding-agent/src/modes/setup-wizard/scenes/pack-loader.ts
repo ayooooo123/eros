@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
-import * as os from "node:os";
 import * as path from "node:path";
+import { getAgentDir } from "@oh-my-pi/pi-utils";
 
 export interface LoadedPack {
 	readonly id: string;
@@ -8,6 +8,11 @@ export interface LoadedPack {
 	readonly palette?: string;
 	readonly params?: Record<string, unknown>;
 	readonly brailleText: string;
+	readonly brailleNarrowText?: string;
+	readonly brailleStandardText?: string;
+	readonly brailleWideText?: string;
+	readonly brailleUltrawideText?: string;
+	readonly brailleFullText?: string;
 	readonly heroWideText: string;
 	readonly heroWide0Text?: string;
 	readonly heroWide1Text?: string;
@@ -24,18 +29,17 @@ export interface LoadedPack {
 	readonly poses?: readonly Record<string, unknown>[];
 }
 
-const INTROS_DIR = path.join(os.homedir(), ".omp", "profiles", "eros", "agent", "intros");
-
 export function loadIntroPack(requestedId?: string): LoadedPack | null {
 	try {
-		if (!fs.existsSync(INTROS_DIR)) return null;
+		const introsDir = path.join(getAgentDir(), "intros");
+		if (!fs.existsSync(introsDir)) return null;
 
 		const selectedId = requestedId || process.env.EROS_INTRO;
 		let targetDir: string | null = null;
 		let targetPackId: string | null = null;
 
 		if (selectedId && selectedId !== "random" && selectedId !== "default") {
-			const candidate = path.join(INTROS_DIR, selectedId);
+			const candidate = path.join(introsDir, selectedId);
 			if (fs.existsSync(candidate) && fs.existsSync(path.join(candidate, "pack.json"))) {
 				targetDir = candidate;
 				targetPackId = selectedId;
@@ -44,10 +48,10 @@ export function loadIntroPack(requestedId?: string): LoadedPack | null {
 
 		if (!targetDir) {
 			// A Lab export pins itself in _current: honor it above random selection.
-			const pinned = path.join(INTROS_DIR, "_current");
+			const pinned = path.join(introsDir, "_current");
 			if (fs.existsSync(pinned)) {
 				const pinId = fs.readFileSync(pinned, "utf8").trim();
-				const candidate = path.join(INTROS_DIR, pinId);
+				const candidate = path.join(introsDir, pinId);
 				if (pinId.startsWith("pack-") && fs.existsSync(path.join(candidate, "pack.json"))) {
 					targetDir = candidate;
 					targetPackId = pinId;
@@ -56,10 +60,10 @@ export function loadIntroPack(requestedId?: string): LoadedPack | null {
 		}
 
 		if (!targetDir) {
-			const entries = fs.readdirSync(INTROS_DIR).filter(name => name.startsWith("pack-"));
+			const entries = fs.readdirSync(introsDir).filter(name => name.startsWith("pack-"));
 			if (entries.length === 0) return null;
 			const picked = entries[Math.floor(Math.random() * entries.length)]!;
-			targetDir = path.join(INTROS_DIR, picked);
+			targetDir = path.join(introsDir, picked);
 			targetPackId = picked;
 		}
 
@@ -74,6 +78,15 @@ export function loadIntroPack(requestedId?: string): LoadedPack | null {
 			const p = path.join(targetDir, name);
 			return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : fallback;
 		};
+		const readOptional = (name: string): string | undefined => {
+			const p = path.join(targetDir, name);
+			return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : undefined;
+		};
+		const brailleNarrowText = readOptional("braille-narrow.txt");
+		const brailleStandardText = readOptional("braille-standard.txt");
+		const brailleWideText = readOptional("braille-wide.txt");
+		const brailleUltrawideText = readOptional("braille-ultrawide.txt");
+		const brailleFullText = readOptional("braille-full.txt");
 		const heroWide0Text = readOr("hero-wide-0.txt", heroWideText);
 		const heroWide1Text = readOr("hero-wide-1.txt", heroWideText);
 		const heroWide2Text = readOr("hero-wide-2.txt", heroWideText);
@@ -105,6 +118,11 @@ export function loadIntroPack(requestedId?: string): LoadedPack | null {
 			palette: packPalette,
 			params: packParams,
 			brailleText,
+			brailleNarrowText,
+			brailleStandardText,
+			brailleWideText,
+			brailleUltrawideText,
+			brailleFullText,
 			heroWideText,
 			heroWide0Text,
 			heroWide1Text,

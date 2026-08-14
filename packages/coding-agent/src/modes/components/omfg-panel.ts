@@ -122,19 +122,19 @@ export class OmfgPanelComponent extends Container {
 			case "rejected":
 				return theme.fg("warning", `${theme.status.warning} Not saved · Esc dismiss`);
 			case "aborted":
-				return theme.fg("warning", `${theme.status.warning} Cancelled · Esc dismiss`);
+				return theme.fg("warning", `${theme.status.warning} Cut short · Esc dismiss`);
 			case "error":
-				return theme.fg("error", `${theme.status.error} Error · Esc dismiss`);
+				return theme.fg("error", `${theme.status.error} Ruptured · Esc dismiss`);
 		}
 	}
 
 	#contentComponent(): Component {
 		if (this.#state === "error") {
-			return new Text(theme.fg("error", replaceTabs(this.#errorMessage ?? "Unknown error")), 1, 0);
+			return new Text(theme.fg("error", replaceTabs(this.#errorMessage ?? "Unknown rupture")), 1, 0);
 		}
 		const text = replaceTabs(this.#preview).trim();
 		if (!text) {
-			return new Text(theme.fg("dim", `${theme.status.pending} Waiting for candidate rule…`), 1, 0);
+			return new Text(theme.fg("dim", `${theme.status.pending} She is forging the candidate rule…`), 1, 0);
 		}
 		return new Markdown(text, 1, 0, getMarkdownTheme());
 	}

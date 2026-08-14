@@ -244,7 +244,7 @@ describe("Agent hub silent-abort regression", () => {
 		viewer.dispose();
 		const renderedText = rendered.join("\n");
 
-		// AssistantMessageComponent renders the error as "Error: <message>"
-		expect(renderedText).toContain("Error: Connection timed out");
+		// AssistantMessageComponent renders the EROS error prefix without swallowing the provider message.
+		expect(renderedText).toContain("Rupture: Connection timed out");
 	});
 });

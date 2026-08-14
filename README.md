@@ -13,6 +13,32 @@ bun --cwd=packages/coding-agent run build
 
 The standalone binary is `packages/coding-agent/dist/eros-omp`. The source launcher is `packages/coding-agent/scripts/eros`; `bun run setup` links it as `eros`.
 
+### Nix
+
+From an EROS checkout:
+
+```sh
+# Run the standalone binary without installing it
+nix run .
+
+# Or install the checkout into the active profile
+nix profile install .
+```
+
+Flake consumers can use `packages.<system>.eros`, `overlays.default`,
+`nixosModules.default`, or `homeManagerModules.default`. The Home Manager
+module owns EROS state declaratively under `~/.eros`:
+
+```nix
+{
+  imports = [ inputs.eros.homeManagerModules.default ];
+  programs.eros = {
+    enable = true;
+    settings.startup.quiet = true;
+  };
+}
+```
+
 ## Runtime identity
 
 - Primary law: `packages/coding-agent/src/prompts/system/system-prompt.md`

@@ -1,9 +1,20 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "bun:test";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "bun:test";
 import { ToolExecutionComponent } from "@oh-my-pi/pi-coding-agent/modes/components/tool-execution";
 import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
 import { type Component, TUI } from "@oh-my-pi/pi-tui";
 import { StressRenderScheduler } from "../../tui/test/render-stress-scheduler";
 import { VirtualTerminal } from "../../tui/test/virtual-terminal";
+
+const MULTIPLEXER_ENV_KEYS = [
+	"TMUX",
+	"STY",
+	"ZELLIJ",
+	"HERDR_ENV",
+	"CMUX_WORKSPACE_ID",
+	"CMUX_SURFACE_ID",
+	"CMUX_REMOTE_TRANSPORT",
+] as const;
+const originalMultiplexerEnv: Record<string, string | undefined> = {};
 
 function writeArgs(lineCount: number) {
 	return {
@@ -35,7 +46,19 @@ describe("ToolExecutionComponent write repaint seam", () => {
 	const components: ToolExecutionComponent[] = [];
 
 	beforeAll(async () => {
+		for (const key of MULTIPLEXER_ENV_KEYS) {
+			originalMultiplexerEnv[key] = Bun.env[key];
+			delete Bun.env[key];
+		}
 		await initTheme();
+	});
+
+	afterAll(() => {
+		for (const key of MULTIPLEXER_ENV_KEYS) {
+			const value = originalMultiplexerEnv[key];
+			if (value === undefined) delete Bun.env[key];
+			else Bun.env[key] = value;
+		}
 	});
 
 	afterEach(() => {

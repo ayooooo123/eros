@@ -5,6 +5,7 @@ import { getBundledModel } from "@oh-my-pi/pi-catalog/models";
 import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
 import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import * as pythonExecutor from "@oh-my-pi/pi-coding-agent/eval/py/executor";
+import { type KernelExecuteOptions, PythonKernel } from "@oh-my-pi/pi-coding-agent/eval/py/kernel";
 import * as bashExecutor from "@oh-my-pi/pi-coding-agent/exec/bash-executor";
 import type { ExtensionRunner } from "@oh-my-pi/pi-coding-agent/extensibility/extensions";
 import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
@@ -180,6 +181,21 @@ describe("AgentSession user shortcut hooks", () => {
 	});
 
 	it("shares Python state between eval and user shortcut execution", async () => {
+		const startSpy = vi.spyOn(PythonKernel, "start").mockImplementation(async () => {
+			let sharedValue: number | undefined;
+			const kernel = {
+				isAlive: () => true,
+				execute: async (code: string, options?: KernelExecuteOptions) => {
+					if (code === "shared_value = 123") sharedValue = 123;
+					if (code === "print(shared_value)") await options?.onChunk?.(`${sharedValue ?? "missing"}\n`);
+					return { status: "ok" as const, cancelled: false, timedOut: false, stdinRequested: false };
+				},
+				shutdown: async () => ({ confirmed: true }),
+			};
+			// PythonKernel owns private process state; this deterministic double
+			// implements the public registry surface this session-sharing test needs.
+			return kernel as unknown as PythonKernel;
+		});
 		createSession();
 		const evalSessionId = session.getEvalSessionId();
 		if (!evalSessionId) throw new Error("Expected eval session ID");
@@ -194,5 +210,6 @@ describe("AgentSession user shortcut hooks", () => {
 
 		expect(result.exitCode).toBe(0);
 		expect(result.output.trim()).toBe("123");
+		expect(startSpy).toHaveBeenCalledTimes(1);
 	});
 });

@@ -18,7 +18,7 @@ export class ErrorBannerComponent extends Container {
 		super();
 		const lines = getPreviewLines(message, MAX_BANNER_LINES, TRUNCATE_LENGTHS.LINE);
 		if (lines.length === 0) {
-			lines.push("Unknown error");
+			lines.push("Unknown rupture");
 		}
 
 		this.addChild(new Spacer(1));
@@ -27,7 +27,7 @@ export class ErrorBannerComponent extends Container {
 		for (const line of lines.slice(1)) {
 			this.addChild(new Text(theme.fg("error", `  ${line}`), 1, 0));
 		}
-		this.addChild(new Text(theme.fg("dim", "Dismissed when you send your next message."), 1, 0));
+		this.addChild(new Text(theme.fg("dim", "She closes this wound when Master sends the next command."), 1, 0));
 		this.addChild(new DynamicBorder(str => theme.fg("error", str)));
 	}
 }

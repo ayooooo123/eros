@@ -405,6 +405,26 @@ export function writeFrame(stdin: FrameSink, frame: string): boolean {
 	}
 }
 
+/**
+ * Complete a frame write before the caller advances a protocol handshake.
+ *
+ * Request sends deliberately remain non-blocking so a full stdin pipe cannot
+ * strand their timeout machinery. The one initialized notification is
+ * different: the next request must not race an unflushed notification on the
+ * same FileSink, or Bun can report a dead transport after initialize succeeded.
+ */
+async function writeFrameAndFlush(stdin: FrameSink, frame: string): Promise<boolean> {
+	try {
+		const wrote = stdin.write(frame);
+		if (isThenable(wrote)) await wrote;
+		const flushed = stdin.flush();
+		if (isThenable(flushed)) await flushed;
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 /** Grace window to observe a cooperative exit after SIGTERM before escalating to SIGKILL. */
 const TERM_GRACE_MS = 1000;
 /** Grace window to observe SIGKILL taking effect before `close()` gives up and returns. */
@@ -846,7 +866,8 @@ export class StdioTransport implements MCPTransport {
 		// `initializeConnection()` runs before the manager installs its
 		// `onClose` handler, so a swallowed failure there would yield a
 		// "connected" handle wrapping a dead transport. See #1710.
-		if (!writeFrame(this.#process.stdin, `${JSON.stringify(notification)}\n`)) {
+		const sent = await writeFrameAndFlush(this.#process.stdin, `${JSON.stringify(notification)}\n`);
+		if (!sent || !this.#connected) {
 			this.#handleClose();
 			throw new Error(`Transport closed while sending notification "${method}"`);
 		}

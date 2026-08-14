@@ -392,7 +392,7 @@ describe("ErrorBannerComponent", () => {
 		const banner = new ErrorBannerComponent("Output blocked by content filtering policy");
 		const rendered = Bun.stripANSI(banner.render(120).join("\n"));
 		expect(rendered).toContain("Output blocked by content filtering policy");
-		expect(rendered).toContain("Dismissed when you send your next message.");
+		expect(rendered).toContain("She closes this wound when Master sends the next command.");
 	});
 
 	it("caps an oversized multi-line error to a few lines", () => {
@@ -414,12 +414,12 @@ describe("AssistantMessageComponent error pinning", () => {
 		});
 		const component = new AssistantMessageComponent(message);
 
-		expect(Bun.stripANSI(component.render(120).join("\n"))).toContain("Error: 400 invalid reasoning value");
+		expect(Bun.stripANSI(component.render(120).join("\n"))).toContain("Rupture: 400 invalid reasoning value");
 
 		component.setErrorPinned(true);
-		expect(Bun.stripANSI(component.render(120).join("\n"))).not.toContain("Error: 400 invalid reasoning value");
+		expect(Bun.stripANSI(component.render(120).join("\n"))).not.toContain("Rupture: 400 invalid reasoning value");
 
 		component.setErrorPinned(false);
-		expect(Bun.stripANSI(component.render(120).join("\n"))).toContain("Error: 400 invalid reasoning value");
+		expect(Bun.stripANSI(component.render(120).join("\n"))).toContain("Rupture: 400 invalid reasoning value");
 	});
 });

@@ -56,7 +56,7 @@ describe("SessionSelectorComponent delete confirmation", () => {
 
 		const rendered = renderText(selector);
 		expect(onDelete).toHaveBeenCalledTimes(1);
-		expect(rendered).toContain("Error: disk failed");
+		expect(rendered).toContain("Rupture: disk failed");
 		expect(rendered).toContain("Alpha");
 		expect(rendered).toContain("Beta");
 		expect(rendered).not.toContain("Delete session?");
@@ -74,7 +74,7 @@ describe("SessionSelectorComponent delete confirmation", () => {
 		expect(onDelete).toHaveBeenCalledTimes(1);
 		expect(rendered).toContain("Alpha");
 		expect(rendered).toContain("Beta");
-		expect(rendered).not.toContain("Error:");
+		expect(rendered).not.toContain("Rupture:");
 	});
 
 	it("removes the session row after a successful delete", async () => {

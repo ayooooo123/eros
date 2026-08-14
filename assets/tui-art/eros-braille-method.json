@@ -1,0 +1,47 @@
+{
+  "schema": "eros-tui/braille-method-decision",
+  "version": 1,
+  "status": "authoritative",
+  "selectedMethod": "chafa",
+  "requiredChafaVersion": "1.18.2",
+  "invocation": [
+    "chafa",
+    "--format",
+    "symbols",
+    "--symbols",
+    "braille",
+    "--fill",
+    "braille",
+    "--colors",
+    "none",
+    "--preprocess",
+    "on",
+    "--size",
+    "{cols}x{rows}",
+    "--font-ratio",
+    "1/2",
+    "--stretch",
+    "{framedSourcePng}"
+  ],
+  "palette": {
+    "name": "eros-black-blood-hot-pink-blush",
+    "stops": [
+      { "at": 0.0, "rgb": [0, 0, 0] },
+      { "at": 0.3, "rgb": [103, 0, 27] },
+      { "at": 0.72, "rgb": [244, 20, 122] },
+      { "at": 1.0, "rgb": [255, 205, 225] }
+    ]
+  },
+  "framing": {
+    "physicalSamplesPerCell": { "width": 2, "height": 4 },
+    "fitModes": ["contain", "cover"],
+    "focus": "normalized x,y in [0,1]; contain positions the plate and cover centers its crop"
+  },
+  "outputContract": {
+    "plainBraille": "UTF-8 Unicode Braille with exact requested cell dimensions",
+    "truecolorBraille": "the same selected Braille cells, foreground-mapped with ANSI 24-bit color",
+    "witnessPng": "a pixel witness of the emitted dot field",
+    "manifest": "records observed input and emitted output SHA-256 values and dimensions"
+  },
+  "replacementLaw": "Replace this Chafa reducer, version pin, palette, or framing law only with a new authoritative EROS decision artifact."
+}

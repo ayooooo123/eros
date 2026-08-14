@@ -470,7 +470,6 @@ describe("Agent hub Enter activation", () => {
 
 		controller.showAgentHub(new SessionObserverRegistry());
 
-		expect(capturedHub).toBeDefined();
 		expect(focusTargets[0]).toBe(capturedHub);
 
 		capturedHub!.handleInput("\r");
@@ -588,7 +587,6 @@ describe("Agent hub double-← gating", () => {
 
 		expect(shown()).toBeUndefined();
 		const shownHub = await shownReady;
-		expect(shownHub).toBeDefined();
 		expect(agents.get("Worker")?.sessionFile).toBe(workerSessionFile);
 		shownHub!.dispose();
 	});
@@ -607,7 +605,7 @@ describe("Agent hub double-← gating", () => {
 		expect(hub).toBeDefined();
 		expect(overlayOptions()).toMatchObject({ width: "100%", maxHeight: "100%", margin: 0, fullscreen: true });
 		expect(agents.get("Worker")).toBeUndefined();
-		expect(Bun.stripANSI(hub!.render(120).join("\n"))).toContain("Loading saved agents");
+		expect(Bun.stripANSI(hub!.render(120).join("\n"))).toContain("Waking saved sisters");
 		await hub!.persistedSubagentsReady;
 		expect(agents.get("Worker")?.status).toBe("parked");
 		hub!.dispose();
