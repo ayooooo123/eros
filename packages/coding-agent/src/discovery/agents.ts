@@ -73,12 +73,12 @@ const HOST_PROBE_TIMEOUT_MS = 500;
  * reported as "unavailable" and discovery falls back to the Linux
  * `$HOME`/`~/.eros` candidates.
  */
-export function runHostProbe(cmd: string[]): string | undefined {
+export function runHostProbe(cmd: string[], timeoutMs = HOST_PROBE_TIMEOUT_MS): string | undefined {
 	try {
 		const result = Bun.spawnSync(cmd, {
 			stdout: "pipe",
 			stderr: "ignore",
-			timeout: HOST_PROBE_TIMEOUT_MS,
+			timeout: timeoutMs,
 			killSignal: "SIGKILL",
 		});
 		if (result.exitCode !== 0) return undefined;

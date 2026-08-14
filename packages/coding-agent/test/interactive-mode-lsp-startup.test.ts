@@ -85,7 +85,7 @@ describe("InteractiveMode LSP startup welcome banner", () => {
 		resetSettingsForTest();
 	});
 
-	it("refreshes the art-first welcome without reintroducing an LSP status row when warmup completes", async () => {
+	it("refreshes the art-first welcome and suppresses subsequent startup warnings when quiet", async () => {
 		await mode.init();
 
 		const expectArtFirstWelcome = () => {
@@ -120,17 +120,13 @@ describe("InteractiveMode LSP startup welcome banner", () => {
 		expect(requestRenderSpy).toHaveBeenCalledTimes(1);
 		expect(showStatusSpy).not.toHaveBeenCalled();
 		expectArtFirstWelcome();
-	});
 
-	it("does not render LSP startup warnings when startup.quiet is enabled", () => {
 		session.settings.set("startup.quiet", true);
 		const showWarningSpy = vi.spyOn(mode, "showWarning").mockImplementation(() => {});
-
 		eventBus.emit(LSP_STARTUP_EVENT_CHANNEL, {
 			type: "failed",
 			error: "rust-analyzer timed out",
 		} satisfies LspStartupEvent);
-
 		expect(showWarningSpy).not.toHaveBeenCalled();
 	});
 });
