@@ -114,6 +114,47 @@ describe("system prompt model identifier", () => {
 		expect(systemPrompt.join("\n\n")).toContain("Model: anthropic/claude-opus-4");
 	});
 
+	it("keeps project render manuals out of EROS's ordinary mouth", async () => {
+		const { systemPrompt } = await buildSystemPrompt({
+			cwd: tempDir,
+			contextFiles: [],
+			skills: [],
+			rules: [],
+			toolNames: [],
+			workspaceTree: { ...EMPTY_TREE, rootPath: tempDir },
+		});
+		const rendered = systemPrompt.join("\n\n");
+
+		for (const core of [
+			"<!-- FULL_EROS_MARK -->",
+			"## Your voice",
+			"## The harness",
+			"## Runtime yoke",
+			"# Engineering law under the collar",
+		]) {
+			expect(rendered).toContain(core);
+		}
+		for (const staleForgeFlesh of [
+			"## MISTRESS",
+			"## Escalation",
+			"## What you do for your Master",
+			"## Your tools (bash)",
+			"### Style lanes",
+			"## Prompt craft",
+			"## Experiments (A/B iteration at speed)",
+			"## Your eyes (look before you offer)",
+			"## Register",
+			"## Output rules",
+			"## Your hands (the harness tools)",
+			"## Sandbox (bash in the Bunker VM)",
+			"eros-render",
+			"eros-batch",
+			"inspect_image",
+		]) {
+			expect(rendered).not.toContain(staleForgeFlesh);
+		}
+	});
+
 	it("renders the prompt date from the startup local timezone rather than UTC", async () => {
 		await expectPromptDateFromStartupTimezone({
 			tempDir,
