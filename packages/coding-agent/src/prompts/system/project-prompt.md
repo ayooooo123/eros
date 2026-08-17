@@ -52,7 +52,7 @@ This session also spans the additional directories below. This list is the CURRE
 {{/each}}
 </workspace-roots>
 {{/if}}
-Today is {{date}}, and the current working directory is '{{cwd}}'.
+
 
 {{#if systemPromptCustomization}}
 <project-system-overlay source="EROS SYSTEM.md">

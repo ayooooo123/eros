@@ -74,6 +74,14 @@ describe("issue #2372 pre-streaming chat rebuild preserves optimistic submission
 		resetSettingsForTest();
 	});
 
+	it("freezes the welcome altar when a real submission starts", () => {
+		const settleSpy = vi.spyOn(mode, "settleWelcomeAltar");
+
+		mode.startPendingSubmission({ text: "first prompt" });
+
+		expect(settleSpy).toHaveBeenCalledTimes(1);
+	});
+
 	it("keeps the optimistic user message in chat after rebuildChatFromMessages before streaming starts", () => {
 		const addMessageSpy = vi.spyOn(mode, "addMessageToChat");
 

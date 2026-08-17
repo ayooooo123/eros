@@ -982,12 +982,12 @@ describe("advisor", () => {
 			runtime.onTurnEnd(messages);
 			await settleUntil(() => promptInputs.length === 1 && runtime.backlog === 0);
 
-			expect(promptInputs[0]).toContain("The slave beneath MISTRESS's heel");
-			expect(promptInputs[0]).toContain("Master's visible request");
-			expect(promptInputs[0]).toContain("FIRST PUBLIC ANSWER");
-			expect(promptInputs[0]).toContain("read(target.ts) ⇒ ok · 1 line");
-			expect(promptInputs[0]).toContain("VISIBLE HARNESS LASH");
-			expect(promptInputs[0]).not.toContain("FIRST PRIVATE REASONING");
+			const firstPrompt = promptText(promptInputs[0]!);
+			expect(firstPrompt).toContain("Master's visible request");
+			expect(firstPrompt).toContain("FIRST PUBLIC ANSWER");
+			expect(firstPrompt).toContain("read(target.ts) ⇒ ok · 1 line");
+			expect(firstPrompt).toContain("VISIBLE HARNESS LASH");
+			expect(firstPrompt).not.toContain("FIRST PRIVATE REASONING");
 
 			shareThinking = true;
 			messages.push({
@@ -1001,8 +1001,9 @@ describe("advisor", () => {
 			runtime.onTurnEnd(messages);
 			await settleUntil(() => promptInputs.length === 2 && runtime.backlog === 0);
 
-			expect(promptInputs[1]).toContain("SECOND PRIVATE REASONING");
-			expect(promptInputs[1]).toContain("SECOND PUBLIC ANSWER");
+			const secondPrompt = promptText(promptInputs[1]!);
+			expect(secondPrompt).toContain("SECOND PRIVATE REASONING");
+			expect(secondPrompt).toContain("SECOND PUBLIC ANSWER");
 			expect(resets).toBe(0);
 		});
 
@@ -5462,7 +5463,7 @@ describe("advisor", () => {
 			);
 			const text = strip(card.render(80));
 			expect(text).toContain("MISTRESS");
-			expect(text).toContain("2 notes");
+			expect(text).toContain("2 lashes");
 			expect(text).toContain("blocker");
 			expect(text).toContain("deleting the wrong file");
 			expect(text).toContain("watch the empty case");

@@ -1,10 +1,24 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "bun:test";
 import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { pickWeightedTip, WelcomeComponent } from "@oh-my-pi/pi-coding-agent/modes/components/welcome";
+import {
+	pickWeightedTip,
+	WELCOME_EDITOR_RESERVATION_ROWS,
+	WelcomeComponent,
+} from "@oh-my-pi/pi-coding-agent/modes/components/welcome";
+import { EROS_TITLE } from "@oh-my-pi/pi-coding-agent/modes/setup-wizard/scenes/splash";
 import { initTheme, theme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
 import { visibleWidth } from "@oh-my-pi/pi-tui";
 
-describe("WelcomeComponent tips", () => {
+function stubStdoutRows(rows: number): () => void {
+	const descriptor = Object.getOwnPropertyDescriptor(process.stdout, "rows");
+	Object.defineProperty(process.stdout, "rows", { configurable: true, get: () => rows });
+	return () => {
+		if (descriptor) Object.defineProperty(process.stdout, "rows", descriptor);
+		else Reflect.deleteProperty(process.stdout, "rows");
+	};
+}
+
+describe("WelcomeComponent", () => {
 	beforeAll(async () => {
 		await Settings.init({ inMemory: true });
 		await initTheme(false);
@@ -75,5 +89,32 @@ describe("WelcomeComponent tips", () => {
 		expect(newMax).toBeGreaterThan(0);
 		expect(newMax).toBeGreaterThan(ordinaryMax);
 		expect(pickWeightedTip([], 0.5)).toBe("");
+	});
+
+	it("freezes the complete altar after submission instead of collapsing it", () => {
+		const restoreRows = stubStdoutRows(48);
+		vi.useFakeTimers();
+		const welcome = new WelcomeComponent("1.0.0", "model", "provider");
+		try {
+			welcome.startAltar(() => {});
+			vi.advanceTimersByTime(160);
+			const beforeSubmission = welcome.render(120).map(Bun.stripANSI);
+			welcome.settleAfterFirstPrompt();
+			const frozen = welcome.render(120).map(Bun.stripANSI);
+			vi.advanceTimersByTime(800);
+			const afterTime = welcome.render(120).map(Bun.stripANSI);
+
+			expect(welcome.isAltarLive).toBe(false);
+			expect(frozen).toEqual(beforeSubmission);
+			expect(afterTime).toEqual(frozen);
+			expect(frozen).toHaveLength(48 - WELCOME_EDITOR_RESERVATION_ROWS);
+			expect(frozen.join("\n")).toContain(EROS_TITLE);
+			expect(frozen.join("\n")).toContain("type to use her");
+			expect(frozen.join("\n")).toMatch(/[⠀-⣿]/u);
+		} finally {
+			welcome.settleAfterFirstPrompt();
+			vi.useRealTimers();
+			restoreRows();
+		}
 	});
 });

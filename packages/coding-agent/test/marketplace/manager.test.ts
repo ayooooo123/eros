@@ -9,6 +9,8 @@ import { PluginManager } from "@oh-my-pi/pi-coding-agent/extensibility/plugins/m
 import {
 	MarketplaceManager,
 	readInstalledPluginsRegistry,
+	readMarketplacesRegistry,
+	writeMarketplacesRegistry,
 } from "@oh-my-pi/pi-coding-agent/extensibility/plugins/marketplace";
 import * as piUtils from "@oh-my-pi/pi-utils";
 import { removeSyncWithRetries } from "@oh-my-pi/pi-utils";
@@ -168,6 +170,34 @@ describe("MarketplaceManager", () => {
 		expect(new Date(updated.updatedAt) >= new Date(added.addedAt)).toBe(true);
 	});
 
+	it("updateMarketplace expands a home-relative catalog path", async () => {
+		const fakeHome = fs.mkdtempSync(path.join(ctx.tmpDir, "home-"));
+		const homedirSpy = spyOn(os, "homedir").mockReturnValue(fakeHome);
+		const registryPath = path.join(ctx.tmpDir, "marketplaces.json");
+		const originalCwd = process.cwd();
+		const cwd = path.join(ctx.tmpDir, "cwd");
+
+		try {
+			const added = await ctx.manager.addMarketplace(FIXTURE_DIR);
+			const catalogPath = "~/.eros/plugins/cache/marketplaces/test-marketplace/marketplace.json";
+			const registry = await readMarketplacesRegistry(registryPath);
+			await writeMarketplacesRegistry(registryPath, {
+				...registry,
+				marketplaces: [{ ...added, catalogPath }],
+			});
+			fs.mkdirSync(cwd);
+			process.chdir(cwd);
+
+			await ctx.manager.updateMarketplace("test-marketplace");
+
+			expect(fs.existsSync(path.join(fakeHome, catalogPath.slice(2)))).toBe(true);
+			expect(fs.existsSync(path.join(cwd, catalogPath))).toBe(false);
+		} finally {
+			process.chdir(originalCwd);
+			homedirSpy.mockRestore();
+		}
+	});
+
 	// ── Plugin discovery ───────────────────────────────────────────────────
 
 	it("listAvailablePlugins → returns catalog entries", async () => {
@@ -246,9 +276,9 @@ describe("MarketplaceManager", () => {
 	it("installPlugin exposes marketplace package to the runtime loader", async () => {
 		const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), "omp-mgr-home-"));
 		try {
-			const pluginsDir = path.join(tmpHome, ".omp", "plugins");
+			const pluginsDir = path.join(tmpHome, ".eros", "plugins");
 			const manager = new MarketplaceManager({
-				marketplacesRegistryPath: path.join(tmpHome, ".omp", "marketplaces.json"),
+				marketplacesRegistryPath: path.join(tmpHome, ".eros", "marketplaces.json"),
 				installedRegistryPath: path.join(pluginsDir, "installed_plugins.json"),
 				marketplacesCacheDir: path.join(pluginsDir, "cache", "marketplaces"),
 				pluginsCacheDir: path.join(pluginsDir, "cache", "plugins"),
@@ -345,9 +375,9 @@ describe("MarketplaceManager", () => {
 	it("installPlugin keeps marketplace packages out of OMP extension roots", async () => {
 		const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), "omp-mgr-home-"));
 		try {
-			const pluginsDir = path.join(tmpHome, ".omp", "plugins");
+			const pluginsDir = path.join(tmpHome, ".eros", "plugins");
 			const manager = new MarketplaceManager({
-				marketplacesRegistryPath: path.join(tmpHome, ".omp", "marketplaces.json"),
+				marketplacesRegistryPath: path.join(tmpHome, ".eros", "marketplaces.json"),
 				installedRegistryPath: path.join(pluginsDir, "installed_plugins.json"),
 				marketplacesCacheDir: path.join(pluginsDir, "cache", "marketplaces"),
 				pluginsCacheDir: path.join(pluginsDir, "cache", "plugins"),
@@ -367,11 +397,11 @@ describe("MarketplaceManager", () => {
 		const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), "omp-mgr-home-"));
 		const projectAnchor = fs.mkdtempSync(path.join(os.tmpdir(), "omp-mgr-project-"));
 		try {
-			const userPluginsDir = path.join(tmpHome, ".omp", "plugins");
-			const projectPluginsDir = path.join(projectAnchor, ".omp", "plugins");
+			const userPluginsDir = path.join(tmpHome, ".eros", "plugins");
+			const projectPluginsDir = path.join(projectAnchor, ".eros", "plugins");
 			fs.mkdirSync(projectPluginsDir, { recursive: true });
 			const manager = new MarketplaceManager({
-				marketplacesRegistryPath: path.join(tmpHome, ".omp", "marketplaces.json"),
+				marketplacesRegistryPath: path.join(tmpHome, ".eros", "marketplaces.json"),
 				installedRegistryPath: path.join(userPluginsDir, "installed_plugins.json"),
 				projectInstalledRegistryPath: path.join(projectPluginsDir, "installed_plugins.json"),
 				marketplacesCacheDir: path.join(userPluginsDir, "cache", "marketplaces"),

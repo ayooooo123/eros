@@ -24,6 +24,14 @@ type MockCall = {
 	body: unknown;
 };
 
+function rootNamespaceIdFromCall(call: MockCall): string | undefined {
+	const body = call.body;
+	if (!body || typeof body !== "object" || !("variables" in body)) return undefined;
+	const variables = body.variables;
+	if (!variables || typeof variables !== "object" || !("rootNamespaceId" in variables)) return undefined;
+	return typeof variables.rootNamespaceId === "string" ? variables.rootNamespaceId : undefined;
+}
+
 type AvailableModelsPayload = {
 	defaultModel?: { name: string; ref: string } | null;
 	selectableModels?: { name: string; ref: string }[] | null;
@@ -463,7 +471,8 @@ describe("GitLab Duo Workflow discovery", () => {
 		});
 		const graphqlRootIds = calls
 			.filter(call => new URL(call.url).pathname === "/api/graphql")
-			.map(call => (call.body as { variables: { rootNamespaceId: string } }).variables.rootNamespaceId);
+			.map(rootNamespaceIdFromCall)
+			.filter((rootNamespaceId): rootNamespaceId is string => typeof rootNamespaceId === "string");
 		expect(graphqlRootIds).toEqual(["no-models", "empty-models", "usable-models"]);
 	});
 

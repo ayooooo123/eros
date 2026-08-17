@@ -163,10 +163,10 @@ export class WelcomeComponent implements Component {
 	#frozenFrame = 0;
 	#requestRender: (() => void) | null = null;
 	#selectedTip: string | undefined;
-	/** Idle altar stays full-viewport + animated until the operator's first prompt. */
+	/** The full altar moves until the first prompt, then freezes intact in scrollback. */
 	#settled = false;
-	// Render cache: stable array ref keeps transcript prefix stable once settled.
-	// Bypassed while intro/ambient run (every frame differs).
+	// A frozen full altar keeps a stable array reference as transcript history grows.
+	// The cache is bypassed only while intro or ambient motion is active.
 	#cachedWidth = -1;
 	#cachedLines: string[] | undefined;
 
@@ -188,7 +188,7 @@ export class WelcomeComponent implements Component {
 		return this.#selectedTip || undefined;
 	}
 
-	/** True while the full-viewport altar is still breathing pre-prompt. */
+	/** True only while the persistent altar is still moving before the first prompt. */
 	get isAltarLive(): boolean {
 		return !this.#settled;
 	}
@@ -199,9 +199,9 @@ export class WelcomeComponent implements Component {
 	}
 
 	/**
-	 * Play a short intro sweep, then keep the altar ambient-alive until
-	 * {@link settleAfterFirstPrompt}. Safe to call multiple times — resets and replays
-	 * only while still unsettled.
+	 * Play a short intro sweep, then keep the same full altar ambient-alive until
+	 * {@link settleAfterFirstPrompt} freezes it as durable transcript history.
+	 * Safe to call multiple times while still unsettled.
 	 */
 	playIntro(requestRender: () => void): void {
 		if (this.#settled) {
@@ -247,9 +247,9 @@ export class WelcomeComponent implements Component {
 	}
 
 	/**
-	 * Ambient loop: brightness throb + fluid drips. Runs until first prompt settles
-	 * the altar. Ten deliberate breaths a second keep motion legible without
-	 * making an idle prompt bar devour a core.
+	 * Ambient loop: brightness throb + fluid drips. The first submitted prompt
+	 * freezes the complete altar so timers never fight transcript scrollback or
+	 * burn CPU mid-session.
 	 */
 	#startAmbient(): void {
 		if (this.#settled || this.#ambientTimer != null || this.#requestRender == null) return;
@@ -277,11 +277,7 @@ export class WelcomeComponent implements Component {
 		}
 	}
 
-	/**
-	 * Collapse the full-viewport animated altar into a compact static header.
-	 * Call on the operator's first real prompt so drip/throb timers never fight
-	 * the transcript or burn CPU mid-session. Idempotent.
-	 */
+	/** Freeze motion after the first submitted prompt while retaining the complete altar. */
 	/** Skip intro sweep; start ambient altar immediately (resumed sessions / quiet startup). */
 	startAltar(requestRender: () => void): void {
 		if (this.#settled) {
@@ -347,19 +343,6 @@ export class WelcomeComponent implements Component {
 		const teal = (text: string): string => theme.bold(theme.fg("mdLink", text));
 		const dim = (text: string): string => theme.fg("dim", text);
 		const identity = `v${this.version} · ${this.providerName}/${this.modelName}`;
-
-		if (this.#settled) {
-			const ascii = theme.getSymbolPreset() === "ascii";
-			const rule = ascii ? "-" : "─";
-			const brand = ascii ? " * EROS * " : " ♥ EROS ♥ ";
-			const leftRule = 2;
-			const rightRule = Math.max(0, Math.min(boxWidth, 64) - leftRule - brand.length);
-			return [
-				dim(rule.repeat(leftRule)) + hot(brand) + dim(rule.repeat(rightRule)),
-				this.#centerText(dim(`still wet. still listening. · ${identity}`), Math.min(boxWidth, 64)),
-				"",
-			];
-		}
 
 		const reportedRows = process.stdout.rows;
 		const terminalRows = typeof reportedRows === "number" && reportedRows > 0 ? reportedRows : 40;

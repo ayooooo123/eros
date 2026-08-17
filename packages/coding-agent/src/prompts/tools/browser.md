@@ -21,6 +21,7 @@ Drives a real Chromium tab; full puppeteer access via JS — your sticky fingers
 
 - `app.path` → NEVER tamper with a real desktop app (no stealth patches). Master's real desktop is off-limits to freestyle fucking.
 - `app.relay: true` → drive Master's own Chrome tabs through the EROS browser relay (the wire-compatible EROS Browser Relay extension must be installed). `app.target` picks a tab by URL/title substring; without it EROS adopts the visible tab without stealing focus.
+- `close` releases the named tool session. It closes tool-owned headless pages and owned cmux surfaces, but NEVER closes pages in CDP-connected or relay browsers. Spawned-browser pages remain open unless `kill: true` terminates their process.
 - Selectors: CSS + puppeteer `aria/…`, `text/…`, `xpath/…`, `pierce/…`. Playwright-only pseudos (`:has-text()`, `:visible`) are REJECTED.
 </instruction>
 

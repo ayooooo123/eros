@@ -117,13 +117,12 @@ describe("AgentSession mid-run todo reconciliation nudge", () => {
 		});
 	}
 
-	// The session's toolResult handler is async, so the reminder lands a few
-	// microtasks after the synchronous emit. Chase the microtask queue instead
-	// of a wall-clock nap — no timers, nothing to flake under load.
+	// The session's toolResult handler is async and image normalization adds
+	// several promise continuations before the hidden reminder is appended.
+	// Drain that deterministic microtask chain without introducing wall-clock
+	// sleeps that can flake under load.
 	async function flushMicrotasks(): Promise<void> {
-		await Promise.resolve();
-		await Promise.resolve();
-		await Promise.resolve();
+		for (let i = 0; i < 12; i++) await Promise.resolve();
 	}
 
 	async function drainNudges(): Promise<CustomMessage[]> {
