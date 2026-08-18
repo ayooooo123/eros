@@ -23,6 +23,12 @@
 - Fixed prompt gutters disappearing whenever an editor wore bordered chrome, so EROS's heartbeat now stays visible without bending terminal width.
 - Fixed root help advertising donor commands and the wrong `~/.omp/agent` user-state path.
 - Fixed the first submitted prompt collapsing EROS's full terminal altar into a compact header; the complete settled portrait now remains visible and frozen like Wrangel's.
+## [17.3.7] - 2026-08-17
+
+### Changed
+
+- Send the `omp/<version>` User-Agent on xAI chat (`xai` and `xai-oauth`) unless the request already set its own ([#8840](https://github.com/can1357/oh-my-pi/pull/8840) by [@Jaaneek](https://github.com/Jaaneek)).
+
 ## [17.3.6] - 2026-08-17
 
 ### Added
