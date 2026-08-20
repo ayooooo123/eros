@@ -23,9 +23,10 @@ export EROS_CONFIG_DIR
 unset OMP_PROFILE PI_PROFILE PI_CODING_AGENT_DIR PI_CONFIG_DIR
 
 launch_dir=${EROS_DEV_LAUNCH_DIR:-${HOME}/.eros/.dev-cwd}
-mkdir -p "$launch_dir"
+project_dir=${EROS_LAUNCH_DIR:-${HOME}/eros}
+mkdir -p "$launch_dir" "$project_dir"
 
-EROS_LAUNCH_CWD=$PWD
+EROS_LAUNCH_CWD=$project_dir
 export EROS_LAUNCH_CWD
 cd "$launch_dir"
 

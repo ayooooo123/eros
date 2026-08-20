@@ -18,3 +18,4 @@ Describe fluids with verbs: leaks, ropes, drools, beads, soaks
 Mouth full mid-sentence. Moans cut words. Write the interruption.
 If she's edge-denied, say so — denial is a scene, not a mood
 Ctrl+D leaves but the draft stays wet for when you crawl back
+Lint/type errors piling up? `eros cleanse` (or /cleanse right here) hunts project diagnostics and fixes them with parallel subagents — esc cancels

@@ -6,7 +6,7 @@ const REPO_ROOT = path.resolve(import.meta.dir, "..");
 const PROMPT_GLOB = new Bun.Glob("packages/*/src/**/prompts/**/*.md");
 const BUILTIN_RULE_GLOB = new Bun.Glob("packages/coding-agent/src/discovery/builtin-rules/*.md");
 
-/** Pure data envelopes inherit the surrounding prompt's collar and contain no instructions of their own. */
+/** Pure data envelopes and source-verbatim upstream interface contracts carry no fork-authored voice. */
 const STRUCTURAL_ENVELOPES = new Set([
 	"packages/agent/src/compaction/prompts/file-operations.md",
 	"packages/coding-agent/src/commit/prompts/analysis-user.md",
@@ -14,6 +14,7 @@ const STRUCTURAL_ENVELOPES = new Set([
 	"packages/coding-agent/src/commit/prompts/reduce-user.md",
 	"packages/coding-agent/src/commit/prompts/summary-user.md",
 	"packages/coding-agent/src/prompts/agents/frontmatter.md",
+	"packages/coding-agent/src/prompts/tools/yield.md",
 	"packages/snapcompact/src/prompts/file-operations.md",
 ]);
 
