@@ -25,9 +25,10 @@ class RenderCountingTUI extends TUI {
 	}
 }
 
-async function expectTwoDirectShimmerFrames(
+async function expectTwoShimmerFrames(
 	tui: RenderCountingTUI,
 	terminal: VirtualTerminal,
+	scheduler: StressRenderScheduler,
 	writes: readonly string[],
 	keyword: string,
 ): Promise<void> {
@@ -47,20 +48,20 @@ async function expectTwoDirectShimmerFrames(
 	expect(bufferPosition.baseY).toBeGreaterThan(0);
 
 	vi.advanceTimersByTime(CustomEditor.SHIMMER_FRAME_MS);
-	await terminal.flush();
+	await scheduler.drain(terminal);
 	const firstPhaseWrites = writes.slice(writesBeforeFirstPhase);
 	expect(firstPhaseWrites.length).toBeGreaterThan(0);
 	expect(firstPhaseWrites.join("")).toContain("\x1b[38");
 
 	const writesBeforeSecondPhase = writes.length;
 	vi.advanceTimersByTime(CustomEditor.SHIMMER_FRAME_MS);
-	await terminal.flush();
+	await scheduler.drain(terminal);
 	const secondPhaseWrites = writes.slice(writesBeforeSecondPhase);
 	expect(secondPhaseWrites.length).toBeGreaterThan(0);
 	expect(secondPhaseWrites.join("")).toContain("\x1b[38");
 	expect(secondPhaseWrites.join("")).not.toBe(firstPhaseWrites.join(""));
 
-	expect(tui.renderCount).toBe(renderCount);
+	expect(tui.renderCount).toBeGreaterThanOrEqual(renderCount + 2);
 	expect(terminal.getViewport().map(row => Bun.stripANSI(row).trimEnd().replace(/[♡♥]/g, "♡"))).toEqual(viewport);
 	expect(terminal.getBufferPosition()).toEqual(bufferPosition);
 	expect(
@@ -133,7 +134,7 @@ describe("InteractiveMode.setEditorComponent", () => {
 		expect(refreshSpy).toHaveBeenCalled();
 	});
 
-	it("direct-writes focused shimmer frames without disturbing terminal state before or after replacement", async () => {
+	it("repaints focused shimmer frames without disturbing terminal state before or after replacement", async () => {
 		const terminal = new VirtualTerminal(80, 8, 1_000);
 		terminal.write(Array.from({ length: 12 }, (_unused, index) => `seed-${index}\r\n`).join(""));
 		const writes: string[] = [];
@@ -160,7 +161,7 @@ describe("InteractiveMode.setEditorComponent", () => {
 			tui.start();
 			await scheduler.drain(terminal);
 
-			await expectTwoDirectShimmerFrames(tui, terminal, writes, "orchestrate");
+			await expectTwoShimmerFrames(tui, terminal, scheduler, writes, "orchestrate");
 			initialEditor.setShimmerRepaintHandler(undefined);
 
 			mode.setEditorComponent((_tui, editorTheme) => new TestModalEditor(editorTheme));
@@ -169,7 +170,7 @@ describe("InteractiveMode.setEditorComponent", () => {
 			replacementEditor.setText("please workflowz this draft");
 			await scheduler.drain(terminal);
 
-			await expectTwoDirectShimmerFrames(tui, terminal, writes, "workflowz");
+			await expectTwoShimmerFrames(tui, terminal, scheduler, writes, "workflowz");
 		} finally {
 			initialEditor.setShimmerRepaintHandler(undefined);
 			replacementEditor?.setShimmerRepaintHandler(undefined);

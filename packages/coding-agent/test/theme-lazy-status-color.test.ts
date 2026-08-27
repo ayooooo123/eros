@@ -124,7 +124,7 @@ describe("lazy status color re-resolves on theme switch", () => {
 			.filter(line => line === "Fresh EROS flesh waits" || line.startsWith("Version "));
 		expect(semanticLines).toEqual([
 			"Fresh EROS flesh waits",
-			"Version 1.2.3 is spread on the altar. Run: eros update",
+			"Version 1.2.3 is spread on the altar. Update the GitLab checkout, then run: ./scripts/install.sh",
 		]);
 	});
 });

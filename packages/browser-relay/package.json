@@ -4,7 +4,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"description": "Chrome extension that lets the EROS browser tool drive your existing tabs (relay server lives in the EROS CLI: `eros browser-relay`)",
-	"author": "Can Boluk",
+	"author": "Stencil Labs, Inc.",
 	"license": "MIT",
 	"repository": {
 		"type": "git",

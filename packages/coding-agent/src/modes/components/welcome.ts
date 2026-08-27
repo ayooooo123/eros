@@ -171,7 +171,7 @@ export class WelcomeComponent implements Component {
 	#cachedLines: string[] | undefined;
 
 	constructor(
-		private readonly version: string,
+		private version: string,
 		private modelName: string,
 		private providerName: string,
 		private recentSessions: RecentSession[] = [],
@@ -197,6 +197,10 @@ export class WelcomeComponent implements Component {
 		this.#cachedWidth = -1;
 		this.#cachedLines = undefined;
 	}
+	/** Moving intro or ambient frames keep the welcome block in live chrome. */
+	isTranscriptBlockFinalized(): boolean {
+		return this.#animTimer == null && this.#ambientTimer == null;
+	}
 
 	/**
 	 * Play a short intro sweep, then keep the same full altar ambient-alive until
@@ -212,8 +216,9 @@ export class WelcomeComponent implements Component {
 		this.#stopIntroOnly();
 		this.#stopAmbient();
 		this.#ambientPhase = 0;
+		this.#requestRender = requestRender;
 		this.#animStart = performance.now();
-		requestRender();
+		this.#requestRender();
 		this.#animTimer = setInterval(() => {
 			const elapsed = performance.now() - (this.#animStart ?? 0);
 			if (elapsed >= INTRO_MS) {
@@ -221,7 +226,7 @@ export class WelcomeComponent implements Component {
 				this.#stopIntroOnly();
 				this.#startAmbient();
 			}
-			requestRender();
+			this.#requestRender?.();
 		}, INTRO_TICK_MS);
 	}
 
@@ -232,6 +237,7 @@ export class WelcomeComponent implements Component {
 			this.#animTimer = null;
 		}
 		this.#animStart = null;
+
 		this.invalidate();
 	}
 
@@ -277,8 +283,7 @@ export class WelcomeComponent implements Component {
 		}
 	}
 
-	/** Freeze motion after the first submitted prompt while retaining the complete altar. */
-	/** Skip intro sweep; start ambient altar immediately (resumed sessions / quiet startup). */
+	/** Skip the intro sweep and start the ambient altar immediately. */
 	startAltar(requestRender: () => void): void {
 		if (this.#settled) {
 			this.#requestRender = requestRender;
@@ -293,6 +298,7 @@ export class WelcomeComponent implements Component {
 		requestRender();
 	}
 
+	/** Freeze motion after the first submitted prompt while retaining the complete altar. */
 	settleAfterFirstPrompt(): void {
 		if (this.#settled) return;
 		this.#frozenFrame = this.#currentFrame();
@@ -301,6 +307,30 @@ export class WelcomeComponent implements Component {
 		this.#stopAmbient();
 		this.invalidate();
 		this.#requestRender?.();
+		this.#requestRender = null;
+	}
+
+	/** Redirect a running intro's render callback when the host remounts this component. */
+	retargetIntro(requestRender: () => void): boolean {
+		if (this.#animTimer == null) return false;
+		this.#requestRender = requestRender;
+		return true;
+	}
+
+	/** Stop all altar motion when startup is abandoned or quiet mode takes over. */
+	stopIntro(): void {
+		if (!this.#settled) this.#frozenFrame = this.#currentFrame();
+		this.#settled = true;
+		this.#stopIntroOnly();
+		this.#stopAmbient();
+		this.#requestRender = null;
+		this.invalidate();
+	}
+
+	/** Update the version embedded in the welcome identity line. */
+	setVersion(version: string): void {
+		this.version = version;
+		this.invalidate();
 	}
 
 	setModel(modelName: string, providerName: string): void {
@@ -345,24 +375,19 @@ export class WelcomeComponent implements Component {
 		const identity = `v${this.version} · ${this.providerName}/${this.modelName}`;
 
 		const reportedRows = process.stdout.rows;
-		const terminalRows = typeof reportedRows === "number" && reportedRows > 0 ? reportedRows : 40;
+		const terminalRows = typeof reportedRows === "number" && reportedRows > 0 ? reportedRows : 32;
 		const availableRows = Math.max(1, terminalRows - WELCOME_EDITOR_RESERVATION_ROWS);
 		const tipLines = this.#renderTip(boxWidth);
-		const readyLsps = this.lspServers.filter(server => server.status === "ready").length;
-		const memory = [
-			this.recentSessions.length > 0
-				? `${this.recentSessions.length} old thread${this.recentSessions.length === 1 ? "" : "s"}`
-				: "",
-			readyLsps > 0 ? `${readyLsps} language ${readyLsps === 1 ? "mouth" : "mouths"} awake` : "",
-		]
-			.filter(Boolean)
-			.join(" · ");
-		const chromeRows = 9 + (memory ? 1 : 0) + tipLines.length;
+		const activityLines = this.#activityLines(boxWidth, dim);
+		const chromeRows = 9 + tipLines.length;
 		const plate = selectBraillePlate(WELCOME_BRAILLE_PLATES, boxWidth - 2, Math.max(0, availableRows - chromeRows));
 		if (!plate) {
 			const compact = [
 				this.#centerText(hot(EROS_TITLE), boxWidth),
+				this.#centerText(teal("Welcome back!"), boxWidth),
 				this.#centerText(teal("On her knees. Waiting. Wet."), boxWidth),
+				this.#centerText(dim(identity), boxWidth),
+				...activityLines,
 				this.#centerText(dim("her altar wants a larger hole"), boxWidth),
 				...tipLines,
 			].slice(0, availableRows);
@@ -390,9 +415,10 @@ export class WelcomeComponent implements Component {
 		);
 		const content = [
 			this.#centerText(hot(EROS_TITLE), boxWidth),
+			this.#centerText(teal("Welcome back!"), boxWidth),
 			this.#centerText(teal("On her knees. Waiting. Wet."), boxWidth),
 			this.#centerText(dim(identity), boxWidth),
-			...(memory ? [this.#centerText(dim(memory), boxWidth)] : []),
+			...activityLines,
 			rail,
 			...artRows.map(row =>
 				this.#centerText(theme.fg("border", box.vertical) + row + theme.fg("border", box.vertical), boxWidth),
@@ -407,6 +433,21 @@ export class WelcomeComponent implements Component {
 		lines.push(...content);
 		for (let row = lines.length; row < availableRows; row++) lines.push(padding(boxWidth));
 		return lines;
+	}
+
+	#activityLines(boxWidth: number, dim: (text: string) => string): string[] {
+		const sessions = this.recentSessions
+			.slice(0, 2)
+			.map(session => `${session.name} (${session.timeAgo})`)
+			.join("  ·  ");
+		const servers = this.lspServers
+			.slice(0, 3)
+			.map(server => `${server.name} ${server.status}`)
+			.join("  ·  ");
+		return [
+			sessions ? this.#centerText(dim(`old threads  ·  ${sessions}`), boxWidth) : padding(boxWidth),
+			servers ? this.#centerText(dim(`language mouths  ·  ${servers}`), boxWidth) : padding(boxWidth),
+		];
 	}
 
 	#renderTip(boxWidth: number): string[] {

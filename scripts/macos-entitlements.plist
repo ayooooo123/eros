@@ -4,7 +4,7 @@
 <dict>
 	<!--
 	  Entitlements for the hardened-runtime Developer ID signature applied to the
-	  compiled `omp` macOS binary (see scripts/ci-macos-sign.sh).
+	  compiled `eros` macOS binary (see scripts/ci-macos-sign.sh).
 
 	  These are NOT optional. The binary is a Bun single-file executable, and:
 	    * allow-jit / allow-unsigned-executable-memory — JavaScriptCore JITs at

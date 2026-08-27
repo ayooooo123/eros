@@ -134,7 +134,9 @@ describe("CustomEditor queue shorthand decoration", () => {
 			const editor = new CustomEditor(getEditorTheme());
 			editor.setText(`${prefix}\nqueue this`);
 
-			expect(editor.decorateText(prefix)).toBe(theme.fg("dim", `Next thrust ${theme.nav.selected}`));
+			expect(editor.decorateText(prefix, { line: 0, startCol: 0, endCol: prefix.length })).toBe(
+				theme.fg("dim", `Next thrust ${theme.nav.selected}`),
+			);
 			editor.focused = true;
 			const rendered = editor.render(40).map(line => Bun.stripANSI(line.replace(CURSOR_MARKER, "")));
 			expect(rendered.some(line => line.includes(`Next thrust ${theme.nav.selected}`))).toBe(true);
@@ -168,17 +170,29 @@ describe("CustomEditor queue shorthand decoration", () => {
 		]) {
 			const editor = new CustomEditor(getEditorTheme());
 			editor.setText(input);
-			expect(editor.decorateText(`${marker} first`).startsWith(theme.fg("accent", marker))).toBe(true);
+			expect(
+				editor
+					.decorateText(`${marker} first`, { line: 1, startCol: 0, endCol: `${marker} first`.length })
+					.startsWith(theme.fg("accent", marker)),
+			).toBe(true);
 		}
 
 		const unfinished = new CustomEditor(getEditorTheme());
 		unfinished.setText("=>\n1. first\n2. second\n3. third\n4.");
-		expect(unfinished.decorateText("1. first").startsWith(theme.fg("accent", "1."))).toBe(true);
-		expect(unfinished.decorateText("4.").startsWith(theme.fg("accent", "4."))).toBe(true);
+		expect(
+			unfinished
+				.decorateText("1. first", { line: 1, startCol: 0, endCol: "1. first".length })
+				.startsWith(theme.fg("accent", "1.")),
+		).toBe(true);
+		expect(
+			unfinished
+				.decorateText("4.", { line: 4, startCol: 0, endCol: "4.".length })
+				.startsWith(theme.fg("accent", "4.")),
+		).toBe(true);
 
 		const editor = new CustomEditor(getEditorTheme());
 		editor.setText("=>\n1. first\n3. third");
-		expect(editor.decorateText("1. first")).toBe("1. first");
+		expect(editor.decorateText("1. first", { line: 1, startCol: 0, endCol: "1. first".length })).toBe("1. first");
 	});
 });
 

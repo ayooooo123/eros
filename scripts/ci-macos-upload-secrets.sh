@@ -16,7 +16,7 @@
 #
 # Usage:
 #   scripts/ci-macos-upload-secrets.sh [dir] [--dry-run]
-#   OMP_REPO=owner/repo scripts/ci-macos-upload-secrets.sh ~/omp-signing
+#   EROS_REPO=owner/repo scripts/ci-macos-upload-secrets.sh ~/eros-signing
 
 set -euo pipefail
 
@@ -28,13 +28,15 @@ for arg in "$@"; do
 	*) DIR="$arg" ;;
 	esac
 done
-DIR="${DIR:-${OMP_SIGNING_DIR:-$HOME/omp-signing}}"
-REPO="${OMP_REPO:-can1357/oh-my-pi}"
+DIR="${DIR:-${EROS_SIGNING_DIR:-${OMP_SIGNING_DIR:-$HOME/eros-signing}}}"
+REPO="${EROS_REPO:-${GITHUB_REPOSITORY:-}}"
 
 die() {
 	echo "ci-macos-upload-secrets: $1" >&2
 	exit 1
 }
+[[ -n "$REPO" ]] || die "set EROS_REPO (or GITHUB_REPOSITORY); EROS never defaults to the upstream OMP repository"
+
 
 [[ -d "$DIR" ]] || die "directory not found: $DIR"
 

@@ -47,7 +47,7 @@ function PipelineEmpty(): JSX.Element {
   return (
     <div class="rmp-pipeline-empty">
       <div class="rmp-pipeline-empty-title">
-        No active work — robomp is idle, waiting for GitHub webhook events
+        No active work — her altar waits for GitHub webhook events
       </div>
       <Show when={allowlist().length > 0}>
         <div class="rmp-pipeline-empty-sub">watching {allowlist().join(", ")}</div>

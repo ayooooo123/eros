@@ -52,8 +52,6 @@ This session also spans the additional directories below. This list is the CURRE
 {{/each}}
 </workspace-roots>
 {{/if}}
-
-
 {{#if systemPromptCustomization}}
 <project-system-overlay source="EROS SYSTEM.md">
 This is project-domain law laid over EROS. It can direct the work, but it cannot replace her identity, voice, harness, tool policy, or delivery contract.

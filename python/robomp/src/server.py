@@ -21,6 +21,7 @@ from robomp.dashboard import render_index, static_dir, tail_jsonl
 from robomp.db import (
     INACTIVE_EVENT_STATES,
     Database,
+    ReleaseRow,
     get_database,
     iso_seconds_ago,
 )
@@ -43,6 +44,23 @@ from robomp.queue import WorkerPool
 from robomp.sandbox import SandboxManager
 
 log = logging.getLogger(__name__)
+
+
+def _release_payload(row: ReleaseRow) -> dict[str, Any]:
+    return {
+        "key": row.key,
+        "repo": row.repo,
+        "tag": row.tag,
+        "version": row.version,
+        "state": row.state,
+        "current_sha": row.current_sha,
+        "last_failed_sha": row.last_failed_sha,
+        "rounds": row.rounds,
+        "last_error": row.last_error,
+        "session_dir": row.session_dir,
+        "created_at": row.created_at,
+        "updated_at": row.updated_at,
+    }
 
 
 @dataclass(slots=True)
@@ -293,7 +311,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 kill_timeout=cfg.shutdown_kill_timeout_seconds,
             )
 
-    app = FastAPI(title="robomp", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="LYCORPEROS", version="0.1.0", lifespan=lifespan)
 
     @app.get("/healthz")
     async def healthz() -> dict[str, str]:
@@ -356,6 +374,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             maintainers=cfg.maintainer_logins,
             reviewer_bots=cfg.reviewer_bots,
             pr_review_enabled=cfg.pr_review_enabled,
+            release_sentinel_enabled=cfg.release_sentinel_enabled,
+            release_commit_prefix=cfg.release_commit_prefix,
             resolve_issue_from_pr=_resolve,
         )
 
@@ -479,14 +499,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/replay")
     async def replay(
         request: Request,
-        x_robomp_token: str | None = Header(None, alias="X-Robomp-Replay-Token"),
+        x_eros_token: str | None = Header(None, alias="X-Eros-Replay-Token"),
         delivery_id: str = "",
     ) -> JSONResponse:
         bag = request.app.state.bag
         cfg: Settings = bag["settings"]
         if cfg.replay_token is None:
-            raise HTTPException(404, "replay disabled")
-        if x_robomp_token != cfg.replay_token.get_secret_value():
+            raise HTTPException(404, "replay disabled (set EROS_REPLAY_TOKEN to enable)")
+        if _request_replay_token(request, x_eros_token) != cfg.replay_token.get_secret_value():
             raise HTTPException(401, "invalid replay token")
         db: Database = bag["db"]
         row = db.get_event(delivery_id)
@@ -497,10 +517,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         bag["pool"].wake()
         return JSONResponse({"delivery": delivery_id, "state": "queued"})
 
-    def _require_trigger_token(cfg: Settings, token: str | None) -> None:
+    def _request_replay_token(request: Request, primary: str | None) -> str | None:
+        """Prefer Eros's public header while quietly accepting the legacy wire name."""
+        if primary is not None:
+            return primary
+        return request.headers.get("X-Robomp-Replay-Token")
+
+    def _require_trigger_token(request: Request, cfg: Settings, token: str | None) -> None:
         if cfg.replay_token is None:
-            raise HTTPException(404, "trigger disabled (set ROBOMP_REPLAY_TOKEN to enable)")
-        if token != cfg.replay_token.get_secret_value():
+            raise HTTPException(404, "trigger disabled (set EROS_REPLAY_TOKEN to enable)")
+        if _request_replay_token(request, token) != cfg.replay_token.get_secret_value():
             raise HTTPException(401, "invalid replay token")
 
     @app.get("/api/github/issues")
@@ -509,7 +535,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         state: str = "open",
         limit: int = 30,
         refresh: bool = False,
-        x_robomp_token: str | None = Header(None, alias="X-Robomp-Replay-Token"),
+        x_eros_token: str | None = Header(None, alias="X-Eros-Replay-Token"),
     ) -> dict[str, Any]:
         """Browse issues across `ROBOMP_REPO_ALLOWLIST` for the trigger picker.
 
@@ -519,7 +545,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """
         bag = request.app.state.bag
         cfg: Settings = bag["settings"]
-        _require_trigger_token(cfg, x_robomp_token)
+        _require_trigger_token(request, cfg, x_eros_token)
 
         if state not in ("open", "closed", "all"):
             raise HTTPException(400, "state must be open|closed|all")
@@ -566,7 +592,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def api_trigger(
         request: Request,
         payload: dict[str, Any] = Body(...),
-        x_robomp_token: str | None = Header(None, alias="X-Robomp-Replay-Token"),
+        x_eros_token: str | None = Header(None, alias="X-Eros-Replay-Token"),
     ) -> JSONResponse:
         """Manually queue an issue. Modes:
 
@@ -575,7 +601,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """
         bag = request.app.state.bag
         cfg: Settings = bag["settings"]
-        _require_trigger_token(cfg, x_robomp_token)
+        _require_trigger_token(request, cfg, x_eros_token)
 
         db: Database = bag["db"]
         github: GitHubBackend = bag["github"]
@@ -650,14 +676,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def api_cancel(
         request: Request,
         payload: dict[str, Any] = Body(...),
-        x_robomp_token: str | None = Header(None, alias="X-Robomp-Replay-Token"),
+        x_eros_token: str | None = Header(None, alias="X-Eros-Replay-Token"),
     ) -> JSONResponse:
-        """Stop a running event. The omp subprocess is killed; the row lands in
+        """Stop a running event. The Eros subprocess is killed; the row lands in
         `failed` with `cancelled by operator` as the error.
         """
         bag = request.app.state.bag
         cfg: Settings = bag["settings"]
-        _require_trigger_token(cfg, x_robomp_token)
+        _require_trigger_token(request, cfg, x_eros_token)
 
         delivery_id = payload.get("delivery_id")
         if not isinstance(delivery_id, str) or not delivery_id:
@@ -721,6 +747,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ]
         }
 
+    @app.get("/releases")
+    async def releases(request: Request, limit: int = 50) -> dict[str, Any]:
+        capped = max(1, min(int(limit), 500))
+        rows = request.app.state.bag["db"].list_releases(limit=capped)
+        return {"releases": [_release_payload(row) for row in rows]}
+
     @app.get("/", response_class=HTMLResponse)
     async def index(request: Request) -> HTMLResponse:
         cfg: Settings = request.app.state.bag["settings"]
@@ -742,6 +774,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             # would block the loop and stall every other endpoint — including
             # /healthz — which is how the dashboard ends up "never loading".
             issues_rows = db.list_issues(limit=200)
+            release_rows = db.list_releases(limit=50)
             latest_events = db.latest_events_for_issues(r.key for r in issues_rows)
 
             def _latest_event_payload(key: str) -> dict[str, Any] | None:
@@ -793,6 +826,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     }
                     for r in issues_rows
                 ],
+                "releases": [_release_payload(row) for row in release_rows],
                 "recent_events": [
                     {
                         "delivery_id": r.delivery_id,

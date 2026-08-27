@@ -115,12 +115,12 @@ export function getAddonFilenames({ tag, arch, variant }) {
  * Decide whether the loader should mirror the package's `native/<filename>.node`
  * into the per-version cache directory (`~/.eros/natives/<version>/`) before loading.
  *
- * Windows-only safety net for `bun install -g` updates: when a previous `omp`
+ * Windows-only safety net for `bun install -g` updates: when a previous `eros`
  * process is running, bun cannot overwrite the locked `.node` inside
  * `node_modules/@oh-my-pi/pi-natives/native/`, leaving an old binary next to a
  * newer `index.js` and producing `<sym> is not a function` crashes on the next
  * launch. Staging into the version-pinned cache:
- *   1. Gives every package version its own filesystem path, so concurrent omp
+ *   1. Gives every package version its own filesystem path, so concurrent Eros
  *      processes never collide on the same file.
  *   2. Makes the running process keep its handle on the cache copy, freeing bun
  *      to overwrite the `node_modules` copy on subsequent updates.
@@ -657,6 +657,27 @@ function maybeStageNodeModulesAddon(ctx, errors) {
 	return stagedPath;
 }
 
+
+/**
+ * Before version sentinels were exported, published native addons still shared
+ * this stable core ABI. Let those on-disk addons bridge a package-version bump
+ * when they expose the signature; keep every versioned addon and a current
+ * on-disk file paired with resident old exports on the strict path below.
+ */
+function isCompatiblePreSentinelNativeAddon(bindings, diskHasExpectedSentinel) {
+	if (diskHasExpectedSentinel) return false;
+	if (Object.keys(bindings).some(key => /^__piNativesV[A-Za-z0-9_]+$/.test(key))) return false;
+	return (
+		typeof bindings.countTokens === "function" &&
+		typeof bindings.executeShell === "function" &&
+		typeof bindings.visibleWidth === "function" &&
+		typeof bindings.DesktopSession === "function" &&
+		typeof bindings.DesktopSession.prototype?.capture === "function" &&
+		typeof bindings.DesktopSession.prototype?.execute === "function" &&
+		typeof bindings.DesktopSession.prototype?.close === "function"
+	);
+}
+
 export function validateLoadedBindings(ctx, bindings, candidate) {
 	// In workspace dev (running out of `packages/natives/native/` rather than a
 	// `node_modules` install or a compiled bundle) the local `.node` only gains
@@ -689,14 +710,15 @@ export function validateLoadedBindings(ctx, bindings, candidate) {
 		// The successful require above normally guarantees readability. If the
 		// file disappears concurrently, retain the safe reinstall diagnosis.
 	}
+	if (isCompatiblePreSentinelNativeAddon(bindings, diskHasExpectedSentinel)) return;
 	if (residentSentinel && diskHasExpectedSentinel) {
 		const residentVersion = residentSentinel.slice("__piNativesV".length).replace(/_/g, ".");
 		throw new Error(
 			`Loaded ${candidate}, which exposes the @oh-my-pi/pi-natives@${residentVersion} version ` +
 				`sentinel \`${residentSentinel}\` but not the @${ctx.packageVersion} sentinel ` +
-				`\`${ctx.versionSentinelExport}\` this loader expects. omp was upgraded to ` +
+				`\`${ctx.versionSentinelExport}\` this loader expects. Eros was upgraded to ` +
 				`${ctx.packageVersion} while this session was running; the ${residentVersion} addon is ` +
-				"still resident in this process. Disk is already consistent — restart omp to pick up " +
+				"still resident in this process. Disk is already consistent — restart eros to pick up " +
 				`${ctx.packageVersion} (reinstalling changes nothing).`,
 		);
 	}

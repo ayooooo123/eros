@@ -440,7 +440,7 @@ describe("advisor", () => {
 			expect(onAdvice).toHaveBeenNthCalledWith(3, note, "blocker");
 		});
 
-		it("withholds non-blockers for in-progress updates without consuming dedupe state (blocker mode)", async () => {
+		it("defers non-blockers during in-progress updates and flushes them on the next completed update", async () => {
 			const onAdvice = vi.fn();
 			const tool = new AdviseTool(onAdvice, { wipNotes: "blocker" });
 			const note = "The result still needs a focused regression test.";
@@ -454,11 +454,11 @@ describe("advisor", () => {
 			expect(onAdvice).toHaveBeenCalledWith("A destructive command is running.", "blocker");
 
 			tool.beginUpdate(false);
-			// Dropped WIP notes stay dropped — they do not flush on completed update.
-			expect(onAdvice).toHaveBeenCalledTimes(1);
+			expect(onAdvice).toHaveBeenCalledTimes(3);
+			expect(onAdvice).toHaveBeenNthCalledWith(2, note, "concern");
+			expect(onAdvice).toHaveBeenNthCalledWith(3, "Minor naming cleanup.", "nit");
 			await tool.execute("tc-4", { note, severity: "concern" });
-			expect(onAdvice).toHaveBeenCalledTimes(2);
-			expect(onAdvice).toHaveBeenLastCalledWith(note, "concern");
+			expect(onAdvice).toHaveBeenCalledTimes(3);
 		});
 
 		it("buffers WIP non-blockers and flushes them on the next completed update", async () => {

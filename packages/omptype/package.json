@@ -1,9 +1,9 @@
 {
   "type": "module",
   "name": "@oh-my-pi/omptype",
-  "version": "17.4.0",
+  "version": "18.0.6",
   "description": "ArkType-compatible runtime schema validation with lazy JIT compilation",
-  "author": "Can Boluk",
+  "author": "Stencil Labs, Inc.",
   "license": "MIT",
   "repository": {
     "type": "git",

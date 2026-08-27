@@ -1,9 +1,9 @@
 {
   "type": "module",
   "name": "@oh-my-pi/pi-agent-core",
-  "version": "17.4.0",
+  "version": "18.0.6",
   "description": "General-purpose agent with transport abstraction, state management, and attachment support",
-  "author": "Can Boluk",
+  "author": "Stencil Labs, Inc.",
   "contributors": [
     "Mario Zechner"
   ],

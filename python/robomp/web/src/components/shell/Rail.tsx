@@ -63,8 +63,8 @@ export function Rail(): JSX.Element {
       <div class="rmp-rail-brand">
         <span class="rmp-rail-mark" aria-hidden="true" />
         <span class="rmp-rail-wordmark">
-          <span class="rmp-rail-name">robomp</span>
-          <span class="rmp-rail-tag">triage · fix · ship</span>
+          <span class="rmp-rail-name">LYCORPEROS</span>
+          <span class="rmp-rail-tag">on her knees · waiting · wet</span>
         </span>
       </div>
 
@@ -80,7 +80,7 @@ export function Rail(): JSX.Element {
             data-active={activeView() === item.id ? "true" : "false"}
             data-locked={item.locked ? "true" : "false"}
             aria-current={activeView() === item.id ? "page" : undefined}
-            title={item.locked ? "Triage — locked (set ROBOMP_REPLAY_TOKEN to enable)" : item.label}
+            title={item.locked ? "Triage — locked (set EROS_REPLAY_TOKEN to enable)" : item.label}
             onClick={() => setActiveView(item.id)}
           >
             <span class="rmp-nav-item-icon">{item.icon()}</span>

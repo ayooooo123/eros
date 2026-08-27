@@ -410,7 +410,7 @@ describe("structured subagent primitive", () => {
 		const artifactsDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-structured-subagent-"));
 		const completed = result();
 		completed.patchPath = "/recovery/Worker.patch";
-		completed.branchName = "omp/task/Worker";
+		completed.branchName = "eros/task/Worker";
 		completed.nestedPatches = [{ relativePath: "sub/nested", patch: "diff --git a/file b/file\n" }];
 
 		const hint = await buildStructuredSubagentRecoveryHint(completed, artifactsDir);
@@ -418,7 +418,7 @@ describe("structured subagent primitive", () => {
 
 		expect(hint).toContain("Captured patch preserved at /recovery/Worker.patch.");
 		expect(hint).toContain(`Captured nested patch preserved at ${nestedPath}.`);
-		expect(hint).toContain("Captured branch preserved as omp/task/Worker.");
+		expect(hint).toContain("Captured branch preserved as eros/task/Worker.");
 		expect(await fs.readFile(nestedPath, "utf8")).toBe("diff --git a/file b/file\n");
 		await fs.rm(artifactsDir, { recursive: true, force: true });
 	});
@@ -431,7 +431,7 @@ describe("structured subagent primitive", () => {
 			runStructuredSubagent(
 				request({ session: session({ isolationMode: "worktree" }), isolation: { requested: true } }),
 			),
-		).rejects.toThrow("Isolated subagent execution requires a git repository");
+		).rejects.toThrow("Isolated subagent execution could not be prepared: not a repository");
 		expect(artifactsDirsFromRegistry()).toEqual([]);
 	});
 

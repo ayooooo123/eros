@@ -398,7 +398,7 @@ describe("MarketplaceManager", () => {
 		const projectAnchor = fs.mkdtempSync(path.join(os.tmpdir(), "omp-mgr-project-"));
 		try {
 			const userPluginsDir = path.join(tmpHome, ".eros", "plugins");
-			const projectPluginsDir = path.join(projectAnchor, ".eros", "plugins");
+			const projectPluginsDir = path.join(projectAnchor, ".omp", "plugins");
 			fs.mkdirSync(projectPluginsDir, { recursive: true });
 			const manager = new MarketplaceManager({
 				marketplacesRegistryPath: path.join(tmpHome, ".eros", "marketplaces.json"),

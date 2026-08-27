@@ -14,9 +14,9 @@ Permission model
 There are four ownership zones on disk; do not let them blur:
 
 1. **Workspace tree** (`/data/workspaces/<key>/`, including `repo/`,
-   `.omp-session/`, `context/`, `artifacts/`, `.omp-tmp/`, `.omp-xdg`):
-   single-owner. Owned by the active slot UID/GID (`omp-N`) when slot
-   isolation is enabled, otherwise by the orchestrator's own UID/GID. Modes
+   `.eros-session/`, `context/`, `artifacts/`, `.eros-tmp/`, `.eros-xdg`):
+   single-owner. Owned by the active compatibility slot UID/GID (`omp-N`) when
+   slot isolation is enabled, otherwise by the orchestrator's own UID/GID. Modes
    stay `u=rwX,g=rwX,o=` (effectively `0770` dirs / `0660` files). The
    orchestrator (root) reads/writes via uid-0 bypass when it must, and drops
    to the slot for any subprocess that touches paths the agent will revisit.
@@ -73,6 +73,9 @@ from robomp.git_ops import (
 from robomp.git_ops import (
     push as git_push,
 )
+from robomp.git_ops import (
+    push_release as git_push_release,
+)
 from robomp.natives_cache import CacheHit, NativesCache
 from robomp.natives_cache import compute_key as natives_compute_key
 
@@ -90,7 +93,7 @@ class Workspace:
     artifacts_dir: Path
     branch: str
     repo_full_name: str
-    issue_number: int
+    issue_number: int | str
 
     @property
     def repro_dir(self) -> Path:
@@ -114,7 +117,7 @@ def _short_hex(seed: str | None = None) -> str:
     return secrets.token_hex(4)
 
 
-def workspace_key(repo: str, number: int) -> str:
+def workspace_key(repo: str, number: int | str) -> str:
     return f"{repo.replace('/', '__')}__{number}"
 
 
@@ -253,6 +256,20 @@ class GitTransport(Protocol):
         """Push `branch` to origin. MUST refuse if HEAD has drifted from `expected_head`."""
         ...
 
+    def push_release(
+        self,
+        *,
+        repo: str,
+        workspace_key: str,
+        repo_dir: Path,
+        branch: str,
+        tag: str,
+        expected_head: str,
+        slot_uid: int | None = None,
+    ) -> PushResult:
+        """Atomically push a release branch and move its tag."""
+        ...
+
 
 class LocalGitTransport:
     """Default GitTransport: run git in-process with ephemeral PAT injection.
@@ -295,6 +312,27 @@ class LocalGitTransport:
     ) -> PushResult:
         del repo, workspace_key
         return git_push(repo_dir, branch=branch, expected_head=expected_head, token=self._token, slot_uid=slot_uid)
+
+    def push_release(
+        self,
+        *,
+        repo: str,
+        workspace_key: str,
+        repo_dir: Path,
+        branch: str,
+        tag: str,
+        expected_head: str,
+        slot_uid: int | None = None,
+    ) -> PushResult:
+        del repo, workspace_key
+        return git_push_release(
+            repo_dir,
+            branch=branch,
+            tag=tag,
+            expected_head=expected_head,
+            token=self._token,
+            slot_uid=slot_uid,
+        )
 
 
 # ---------- low-level helpers retained for callers expecting old shape ----------
@@ -452,14 +490,14 @@ def _prepare_slot_tmpdir(workspace: Workspace, slot_uid: int | None) -> Path:
     Ownership/mode is set by ``_chown_workspace`` as part of the workspace's
     single-ownership invariant; this helper only:
 
-    - replaces any non-directory at ``.omp-tmp`` (symlink-protection: a user
+    - replaces any non-directory at ``.eros-tmp`` (symlink-protection: a user
       who plants a symlink there could redirect later writes outside the
       workspace regardless of who owns the destination), and
     - ``mkdir(mode=0o700, exist_ok=True)`` as a safety net for callers that
       run before ``ensure_workspace`` (e.g. unit tests with ``slot_uid=None``).
     """
     del slot_uid  # ownership is _chown_workspace's job; kept for call-site parity
-    tmpdir = workspace.root / ".omp-tmp"
+    tmpdir = workspace.root / ".eros-tmp"
     try:
         st = tmpdir.lstat()
     except FileNotFoundError:
@@ -500,7 +538,7 @@ def _prepare_slot_runtime_env(workspace: Workspace, slot_uid: int | None) -> dic
     cross-slot shared cache a permanent source of permission failures.
     """
     tmpdir = _prepare_slot_tmpdir(workspace, slot_uid)
-    xdg_root = workspace.root / ".omp-xdg"
+    xdg_root = workspace.root / ".eros-xdg"
     xdg_data = xdg_root / "data"
     xdg_state = xdg_root / "state"
     xdg_cache = xdg_root / "cache"
@@ -508,7 +546,7 @@ def _prepare_slot_runtime_env(workspace: Workspace, slot_uid: int | None) -> dic
 
     for base in (xdg_data, xdg_state, xdg_cache):
         base.mkdir(parents=True, exist_ok=True)
-        (base / "omp").mkdir(parents=True, exist_ok=True)
+        (base / "eros").mkdir(parents=True, exist_ok=True)
     bun_cache.mkdir(parents=True, exist_ok=True)
 
     return {
@@ -526,14 +564,14 @@ def _provision_runtime_dirs(ws_root: Path) -> None:
     """Create the runtime dirs that ``_chown_workspace`` will hand to the slot.
 
     Runs immediately before ``_chown_workspace`` so the recursive chown sweep
-    picks up ``.omp-tmp`` and the per-workspace XDG tree. Without this,
+    picks up ``.eros-tmp`` and the per-workspace XDG tree. Without this,
     ``_prepare_slot_runtime_env`` would create them later from the orchestrator
     process — leaving root-owned cache roots that bun/biome/cargo cannot
     chmod/utime, the original source of the recurring permission failures.
 
-    Symlink-safe on ``.omp-tmp`` (replaces a planted non-directory in place).
+    Symlink-safe on ``.eros-tmp`` (replaces a planted non-directory in place).
     """
-    tmpdir = ws_root / ".omp-tmp"
+    tmpdir = ws_root / ".eros-tmp"
     try:
         st = tmpdir.lstat()
     except FileNotFoundError:
@@ -543,11 +581,11 @@ def _provision_runtime_dirs(ws_root: Path) -> None:
             tmpdir.unlink()
     tmpdir.mkdir(mode=0o700, parents=True, exist_ok=True)
 
-    xdg_root = ws_root / ".omp-xdg"
+    xdg_root = ws_root / ".eros-xdg"
     for sub in ("data", "state", "cache"):
         base = xdg_root / sub
         base.mkdir(parents=True, exist_ok=True)
-        (base / "omp").mkdir(parents=True, exist_ok=True)
+        (base / "eros").mkdir(parents=True, exist_ok=True)
     (xdg_root / "cache" / "bun-install").mkdir(parents=True, exist_ok=True)
 
 
@@ -718,8 +756,8 @@ def _stage_workspace_trash(ws_root: Path) -> tuple[Path, ...]:
         return ()
     staged = [p for p in ws_root.iterdir() if p.name.startswith(_TRASH_PREFIX)]
     candidates = [
-        ws_root / ".omp-xdg" / "cache",
-        ws_root / ".omp-tmp",
+        ws_root / ".eros-xdg" / "cache",
+        ws_root / ".eros-tmp",
         *_find_node_modules(ws_root / "repo"),
     ]
     trash_root: Path | None = None
@@ -784,20 +822,24 @@ class SandboxManager:
     def pool_path(self, repo: str) -> Path:
         return self.pool / repo.replace("/", "__")
 
-    def ensure_clone(self, *, repo: str, clone_url: str, default_branch: str) -> Path:
-        """Idempotent shared clone for `repo`.
+    def ensure_clone(
+        self,
+        *,
+        repo: str,
+        clone_url: str,
+        default_branch: str,
+        refresh: bool = True,
+    ) -> Path:
+        """Create or refresh the shared clone for `repo`.
 
         `clone_url` MUST be a plain `https://github.com/<owner>/<repo>.git`
         (no embedded credentials). Auth is supplied per-call by the transport.
         """
         target = self.pool_path(repo)
         if (target / ".git").exists() or (target / "HEAD").exists():
-            # Idempotent refresh. An older deploy may have baked a
-            # credentialed `https://user:pass@github.com/...` into
-            # `.git/config`; rewrite to the credential-free URL we now own
-            # before fetching so the PAT never persists on disk.
             self._reset_origin_url(target, clone_url)
-            self.transport.fetch_pool(repo=repo, pool_dir=target)
+            if refresh:
+                self.transport.fetch_pool(repo=repo, pool_dir=target)
             return target
         target.mkdir(parents=True, exist_ok=True)
         self.transport.clone_pool(
@@ -830,7 +872,7 @@ class SandboxManager:
         _safe_run(["git", "remote", "set-url", "origin", clone_url], cwd=repo_dir)
 
     # ---- per-issue workspace ----
-    def workspace_root(self, repo: str, number: int) -> Path:
+    def workspace_root(self, repo: str, number: int | str) -> Path:
         return self.root / workspace_key(repo, number)
 
     def ensure_workspace(
@@ -854,7 +896,7 @@ class SandboxManager:
             pool = self.ensure_clone(repo=repo, clone_url=clone_url, default_branch=default_branch)
             ws_root = self.workspace_root(repo, number)
             repo_dir = ws_root / "repo"
-            session_dir = ws_root / ".omp-session"
+            session_dir = ws_root / ".eros-session"
             context_dir = ws_root / "context"
             artifacts_dir = ws_root / "artifacts"
             for path in (ws_root, session_dir, context_dir, context_dir / "repro", artifacts_dir):
@@ -980,6 +1022,84 @@ class SandboxManager:
             self._populate_natives_cache(workspace, slot_uid=slot_uid)
             return workspace
 
+    def ensure_release_workspace(
+        self,
+        *,
+        repo: str,
+        clone_url: str,
+        default_branch: str,
+        tag: str,
+        author_name: str,
+        author_email: str,
+        slot_uid: int | None = None,
+    ) -> Workspace:
+        """Create or reset the repository's reusable main-branch release worktree."""
+        with self._repo_lock(repo):
+            pool = self.ensure_clone(
+                repo=repo,
+                clone_url=clone_url,
+                default_branch=default_branch,
+                refresh=False,
+            )
+            self.transport.fetch_pool(repo=repo, pool_dir=pool)
+            ws_root = self.workspace_root(repo, "release")
+            repo_dir = ws_root / "repo"
+            session_dir = ws_root / f".eros-session-{tag}"
+            context_dir = ws_root / "context"
+            artifacts_dir = ws_root / "artifacts"
+            for path in (ws_root, session_dir, context_dir, context_dir / "repro", artifacts_dir):
+                path.mkdir(parents=True, exist_ok=True)
+
+            detach = ["git", "checkout", "--detach"]
+            detached = _safe_run(detach, cwd=pool)
+            if detached.returncode != 0:
+                raise GitCommandError(detach, detached.returncode, detached.stdout, detached.stderr)
+
+            if not (repo_dir / ".git").exists():
+                _worktree_add(
+                    [
+                        "git",
+                        "worktree",
+                        "add",
+                        "-B",
+                        default_branch,
+                        str(repo_dir),
+                        f"origin/{default_branch}",
+                    ],
+                    pool=pool,
+                    repo_dir=repo_dir,
+                )
+
+            _share_git_metadata_with_slots(repo_dir, slot_uid)
+            _provision_runtime_dirs(ws_root)
+            _chown_workspace(ws_root, slot_uid)
+            slot_git_kwargs = _slot_subprocess_kwargs(slot_uid)
+            slot_git_env = _git_env_for_repo(repo_dir)
+            commands = (
+                ["git", "checkout", "-B", default_branch, f"origin/{default_branch}"],
+                ["git", "reset", "--hard", f"origin/{default_branch}"],
+                ["git", "clean", "-fd"],
+                ["git", "config", "user.email", author_email],
+                ["git", "config", "user.name", author_name],
+            )
+            for command in commands:
+                proc = _safe_run(command, cwd=repo_dir, env=slot_git_env, **slot_git_kwargs)
+                if proc.returncode != 0:
+                    raise GitCommandError(command, proc.returncode, proc.stdout, proc.stderr)
+            _share_git_metadata_with_slots(repo_dir, slot_uid)
+            workspace = Workspace(
+                root=ws_root,
+                repo_dir=repo_dir,
+                session_dir=session_dir,
+                context_dir=context_dir,
+                artifacts_dir=artifacts_dir,
+                branch=default_branch,
+                repo_full_name=repo,
+                issue_number="release",
+            )
+            self._populate_natives_cache(workspace, slot_uid=slot_uid)
+            return workspace
+
     def _populate_natives_cache(self, workspace: Workspace, *, slot_uid: int | None = None) -> None:
         """Try to hardlink cached pi-natives artifacts into the worktree.
 
@@ -1062,7 +1182,7 @@ class SandboxManager:
                     extra={"file": str(child), "err": str(exc)},
                 )
 
-    def remove_workspace(self, *, repo: str, number: int) -> None:
+    def remove_workspace(self, *, repo: str, number: int | str) -> None:
         with self._repo_lock(repo):
             ws_root = self.workspace_root(repo, number)
             repo_dir = ws_root / "repo"
@@ -1101,7 +1221,7 @@ class SandboxManager:
             if ws_root.exists():
                 shutil.rmtree(ws_root, ignore_errors=True)
 
-    def reclaim_workspace_caches(self, *, repo: str, number: int) -> bool:
+    def reclaim_workspace_caches(self, *, repo: str, number: int | str) -> bool:
         """Strip re-creatable dependency caches from an idle workspace.
 
         Every task run reinstalls ``node_modules`` (see

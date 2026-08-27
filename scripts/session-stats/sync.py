@@ -49,8 +49,8 @@ except ImportError:
 # --------------------------------------------------------------------------- #
 # Config
 
-SESSIONS_ROOT = Path.home() / ".omp" / "agent" / "sessions"
-DB_PATH = Path.home() / ".omp" / "stats.db"
+SESSIONS_ROOT = Path.home() / ".eros" / "agent" / "sessions"
+DB_PATH = Path.home() / ".eros" / "stats.db"
 TOKENIZER_NAME = "o200k_base"
 SCHEMA_VERSION = 3
 # Bump whenever parse_hashline_input / find_longest_repeat / duplicated_anchors

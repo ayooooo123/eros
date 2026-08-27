@@ -4,7 +4,7 @@
   "name": "@oh-my-pi/typescript-edit-benchmark",
   "version": "0.0.1",
   "description": "Edit benchmark suite using TypeScript source code mutations",
-  "author": "Can Boluk",
+  "author": "Stencil Labs, Inc.",
   "license": "MIT",
   "repository": {
     "type": "git",

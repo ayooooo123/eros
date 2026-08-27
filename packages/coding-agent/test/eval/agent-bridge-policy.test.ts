@@ -368,7 +368,7 @@ describe("runEvalAgent", () => {
 		]);
 	});
 
-	it("inherits non-plan LSP and IRC policy for bridge subagents", async () => {
+	it("keeps bridge kernels independent while inheriting non-plan LSP and IRC policy", async () => {
 		mockAgents();
 		const runSpy = vi.spyOn(taskExecutor, "runSubprocess").mockImplementation(async options => singleResult(options));
 		// makeSession() defaults to enableLsp: true and task.enableLsp: true.
@@ -381,6 +381,7 @@ describe("runEvalAgent", () => {
 		expect(options.enableLsp).toBe(true);
 		expect(options.enableIrc).toBe(true);
 		expect(options.keepAlive).toBe(false);
+		expect(options.parentEvalSessionId).toBeUndefined();
 	});
 
 	it("registers temp artifact dirs for in-memory handle results so agent URLs resolve", async () => {
@@ -401,9 +402,18 @@ describe("runEvalAgent", () => {
 	it("unregisters eval subagents through the bridge cleanup path", async () => {
 		AgentRegistry.resetGlobalForTests();
 		mockAgents();
+		const order: string[] = [];
 		let disposed = false;
 		const cleanupSession = {
+			prepareForHeadlessAdvisorDrain: () => {
+				order.push("prepare");
+			},
+			waitForAdvisorCatchup: async () => {
+				order.push("catchup");
+				return true;
+			},
 			dispose: async () => {
+				order.push("dispose");
 				disposed = true;
 			},
 		} as unknown as AgentSession;
@@ -430,6 +440,9 @@ describe("runEvalAgent", () => {
 		await runEvalAgent({ prompt: "hello", label: "Cleanup" }, { session: makeSession() });
 
 		expect(disposed).toBe(true);
+		// The advisor's final-turn review is drained before the runtime is torn
+		// down (#9505): a graceful subagent finish must not abandon the yield.
+		expect(order).toEqual(["prepare", "catchup", "dispose"]);
 		expect(AgentRegistry.global().get("Cleanup")).toBeUndefined();
 		expect(
 			AgentRegistry.global()
@@ -1377,11 +1390,11 @@ describe("runEvalAgent isolation", () => {
 		vi.spyOn(isolationRunner, "runIsolatedSubprocess").mockImplementation(async opts =>
 			singleResult(opts.baseOptions, {
 				output: "ran",
-				branchName: `omp/task/${opts.agentId}`,
+				branchName: `eros/task/${opts.agentId}`,
 			}),
 		);
 		vi.spyOn(isolationRunner, "mergeIsolatedChanges").mockResolvedValue({
-			summary: "\n\n<system-notification>Branch merge failed: omp/task/x.\nConflict: foo.ts</system-notification>",
+			summary: "\n\n<system-notification>Branch merge failed: eros/task/x.\nConflict: foo.ts</system-notification>",
 			changesApplied: false,
 			hadAnyChanges: false,
 			mergedBranchForNestedPatches: false,
@@ -1389,7 +1402,7 @@ describe("runEvalAgent isolation", () => {
 
 		const session = isolatedSession({ "task.isolation.merge": "branch" });
 		await expect(runEvalAgent({ prompt: "scout", isolated: true }, { session })).rejects.toThrow(
-			/isolated apply failed.*Branch merge failed.*Captured branch preserved as omp\/task\//s,
+			/isolated apply failed.*Branch merge failed.*Captured branch preserved as eros\/task\//s,
 		);
 	});
 
@@ -1496,7 +1509,7 @@ describe("runEvalAgent isolation", () => {
 		vi.spyOn(isolationRunner, "runIsolatedSubprocess").mockImplementation(async opts =>
 			singleResult(opts.baseOptions, {
 				output: "branched",
-				branchName: `omp/task/${opts.agentId}`,
+				branchName: `eros/task/${opts.agentId}`,
 			}),
 		);
 		const mergeSpy = vi.spyOn(isolationRunner, "mergeIsolatedChanges");
@@ -1505,8 +1518,8 @@ describe("runEvalAgent isolation", () => {
 		const result = await runEvalAgent({ prompt: "scout", isolated: true, apply: false }, { session });
 
 		expect(mergeSpy).not.toHaveBeenCalled();
-		expect(result.details.branchName).toMatch(/^omp\/task\//);
-		expect(result.text).toContain("omp/task/");
+		expect(result.details.branchName).toMatch(/^eros\/task\//);
+		expect(result.text).toContain("eros/task/");
 		expect(result.text).toContain("apply=false");
 	});
 

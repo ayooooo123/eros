@@ -39,7 +39,7 @@ export interface ComposerShapePreviewOptions {
 	status?: ComposerPreviewStatusSource;
 }
 /** Stand-in session title shown while the previewed session is unnamed. */
-const PREVIEW_TITLE = "omp";
+const PREVIEW_TITLE = "eros";
 
 export function renderComposerShapePreview(
 	shape: ComposerShape,

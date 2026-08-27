@@ -356,7 +356,7 @@ describe("HookEditorComponent prompt-style mode", () => {
 		const rendered = renderText(component);
 		const lines = renderLines(component);
 
-		expect(lines[0]).toMatch(/^╭─ Prompt .*╮$/);
+		expect(lines[0]).toMatch(/^╭─ ✦ Prompt .*╮$/);
 		expect(lines.at(-1)).toMatch(/^╰.*╯$/);
 		expect(lines.some(line => line.includes("> "))).toBe(true);
 		expect(rendered).toContain("enter or ctrl+q submit  esc cancel");

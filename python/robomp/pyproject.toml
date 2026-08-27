@@ -1,14 +1,16 @@
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "robomp"
 version = "0.1.0"
-description = "Self-hosted GitHub triage/fix bot driving omp --mode rpc"
+description = "Self-hosted GitHub triage/fix bot driving eros --mode rpc"
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [{ name = "robomp" }]
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Stencil Labs, Inc." }]
 dependencies = [
   "fastapi>=0.112",
   "uvicorn[standard]>=0.30",

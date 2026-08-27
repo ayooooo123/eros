@@ -12,7 +12,8 @@ import type {
 	Model,
 	SimpleStreamOptions,
 } from "@oh-my-pi/pi-ai";
-import { type BenchModelRegistry, runBenchCommand } from "@oh-my-pi/pi-coding-agent/cli/bench-cli";
+import { runBenchCommand } from "@oh-my-pi/pi-coding-agent/cli/bench-cli";
+import type { BenchModelRegistry } from "@oh-my-pi/pi-coding-agent/cli/bench-runtime";
 
 const EROS_CACHE_PREFIX_PREAMBLE = "Bench cache prefix — cold metal measurement for Master's harness.";
 const EROS_CACHE_SUFFIX_PREAMBLE = "Bench cache suffix — measure the fuck, no vanity.";
@@ -419,8 +420,9 @@ describe("bench cache mode", () => {
 				stdoutIsTTY: false,
 			},
 		);
-		expect(summary.runs).toBe(10);
-		expect(summary.maxTokens).toBe(512);
+		expect(summary.runs).toBe(9);
+		expect(summary.maxTokens).toBeUndefined();
+		expect(summary.profile).toBe("mix");
 		expect(maxActive).toBe(4);
 		await expect(
 			runBenchCommand(

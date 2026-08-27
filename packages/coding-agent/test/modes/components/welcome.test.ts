@@ -52,17 +52,23 @@ describe("WelcomeComponent", () => {
 	});
 
 	it("sweeps the full-width altar without changing terminal geometry", () => {
+		const restoreRows = stubStdoutRows(48);
 		const now = vi.spyOn(performance, "now").mockReturnValue(0);
 		const welcome = new WelcomeComponent("1.0.0", "model", "provider");
-		welcome.playIntro(() => {});
-		const opening = welcome.render(80);
+		try {
+			welcome.playIntro(() => {});
+			const opening = welcome.render(80);
 
-		now.mockReturnValue(1500);
-		const midStroke = welcome.render(80);
+			now.mockReturnValue(1500);
+			const midStroke = welcome.render(80);
 
-		expect(midStroke).not.toEqual(opening);
-		expect([...opening, ...midStroke].every(line => visibleWidth(line) <= 80)).toBe(true);
-		welcome.settleAfterFirstPrompt();
+			expect(midStroke).not.toEqual(opening);
+			expect([...opening, ...midStroke].every(line => visibleWidth(line) <= 80)).toBe(true);
+			welcome.settleAfterFirstPrompt();
+		} finally {
+			welcome.stopIntro();
+			restoreRows();
+		}
 	});
 
 	it("weights [NEW] tips above ordinary tips in selection", () => {

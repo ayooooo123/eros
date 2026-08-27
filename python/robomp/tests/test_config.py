@@ -15,6 +15,20 @@ def test_settings_load_from_env(env: dict[str, str]) -> None:
     assert not cfg.allows("other/widget")
 
 
+def test_eros_command_is_default(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
+    monkeypatch.delenv("ROBOMP_EROS_COMMAND", raising=False)
+    reset_settings_cache()
+    cfg = Settings()  # type: ignore[call-arg]
+    assert cfg.eros_command == "eros"
+
+
+def test_eros_command_alias_overrides_default(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
+    monkeypatch.setenv("ROBOMP_EROS_COMMAND", "/opt/eros/bin/eros")
+    reset_settings_cache()
+    cfg = Settings()  # type: ignore[call-arg]
+    assert cfg.eros_command == "/opt/eros/bin/eros"
+
+
 def test_settings_missing_required(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
     """Empty out every credential source: validator MUST trip the
     'no GitHub access configured' branch. The `env` fixture keeps the other
@@ -64,26 +78,62 @@ def test_allowlist_csv_parsing(monkeypatch: pytest.MonkeyPatch, env: dict[str, s
     assert cfg.repo_allowlist == frozenset({"alpha/one", "beta/two", "gamma/three"})
 
 
-def test_blank_replay_token_treated_as_disabled(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
-    monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "")
+@pytest.mark.parametrize(
+    ("env_name", "raw_token"),
+    [
+        ("EROS_REPLAY_TOKEN", ""),
+        ("EROS_REPLAY_TOKEN", "   "),
+        ("ROBOMP_REPLAY_TOKEN", ""),
+        ("ROBOMP_REPLAY_TOKEN", "   "),
+    ],
+)
+def test_blank_replay_token_treated_as_disabled(
+    monkeypatch: pytest.MonkeyPatch,
+    env: dict[str, str],
+    env_name: str,
+    raw_token: str,
+) -> None:
+    monkeypatch.delenv("EROS_REPLAY_TOKEN", raising=False)
+    monkeypatch.delenv("ROBOMP_REPLAY_TOKEN", raising=False)
+    monkeypatch.setenv(env_name, raw_token)
     reset_settings_cache()
     cfg = Settings()  # type: ignore[call-arg]
     assert cfg.replay_token is None
 
 
-def test_whitespace_replay_token_treated_as_disabled(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
-    monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "   ")
-    reset_settings_cache()
-    cfg = Settings()  # type: ignore[call-arg]
-    assert cfg.replay_token is None
-
-
-def test_real_replay_token_preserved(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
-    monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "abc")
+def test_eros_replay_token_loads(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
+    monkeypatch.delenv("ROBOMP_REPLAY_TOKEN", raising=False)
+    monkeypatch.setenv("EROS_REPLAY_TOKEN", "eros-token")
     reset_settings_cache()
     cfg = Settings()  # type: ignore[call-arg]
     assert cfg.replay_token is not None
-    assert cfg.replay_token.get_secret_value() == "abc"
+    assert cfg.replay_token.get_secret_value() == "eros-token"
+
+
+def test_legacy_replay_token_is_fallback(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
+    monkeypatch.delenv("EROS_REPLAY_TOKEN", raising=False)
+    monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "legacy-token")
+    reset_settings_cache()
+    cfg = Settings()  # type: ignore[call-arg]
+    assert cfg.replay_token is not None
+    assert cfg.replay_token.get_secret_value() == "legacy-token"
+
+
+def test_eros_replay_token_wins_over_legacy(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
+    monkeypatch.setenv("EROS_REPLAY_TOKEN", "eros-token")
+    monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "legacy-token")
+    reset_settings_cache()
+    cfg = Settings()  # type: ignore[call-arg]
+    assert cfg.replay_token is not None
+    assert cfg.replay_token.get_secret_value() == "eros-token"
+
+
+def test_blank_eros_replay_token_wins_over_legacy(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
+    monkeypatch.setenv("EROS_REPLAY_TOKEN", "")
+    monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "legacy-token")
+    reset_settings_cache()
+    cfg = Settings()  # type: ignore[call-arg]
+    assert cfg.replay_token is None
 
 
 def test_blank_bot_login_rejected(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
@@ -167,6 +217,22 @@ def test_pick_model_covers_full_pool(monkeypatch: pytest.MonkeyPatch, env: dict[
     cfg = Settings()  # type: ignore[call-arg]
     seen = {cfg.pick_model() for _ in range(500)}
     assert seen == {"a", "b", "c"}
+
+
+def test_release_model_falls_back_to_general_pool(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
+    monkeypatch.setenv("ROBOMP_MODEL", "a")
+    reset_settings_cache()
+    cfg = Settings()  # type: ignore[call-arg]
+    assert cfg.release_model_pool == ("a",)
+    assert cfg.pick_release_model() == "a"
+
+
+def test_release_model_pool_csv_parses(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> None:
+    monkeypatch.setenv("ROBOMP_MODEL", "fallback")
+    monkeypatch.setenv("ROBOMP_RELEASE_MODEL", " release-a, release-b ,, ")
+    reset_settings_cache()
+    cfg = Settings()  # type: ignore[call-arg]
+    assert cfg.release_model_pool == ("release-a", "release-b")
 
 
 def test_max_concurrency_default_is_8(env: dict[str, str]) -> None:

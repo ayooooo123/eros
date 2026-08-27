@@ -260,6 +260,7 @@ async def test_run_rpc_omits_continue_when_session_empty(
     assert client_kwargs["env"]["HOME"] == str(agent_home)
     assert client_kwargs["env"]["GITHUB_TOKEN"] == ""
     assert client_kwargs["env"]["GITHUB_WEBHOOK_SECRET"] == ""
+    assert client_kwargs["env"]["EROS_REPLAY_TOKEN"] == ""
     assert client_kwargs["env"]["ROBOMP_REPLAY_TOKEN"] == ""
     assert client_kwargs["env"]["ROBOMP_GH_PROXY_HMAC_KEY"] == ""
     assert client_kwargs["user"] is None
@@ -275,25 +276,25 @@ def test_build_extra_env_stages_agent_home(tmp_path: Path, settings: Settings, m
 
     agent_dir = stage_home / ".agent"
     agent_rules_dir = agent_dir / "rules"
-    omp_agent_dir = stage_home / ".omp" / "agent"
+    eros_agent_dir = stage_home / ".eros" / "agent"
     agent_rules_dir.mkdir(parents=True)
-    omp_agent_dir.mkdir(parents=True)
+    eros_agent_dir.mkdir(parents=True)
     (agent_dir / "AGENTS.md").write_text("agent instructions\n", encoding="utf-8")
     (agent_rules_dir / "rule.md").write_text("rule\n", encoding="utf-8")
-    (omp_agent_dir / "models.yml").write_text("models: []\n", encoding="utf-8")
+    (eros_agent_dir / "models.yml").write_text("models: []\n", encoding="utf-8")
 
     env = worker._build_extra_env(settings)
 
     assert env["HOME"] == str(agent_home)
     assert (agent_home / ".agent" / "AGENTS.md").is_file()
     assert (agent_home / ".agent" / "rules" / "rule.md").is_file()
-    assert (agent_home / ".omp" / "agent" / "models.yml").is_file()
+    assert (agent_home / ".eros" / "agent" / "models.yml").is_file()
     assert (agent_home / ".agent").stat().st_mode & 0o777 == 0o755
     assert (agent_home / ".agent" / "AGENTS.md").stat().st_mode & 0o777 == 0o644
     assert (agent_home / ".agent" / "rules").stat().st_mode & 0o777 == 0o755
     assert (agent_home / ".agent" / "rules" / "rule.md").stat().st_mode & 0o777 == 0o644
-    assert (agent_home / ".omp" / "agent").stat().st_mode & 0o777 == 0o755
-    assert (agent_home / ".omp" / "agent" / "models.yml").stat().st_mode & 0o777 == 0o644
+    assert (agent_home / ".eros" / "agent").stat().st_mode & 0o777 == 0o755
+    assert (agent_home / ".eros" / "agent" / "models.yml").stat().st_mode & 0o777 == 0o644
 
 
 @pytest.mark.asyncio
@@ -318,6 +319,7 @@ async def test_run_rpc_omits_home_when_agent_home_absent(
     assert "HOME" not in client_kwargs["env"]
     assert client_kwargs["env"]["GITHUB_TOKEN"] == ""
     assert client_kwargs["env"]["GITHUB_WEBHOOK_SECRET"] == ""
+    assert client_kwargs["env"]["EROS_REPLAY_TOKEN"] == ""
     assert client_kwargs["env"]["ROBOMP_REPLAY_TOKEN"] == ""
     assert client_kwargs["env"]["ROBOMP_GH_PROXY_HMAC_KEY"] == ""
 
@@ -338,12 +340,12 @@ async def test_run_rpc_uses_workspace_xdg_dirs_without_slot(tmp_path: Path, sett
         loop.close()
 
     env = _FakeRpcClient.instances[0].kwargs["env"]
-    xdg_root = inputs.workspace.root / ".omp-xdg"
+    xdg_root = inputs.workspace.root / ".eros-xdg"
     for key in ("XDG_DATA_HOME", "XDG_STATE_HOME", "XDG_CACHE_HOME"):
         path = Path(env[key])
         assert path.is_relative_to(xdg_root)
-        assert (path / "omp").is_dir()
-    tmpdir = inputs.workspace.root / ".omp-tmp"
+        assert (path / "eros").is_dir()
+    tmpdir = inputs.workspace.root / ".eros-tmp"
     assert env["TMPDIR"] == str(tmpdir)
     assert env["TMP"] == str(tmpdir)
     assert env["TEMP"] == str(tmpdir)
@@ -384,7 +386,7 @@ async def test_run_rpc_uses_workspace_xdg_dirs_for_slot_without_chown(
     for key in ("XDG_DATA_HOME", "XDG_STATE_HOME", "XDG_CACHE_HOME"):
         base = Path(env[key])
         assert base.is_dir()
-        assert (base / "omp").is_dir()
+        assert (base / "eros").is_dir()
     assert Path(env["BUN_INSTALL_CACHE_DIR"]).is_dir()
     assert chown_calls == []
 
@@ -630,7 +632,8 @@ async def test_run_rpc_sends_reminder_when_pr_class_quits_early(tmp_path: Path, 
     # kickoff + 2 reminders (default ROBOMP_TASK_COMPLETION_MAX_REMINDERS=2)
     assert len(fake.prompts) == 1 + settings.task_completion_max_reminders
     assert fake.prompts[0] == "kickoff"
-    assert all("terminal action" in p.lower() or "open the pr" in p.lower() for p in fake.prompts[1:])
+    terminal_tools = {"gh_open_pr", "mark_unable_to_reproduce", "abort_task"}
+    assert all(terminal_tools <= set(prompt.split("`")) for prompt in fake.prompts[1:])
 
 
 @pytest.mark.asyncio
@@ -1032,3 +1035,69 @@ def test_capture_natives_cache_records_on_success(
     assert repo == "acme/widgets"
     assert key == "cafef00d"
     assert native_dir == inputs.workspace.repo_dir / "packages" / "natives" / "native"
+
+
+def _release_inputs(
+    tmp_path: Path,
+    settings: Settings,
+    *,
+    session_has_jsonl: bool,
+) -> tuple[worker.TaskInputs, SimpleNamespace]:
+    inputs, bindings = _make_inputs(tmp_path, settings, session_has_jsonl=session_has_jsonl)
+    inputs.issue = None
+    inputs.release = worker.ReleaseTaskContext(
+        tag="v17.2.8",
+        version="17.2.8",
+        round=2,
+        max_rounds=5,
+        head_sha="abc",
+        default_branch="main",
+        failures_text="tests failed",
+        run_urls=("https://example/run",),
+    )
+    bindings.issue = None
+    bindings.issue_key = "acme/widgets#v17.2.8"
+    return inputs, bindings
+
+
+def test_release_prompt_routes_fresh_and_resumed_sessions(
+    tmp_path: Path,
+    settings: Settings,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs, _bindings = _release_inputs(tmp_path, settings, session_has_jsonl=False)
+    monkeypatch.setattr(worker.persona, "kickoff_release", lambda **_kwargs: "fresh", raising=False)
+    monkeypatch.setattr(worker.persona, "followup_release", lambda **_kwargs: "resumed", raising=False)
+    kwargs = {
+        "comment": None,
+        "pr_number": None,
+        "review_payload": None,
+    }
+    assert worker._build_prompt("handle_release_ci", inputs, resuming=False, **kwargs) == "fresh"
+    assert worker._build_prompt("handle_release_ci", inputs, resuming=True, **kwargs) == "resumed"
+
+
+@pytest.mark.asyncio
+async def test_release_task_reminds_until_terminal_tool_runs(
+    tmp_path: Path,
+    settings: Settings,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs, bindings = _release_inputs(tmp_path, settings, session_has_jsonl=False)
+    monkeypatch.setattr(worker.persona, "system_append_release", lambda **_kwargs: "SYS RELEASE", raising=False)
+    monkeypatch.setattr(worker.persona, "followup_release", lambda **_kwargs: "retag or abort", raising=False)
+    loop = asyncio.new_event_loop()
+    try:
+        worker._run_rpc_blocking(
+            inputs,
+            task_kind="handle_release_ci",
+            prompt="kickoff",
+            loop=loop,
+            bindings=bindings,  # type: ignore[arg-type]
+        )
+    finally:
+        loop.close()
+    fake = _FakeRpcClient.instances[0]
+    assert fake.kwargs["append_system_prompt"] == "SYS RELEASE"
+    assert fake.kwargs["model"] in settings.release_model_pool
+    assert fake.prompts == ["kickoff", *(["retag or abort"] * settings.task_completion_max_reminders)]

@@ -41,7 +41,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 
-DB_PATH = Path.home() / ".omp" / "stats.db"
+DB_PATH = Path.home() / ".eros" / "stats.db"
 OUT_DIR = Path(__file__).resolve().parent / "out"
 DEFAULT_SINCE = "2026-05-04"
 

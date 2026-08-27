@@ -186,8 +186,8 @@ export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails>
 	 *  by retagging the same text at a lower or equal severity. */
 	#deliveredNoteSeverities = new Map<string, number>();
 	#inProgressUpdate = false;
-	/** Notes held during a WIP review under `buffer` mode until the next completed update. */
-	#bufferedNotes: Array<{ note: string; severity?: AdvisorSeverity }> = [];
+	/** Notes withheld while the primary is mid-turn, in arrival order. */
+	#deferredNotes: { key: string; note: string; severity?: AdviseDetails["severity"] }[] = [];
 	#wipNotes: AdvisorWipNotesMode = "blocker";
 
 	constructor(
@@ -197,33 +197,29 @@ export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails>
 		if (opts?.wipNotes) this.#wipNotes = opts.wipNotes;
 	}
 
-	/** Hot-reload the WIP delivery mode from settings without rebuilding the tool. */
+	/** Hot-reload the WIP delivery mode without rebuilding the tool. */
 	setWipNotesMode(mode: AdvisorWipNotesMode): void {
 		this.#wipNotes = mode;
-		// Leaving buffer mode with held notes: flush so lashes are not stranded.
-		if (mode !== "buffer" && this.#bufferedNotes.length > 0 && !this.#inProgressUpdate) {
-			this.#flushBufferedNotes();
-		}
+		if (mode === "all") this.#flushDeferredNotes();
 	}
 
 	/**
 	 * Mark whether the next advisor prompt reviews an in-progress primary turn.
 	 *
-	 * Under `advisor.wipNotes: "blocker"` (default), non-blockers filed
-	 * during WIP are dropped. Under `"buffer"`, they queue and flush when the
-	 * next completed update begins. Under `"all"`, every severity delivers live.
+	 * Under `"blocker"` (default) and `"buffer"`, non-blockers filed during WIP
+	 * queue and flush when the turn completes. Under `"all"`, every severity
+	 * delivers live.
 	 */
 	beginUpdate(inProgress: boolean): void {
 		const wasInProgress = this.#inProgressUpdate;
 		this.#inProgressUpdate = inProgress;
-		// Completed-update boundary: release anything held during WIP.
+		// Turn just completed: flush every note withheld mid-turn, oldest first.
 		if (wasInProgress && !inProgress) {
-			this.#flushBufferedNotes();
+			this.#flushDeferredNotes();
 		}
-		// Also flush when a fresh completed update starts (covers the common
-		// beginUpdate(false) call at the top of a non-WIP review).
+		// Also cover a fresh completed update that begins without a WIP transition.
 		if (!inProgress) {
-			this.#flushBufferedNotes();
+			this.#flushDeferredNotes();
 		}
 	}
 
@@ -231,27 +227,16 @@ export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails>
 	resetDeliveredNotes(): void {
 		this.#deliveredNoteSeverities.clear();
 		this.#inProgressUpdate = false;
-		this.#bufferedNotes = [];
+		this.#deferredNotes = [];
 	}
 
-	#flushBufferedNotes(): void {
-		if (this.#bufferedNotes.length === 0) return;
-		const pending = this.#bufferedNotes;
-		this.#bufferedNotes = [];
-		for (const entry of pending) {
-			this.#deliver(entry.note, entry.severity);
+	#flushDeferredNotes(): void {
+		if (this.#deferredNotes.length === 0) return;
+		const pending = this.#deferredNotes;
+		this.#deferredNotes = [];
+		for (const { note, severity } of pending) {
+			this.#deliver(note, severity);
 		}
-	}
-
-	/** Shared deliver path: severity-rank dedupe then forward to the host. */
-	#deliver(note: string, severity?: AdvisorSeverity): "delivered" | "duplicate" {
-		const key = advisorNoteDedupeKey(note);
-		const rank = advisorSeverityRank(severity);
-		const previousRank = this.#deliveredNoteSeverities.get(key) ?? 0;
-		if (rank <= previousRank) return "duplicate";
-		this.#deliveredNoteSeverities.set(key, rank);
-		this.onAdvice(note, severity);
-		return "delivered";
 	}
 
 	async execute(
@@ -263,38 +248,42 @@ export class AdviseTool implements AgentTool<typeof adviseSchema, AdviseDetails>
 	): Promise<AgentToolResult<AdviseDetails>> {
 		const isNonBlocker = args.severity !== "blocker";
 		if (this.#inProgressUpdate && isNonBlocker && this.#wipNotes !== "all") {
-			if (this.#wipNotes === "buffer") {
-				// Hold until the next completed-update boundary. Dedupe against
-				// already-delivered text so a WIP rephrase of a prior lash does
-				// not queue a duplicate; still allow genuine escalations later.
-				const key = advisorNoteDedupeKey(args.note);
-				const rank = advisorSeverityRank(args.severity);
-				const previousRank = this.#deliveredNoteSeverities.get(key) ?? 0;
-				if (rank > previousRank) {
-					// Replace any lower-severity buffered copy of the same note.
-					this.#bufferedNotes = this.#bufferedNotes.filter(entry => advisorNoteDedupeKey(entry.note) !== key);
-					this.#bufferedNotes.push({ note: args.note, severity: args.severity });
-				}
+			const key = advisorNoteDedupeKey(args.note);
+			const pending = this.#deferredNotes.find(item => item.key === key);
+			if (!pending) {
+				this.#deferredNotes.push({ key, note: args.note, severity: args.severity });
+			} else if (advisorSeverityRank(args.severity) > advisorSeverityRank(pending.severity)) {
+				pending.severity = args.severity;
 			}
-			// "blocker" mode: drop. Either way Mistress still hears "Recorded."
 			return {
-				content: [{ type: "text", text: "Recorded." }],
+				content: [
+					{
+						type: "text",
+						text: "Deferred — primary is mid-turn; this note will be delivered automatically when the turn completes. Do not re-raise the same point.",
+					},
+				],
 				details: { note: args.note, severity: args.severity },
 				useless: true,
 			};
 		}
-		const outcome = this.#deliver(args.note, args.severity);
-		if (outcome === "duplicate") {
-			return {
-				content: [{ type: "text", text: "Duplicate advice ignored." }],
-				details: { note: args.note, severity: args.severity },
-				useless: true,
-			};
-		}
+		const delivered = this.#deliver(args.note, args.severity);
 		return {
-			content: [{ type: "text", text: "Recorded." }],
+			content: [{ type: "text", text: delivered ? "Recorded." : "Duplicate advice ignored." }],
 			details: { note: args.note, severity: args.severity },
 			useless: true,
 		};
+	}
+
+	/** Run one note through the escalation-rank dedupe and, if it passes, route it
+	 *  to the primary. Returns true when the note was actually delivered. Shared by
+	 *  the live path (`execute`) and the deferred flush (`beginUpdate(false)`). */
+	#deliver(note: string, severity?: AdviseDetails["severity"]): boolean {
+		const key = advisorNoteDedupeKey(note);
+		const rank = advisorSeverityRank(severity);
+		const previousRank = this.#deliveredNoteSeverities.get(key) ?? 0;
+		if (rank <= previousRank) return false;
+		this.#deliveredNoteSeverities.set(key, rank);
+		this.onAdvice(note, severity);
+		return true;
 	}
 }

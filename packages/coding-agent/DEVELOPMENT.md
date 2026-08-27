@@ -20,7 +20,7 @@ Run from `packages/coding-agent/` (or add `--cwd=packages/coding-agent`):
 | Lint only | `bun run lint` |
 | Tests | `bun run test` |
 | Autofix: lint + format prompts | `bun run fix` |
-| Build the `dist/omp` binary | `bun run build` |
+| Build the `dist/eros-omp` binary | `bun run build` |
 
 Never invoke `tsc`/`npx tsc` directly — `bun run check` is the typecheck gate. After
 changing the React tool renderers under `collab-web/src/tool-render/`, rebuild them
@@ -98,7 +98,7 @@ Top-level entry modules: `cli.ts`, `main.ts`, `sdk.ts`, `index.ts` (SDK barrel),
 - [models.md](../../docs/models.md), [providers.md](../../docs/providers.md), [adding-a-provider.md](../../docs/adding-a-provider.md)
 - [local-models.md](../../docs/local-models.md)
 - [provider-streaming-internals.md](../../docs/provider-streaming-internals.md), [ai-schema-normalize.md](../../docs/ai-schema-normalize.md)
-- [toolconv/](../../docs/toolconv/) — per-family tool-call conversion (anthropic, harmony, qwen3, deepseek, glm-4.5, kimi-k2, gemini, gemma, pi-native); see also [ERRATA-GPT5-HARMONY.md](../../docs/ERRATA-GPT5-HARMONY.md)
+- [toolconv/](../../docs/toolconv/) — per-family tool-call conversion (anthropic, deepseek, gemini, gemma, glm-4.5, harmony, hermes, kimi-k2, minimax, pi-native, qwen3, xml); see also [ERRATA-GPT5-HARMONY.md](../../docs/ERRATA-GPT5-HARMONY.md)
 - [keybindings.md](../../docs/keybindings.md)
 - [secrets.md](../../docs/secrets.md), [auth-broker-gateway.md](../../docs/auth-broker-gateway.md), [install-id.md](../../docs/install-id.md)
 - [system-prompt-customization.md](../../docs/system-prompt-customization.md)

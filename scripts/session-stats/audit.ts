@@ -44,9 +44,9 @@ import { type GeneratedProvider, getBundledModel } from "@oh-my-pi/pi-catalog/mo
 import { getAgentDbPath, isEnoent } from "@oh-my-pi/pi-utils";
 import SYSTEM_PROMPT from "./audit-prompt.md" with { type: "text" };
 
-const SESSIONS_ROOT = path.join(os.homedir(), ".omp", "agent", "sessions");
+const SESSIONS_ROOT = path.join(os.homedir(), ".eros", "agent", "sessions");
 const DEFAULT_MODEL = "anthropic/claude-sonnet-4-6";
-const CACHE_PATH = path.join(os.homedir(), ".omp", "stats-audit-cache.json");
+const CACHE_PATH = path.join(os.homedir(), ".eros", "stats-audit-cache.json");
 
 // --------------------------------------------------------------------------
 // CLI

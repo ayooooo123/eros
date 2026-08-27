@@ -1,9 +1,9 @@
 {
   "name": "@oh-my-pi/pi-natives",
-  "version": "17.4.0",
+  "version": "18.0.6",
   "description": "Native Rust bindings for PDF conversion, audio, WebRTC, grep, clipboard, image processing, syntax highlighting, PTY, and shell operations via N-API",
   "type": "module",
-  "author": "Can Boluk",
+  "author": "Stencil Labs, Inc.",
   "license": "MIT",
   "repository": {
     "type": "git",

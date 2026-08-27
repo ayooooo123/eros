@@ -7,7 +7,7 @@ from functools import cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr, field_validator, model_validator
+from pydantic import AliasChoices, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ThinkingLevel = Literal["off", "low", "medium", "high", "xhigh", "max"]
@@ -38,6 +38,13 @@ class Settings(BaseSettings):
     git_author_email: str = Field(..., alias="ROBOMP_GIT_AUTHOR_EMAIL")
     repo_allowlist_raw: str = Field("", alias="ROBOMP_REPO_ALLOWLIST")
     pr_review_enabled: bool = Field(True, alias="ROBOMP_PR_REVIEW_ENABLED")
+
+    # Release sentinel
+    release_sentinel_enabled: bool = Field(False, alias="ROBOMP_RELEASE_SENTINEL_ENABLED")
+    release_commit_prefix: str = Field("chore: bump version to ", alias="ROBOMP_RELEASE_COMMIT_PREFIX")
+    release_max_rounds: int = Field(5, alias="ROBOMP_RELEASE_MAX_ROUNDS")
+    release_task_timeout_seconds: float = Field(3600.0, alias="ROBOMP_RELEASE_TASK_TIMEOUT_SECONDS")
+    release_model: str | None = Field(None, alias="ROBOMP_RELEASE_MODEL")
 
     # gh-proxy. Set BOTH to route GitHub through the proxy; leave both empty
     # to keep PAT-on-orchestrator behavior. Mixing the two (PAT + proxy) is
@@ -82,14 +89,14 @@ class Settings(BaseSettings):
     # agent having reached a terminal tool (`gh_open_pr`,
     # `mark_unable_to_reproduce`, `abort_task`) for a `bug`/`documentation`
     # classification, the driver sends up to this many "you stopped before
-    # opening a PR — continue" reminder prompts into the same omp session.
+    # opening a PR — continue" reminder prompts into the same Eros session.
     # Set to 0 to disable.
     task_completion_max_reminders: int = Field(2, alias="ROBOMP_TASK_COMPLETION_MAX_REMINDERS")
-    omp_command: str = Field("omp", alias="ROBOMP_OMP_COMMAND")
+    eros_command: str = Field("eros", alias="ROBOMP_EROS_COMMAND")
 
     # Graceful shutdown (Phase B). On SIGTERM the dispatcher stops claiming
     # new work, then waits up to `drain` seconds for in-flight events to
-    # complete cleanly; any still running after that get their omp
+    # complete cleanly; any still running after that get their Eros
     # subprocess killed and the row left in `running` so it requeues on
     # next start. Sum of both MUST stay below the compose `stop_grace_period`.
     shutdown_drain_timeout_seconds: float = Field(25.0, alias="ROBOMP_SHUTDOWN_DRAIN_TIMEOUT_SECONDS")
@@ -104,8 +111,12 @@ class Settings(BaseSettings):
     bind_host: str = Field("0.0.0.0", alias="ROBOMP_BIND_HOST")
     bind_port: int = Field(8080, alias="ROBOMP_BIND_PORT")
 
-    # Dev-only replay header value; if empty, /replay is disabled
-    replay_token: SecretStr | None = Field(None, alias="ROBOMP_REPLAY_TOKEN")
+    # Dev-only replay header value; the EROS name is preferred. Empty values
+    # disable /replay; ROBOMP_REPLAY_TOKEN remains a legacy fallback.
+    replay_token: SecretStr | None = Field(
+        None,
+        validation_alias=AliasChoices("EROS_REPLAY_TOKEN", "ROBOMP_REPLAY_TOKEN"),
+    )
 
     # Per-submitter rate limiting. `window_seconds` defines the rolling window;
     # `default` is the per-window cap for unknown/first-time submitters;
@@ -176,9 +187,10 @@ class Settings(BaseSettings):
     @field_validator("replay_token", mode="before")
     @classmethod
     def _blank_replay_disables(cls, value: object) -> object:
-        # Treat empty/whitespace strings as 'disabled'. Without this, an empty
-        # ROBOMP_REPLAY_TOKEN becomes SecretStr("") which the server would
-        # happily compare against an empty X-Robomp-Replay-Token header.
+        # Treat empty/whitespace strings as 'disabled'. Without this,
+        # EROS_REPLAY_TOKEN (or its legacy ROBOMP_REPLAY_TOKEN fallback)
+        # becomes SecretStr("") which the server would happily compare against
+        # an empty X-Robomp-Replay-Token header.
         if isinstance(value, str) and not value.strip():
             return None
         if hasattr(value, "get_secret_value"):
@@ -326,6 +338,18 @@ class Settings(BaseSettings):
     def pick_model(self) -> str:
         """Random selection from the pool (uniform). One-element pools return that one."""
         return random.choice(self.model_pool)
+
+    @property
+    def release_model_pool(self) -> tuple[str, ...]:
+        """Release-specific model pool, falling back to the general pool."""
+        items = [piece.strip() for piece in (self.release_model or "").split(",") if piece.strip()]
+        return tuple(items) or self.model_pool
+
+    def pick_release_model(self) -> str:
+        """Select a release model, falling back to the general selector."""
+        if not self.release_model or not self.release_model.strip():
+            return self.pick_model()
+        return random.choice(self.release_model_pool)
 
     @field_validator("event_retry_delays_raw", mode="before")
     @classmethod

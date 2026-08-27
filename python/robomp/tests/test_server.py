@@ -57,6 +57,14 @@ def _seed_db(settings: Settings) -> None:
         pr_number=42,
     )
     db.set_issue_classification(issue_key("octo/widget", 3), "bug")
+    release = db.upsert_release(
+        repo="octo/widget",
+        tag="v1.2.3",
+        version="1.2.3",
+        current_sha="a" * 40,
+        session_dir="/tmp/release-session",
+    )
+    db.bump_release_round(release.key, failed_sha=release.current_sha)
 
 
 def test_index_serves_dashboard_html(settings: Settings) -> None:
@@ -68,7 +76,7 @@ def test_index_serves_dashboard_html(settings: Settings) -> None:
     # Stable anchors only. The Vite bundle hashes its asset filenames on every
     # build, but the structural skeleton (title, mount node, config script)
     # has to stay intact for the SPA to bootstrap.
-    assert "<title>robomp</title>" in resp.text
+    assert "<title>LYCORPEROS — On Her Knees</title>" in resp.text
     assert 'id="app"' in resp.text
     assert 'id="robomp-config"' in resp.text
     # The sentinel must have been substituted — neither the literal sentinel
@@ -79,7 +87,7 @@ def test_index_serves_dashboard_html(settings: Settings) -> None:
 
 def test_index_substitutes_replay_token(env, monkeypatch: pytest.MonkeyPatch) -> None:
     """When a replay token is set, the config blob exposes it to the SPA."""
-    monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "secret-token-7")
+    monkeypatch.setenv("EROS_REPLAY_TOKEN", "secret-token-7")
     reset_settings_cache()
     cfg = Settings()  # type: ignore[call-arg]
     cfg.ensure_paths()
@@ -133,8 +141,51 @@ def test_api_status_reports_runtime_counts_and_inflight(settings: Settings) -> N
     assert issues[fix_key]["pr_number"] == 42
     assert issues[fix_key]["branch"] == "farm/abc12345/fix"
 
+    releases = {release["key"]: release for release in body["releases"]}
+    assert releases["octo/widget#v1.2.3"]["state"] == "fixing"
+    assert releases["octo/widget#v1.2.3"]["rounds"] == 1
+    assert releases["octo/widget#v1.2.3"]["current_sha"] == "a" * 40
+
     delivery_ids = {e["delivery_id"] for e in body["recent_events"]}
     assert {"d-queued", "d-skipped", "d-running"}.issubset(delivery_ids)
+
+
+def test_releases_endpoint_returns_recent_release_state(settings: Settings) -> None:
+    app = create_app(settings)
+    with TestClient(app) as client:
+        db = get_database(settings.sqlite_path)
+        row = db.upsert_release(
+            repo="octo/widget",
+            tag="v2.0.0",
+            version="2.0.0",
+            current_sha="b" * 40,
+            session_dir="/tmp/release-v2",
+        )
+        db.set_release_state(row.key, "failed", error="CI green but GitHub Release missing/draft")
+        updated_row = db.get_release(row.key)
+        assert updated_row is not None
+        resp = client.get("/releases?limit=1")
+    close_database()
+
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "releases": [
+            {
+                "key": "octo/widget#v2.0.0",
+                "repo": "octo/widget",
+                "tag": "v2.0.0",
+                "version": "2.0.0",
+                "state": "failed",
+                "current_sha": "b" * 40,
+                "last_failed_sha": None,
+                "rounds": 0,
+                "last_error": "CI green but GitHub Release missing/draft",
+                "session_dir": "/tmp/release-v2",
+                "created_at": updated_row.created_at,
+                "updated_at": updated_row.updated_at,
+            }
+        ]
+    }
 
 
 def test_api_status_reports_current_issue_event_state(settings: Settings) -> None:
@@ -323,7 +374,7 @@ async def test_await_terminal_state_times_out_with_current_state(db: Database) -
 
 def _enable_replay(monkeypatch: pytest.MonkeyPatch) -> str:
     token = "trigger-secret"
-    monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", token)
+    monkeypatch.setenv("EROS_REPLAY_TOKEN", token)
     reset_settings_cache()
     return token
 
@@ -392,7 +443,7 @@ def test_trigger_triage_fetches_and_enqueues(env, monkeypatch: pytest.MonkeyPatc
         resp = client.post(
             "/api/trigger",
             json={"mode": "triage", "issue": "octo/widget#7"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
 
@@ -437,7 +488,7 @@ def test_trigger_triage_conflicts_when_manual_delivery_is_active(
         resp = client.post(
             "/api/trigger",
             json={"mode": "triage", "issue": "octo/widget#7"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         row = get_database(cfg.sqlite_path).get_event(delivery)
     close_database()
@@ -507,7 +558,7 @@ def test_trigger_triage_replaces_inactive_manual_delivery(env, monkeypatch: pyte
         resp = client.post(
             "/api/trigger",
             json={"mode": "triage", "issue": "octo/widget#7"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         row = get_database(cfg.sqlite_path).get_event(delivery)
     close_database()
@@ -559,7 +610,7 @@ def test_trigger_triage_rejects_pull_request_issue_payload(env, monkeypatch: pyt
         resp = client.post(
             "/api/trigger",
             json={"mode": "triage", "issue": "octo/widget#7"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         assert get_database(cfg.sqlite_path).get_event("manual-octo__widget-7") is None
     close_database()
@@ -580,7 +631,7 @@ def test_trigger_triage_rejects_repo_not_in_allowlist(env, monkeypatch: pytest.M
         resp = client.post(
             "/api/trigger",
             json={"mode": "triage", "issue": "evil/repo#1"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
     assert resp.status_code == 403
@@ -610,7 +661,7 @@ def test_trigger_retry_by_delivery_rejects_active_events(
         resp = client.post(
             "/api/trigger",
             json={"mode": "retry", "delivery_id": f"d-{state}"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         assert resp.status_code == 409
         assert state in resp.json()["detail"]
@@ -629,7 +680,7 @@ def test_trigger_triage_surfaces_github_failure(env, monkeypatch: pytest.MonkeyP
         resp = client.post(
             "/api/trigger",
             json={"mode": "triage", "issue": "octo/widget#999"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
     assert resp.status_code == 502
@@ -665,7 +716,7 @@ def test_trigger_retry_by_delivery_id_requeues(env, monkeypatch: pytest.MonkeyPa
         resp = client.post(
             "/api/trigger",
             json={"mode": "retry", "delivery_id": "d-old"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         assert resp.status_code == 202
         assert get_database(cfg.sqlite_path).get_event("d-old").state == "queued"
@@ -718,7 +769,7 @@ def test_trigger_retry_by_issue_finds_latest_non_skipped_event(env, monkeypatch:
         resp = client.post(
             "/api/trigger",
             json={"mode": "retry", "issue": "octo/widget#9"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         body = resp.json()
         assert resp.status_code == 202, body
@@ -757,7 +808,7 @@ def test_trigger_retry_by_issue_rejects_active_latest_event(env, monkeypatch: py
         resp = client.post(
             "/api/trigger",
             json={"mode": "retry", "issue": "octo/widget#10"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         assert resp.status_code == 409
         assert "running" in resp.json()["detail"]
@@ -784,7 +835,7 @@ def test_trigger_retry_by_issue_rejects_repo_not_in_allowlist(env, monkeypatch: 
         resp = client.post(
             "/api/trigger",
             json={"mode": "retry", "issue": "evil/repo#1"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         assert resp.status_code == 403
         assert "ROBOMP_REPO_ALLOWLIST" in resp.json()["detail"]
@@ -801,7 +852,7 @@ def test_trigger_retry_unknown_delivery_404s(env, monkeypatch: pytest.MonkeyPatc
         resp = client.post(
             "/api/trigger",
             json={"mode": "retry", "delivery_id": "nope"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
     assert resp.status_code == 404
@@ -816,7 +867,7 @@ def test_trigger_rejects_bad_mode(env, monkeypatch: pytest.MonkeyPatch) -> None:
         resp = client.post(
             "/api/trigger",
             json={"mode": "explode"},
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
     assert resp.status_code == 400
@@ -1198,7 +1249,7 @@ def test_browse_returns_401_with_replay_enabled_without_valid_token(env, monkeyp
         missing = client.get("/api/github/issues")
         wrong = client.get(
             "/api/github/issues",
-            headers={"X-Robomp-Replay-Token": f"{token}-wrong"},
+            headers={"X-Eros-Replay-Token": f"{token}-wrong"},
         )
     close_database()
 
@@ -1259,7 +1310,7 @@ def test_browse_fans_out_across_allowlist_and_filters_prs(env, monkeypatch: pyte
         _install_github_mock(app, transport)
         resp = client.get(
             "/api/github/issues?state=open&limit=20",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
 
@@ -1297,15 +1348,15 @@ def test_browse_reuses_cache_until_forced_refresh(env, monkeypatch: pytest.Monke
         _install_github_mock(app, httpx.MockTransport(handler))
         first = client.get(
             "/api/github/issues?state=open&limit=20",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         second = client.get(
             "/api/github/issues?state=open&limit=20",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         forced = client.get(
             "/api/github/issues?state=open&limit=20&refresh=1",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
 
@@ -1338,7 +1389,7 @@ def test_browse_cache_updates_from_issue_webhook(env, monkeypatch: pytest.Monkey
         _install_github_mock(app, httpx.MockTransport(handler))
         first = client.get(
             "/api/github/issues?state=open&limit=20",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         assert first.status_code == 200
 
@@ -1361,7 +1412,7 @@ def test_browse_cache_updates_from_issue_webhook(env, monkeypatch: pytest.Monkey
         )
         after = client.get(
             "/api/github/issues?state=open&limit=20",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
 
@@ -1404,7 +1455,7 @@ def test_browse_per_repo_failure_does_not_take_down_panel(env, monkeypatch: pyte
         _install_github_mock(app, transport)
         resp = client.get(
             "/api/github/issues",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
 
@@ -1425,7 +1476,7 @@ def test_browse_rejects_bad_state(env, monkeypatch: pytest.MonkeyPatch) -> None:
         _install_github_mock(app, httpx.MockTransport(lambda r: httpx.Response(500)))
         resp = client.get(
             "/api/github/issues?state=garbage",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
     assert resp.status_code == 400
@@ -1462,7 +1513,7 @@ def test_browse_marks_processed_issues_present_in_db(env, monkeypatch: pytest.Mo
         _install_github_mock(app, transport)
         resp = client.get(
             "/api/github/issues?state=open&limit=20",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
 
@@ -1492,7 +1543,7 @@ def test_browse_processed_flag_is_recomputed_on_cache_hit(env, monkeypatch: pyte
         _install_github_mock(app, httpx.MockTransport(handler))
         first = client.get(
             "/api/github/issues?state=open&limit=20",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
         assert first.status_code == 200
         assert first.json()["issues"][0]["processed"] is False
@@ -1507,7 +1558,7 @@ def test_browse_processed_flag_is_recomputed_on_cache_hit(env, monkeypatch: pyte
 
         second = client.get(
             "/api/github/issues?state=open&limit=20",
-            headers={"X-Robomp-Replay-Token": token},
+            headers={"X-Eros-Replay-Token": token},
         )
     close_database()
 

@@ -9,7 +9,7 @@ describe("runUpdateCommand fetch cancellation", () => {
 		vi.restoreAllMocks();
 	});
 
-	it("checks release metadata with a timeout signal", async () => {
+	it("rejects source-managed EROS before fetching stock release metadata", async () => {
 		let requestSignal: AbortSignal | undefined;
 		vi.spyOn(console, "log").mockImplementation(() => {});
 		const fetchStub = Object.assign(
@@ -21,9 +21,8 @@ describe("runUpdateCommand fetch cancellation", () => {
 		);
 		vi.spyOn(globalThis, "fetch").mockImplementation(fetchStub);
 
-		await runUpdateCommand({ force: false, check: true });
-
-		expect(requestSignal).toBeInstanceOf(AbortSignal);
+		await expect(runUpdateCommand({ force: false, check: true })).rejects.toThrow("EROS core is source-managed");
+		expect(requestSignal).toBeUndefined();
 	});
 });
 
@@ -72,6 +71,15 @@ describe("getLatestRelease rename pointers", () => {
 			"https://registry.npmjs.org/@oh-my-pi/pi-coding-agent/latest",
 			"https://registry.npmjs.org/@new/omp/latest",
 		]);
+	});
+	it("fetches the canary dist-tag when checking the canary channel", async () => {
+		const urls = stubRegistry({
+			"@oh-my-pi/pi-coding-agent": { version: "999.0.0-canary.1" },
+		});
+
+		await getLatestRelease({ channel: "canary" });
+
+		expect(urls).toEqual(["https://registry.npmjs.org/@oh-my-pi/pi-coding-agent/canary"]);
 	});
 
 	it("ignores a rename pointer that cycles back to an already-visited package", async () => {

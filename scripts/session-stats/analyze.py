@@ -22,7 +22,7 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
-DB_PATH = Path.home() / ".omp" / "stats.db"
+DB_PATH = Path.home() / ".eros" / "stats.db"
 
 
 # --------------------------------------------------------------------------- #

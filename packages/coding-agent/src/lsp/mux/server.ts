@@ -319,7 +319,7 @@ export class LspMuxServer {
 				this.#sendSession(session, rpcError(message.id, -32602, "invalid mux connect params"));
 				return;
 			}
-			const key = muxServerKey(params.command, params.cwd);
+			const key = muxServerKey(params);
 			let server = [...this.#servers].find(candidate => candidate.key === key && candidate.sessions.size === 0);
 			if (server && server.proc.exitCode !== null) {
 				this.#serverExited(server);
@@ -732,7 +732,7 @@ export async function startLspMuxFromEnvironment(): Promise<void> {
 	if (!endpoint || !projectDir) throw new Error("LSP mux environment is incomplete");
 	delete process.env[LSP_MUX_SOCKET_ENV];
 	delete process.env[LSP_MUX_PROJECT_DIR_ENV];
-	setProcessName("omp lsp mux");
+	setProcessName("eros lsp mux");
 	const server = new LspMuxServer();
 	const stopped = Promise.withResolvers<void>();
 	server.onIdle = () => {

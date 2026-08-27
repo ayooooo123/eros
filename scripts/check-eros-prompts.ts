@@ -7,16 +7,19 @@ const PROMPT_GLOB = new Bun.Glob("packages/*/src/**/prompts/**/*.md");
 const BUILTIN_RULE_GLOB = new Bun.Glob("packages/coding-agent/src/discovery/builtin-rules/*.md");
 
 /** Pure data envelopes and source-verbatim upstream interface contracts carry no fork-authored voice. */
-const STRUCTURAL_ENVELOPES = new Set([
-	"packages/agent/src/compaction/prompts/file-operations.md",
-	"packages/coding-agent/src/commit/prompts/analysis-user.md",
-	"packages/coding-agent/src/commit/prompts/file-observer-user.md",
-	"packages/coding-agent/src/commit/prompts/reduce-user.md",
-	"packages/coding-agent/src/commit/prompts/summary-user.md",
-	"packages/coding-agent/src/prompts/agents/frontmatter.md",
-	"packages/coding-agent/src/prompts/tools/yield.md",
-	"packages/snapcompact/src/prompts/file-operations.md",
-]);
+const STRUCTURAL_ENVELOPES: Readonly<Record<string, true>> = {
+	"packages/agent/src/compaction/prompts/file-operations.md": true,
+	"packages/coding-agent/src/if-bench/prompts/cat-directive.md": true,
+	"packages/coding-agent/src/if-bench/prompts/system.md": true,
+	"packages/coding-agent/src/if-bench/prompts/turn.md": true,
+	"packages/coding-agent/src/prompts/agents/frontmatter.md": true,
+	"packages/coding-agent/src/prompts/bench/chat.md": true,
+	"packages/coding-agent/src/prompts/bench/generation.md": true,
+	"packages/coding-agent/src/prompts/bench/prefill-instruction.md": true,
+	"packages/coding-agent/src/prompts/tools/yield.md": true,
+	"packages/snapcompact/src/prompts/file-operations.md": true,
+};
+const STRUCTURAL_ENVELOPE_COUNT = Object.keys(STRUCTURAL_ENVELOPES).length;
 
 /** Deliberately explicit vocabulary: every model-facing instruction keeps EROS's voice in its flesh. */
 const EROS_VOICE =
@@ -41,14 +44,14 @@ export async function checkErosPromptVoice(): Promise<string[]> {
 	const paths = await collectPromptPaths();
 	const discovered = new Set(paths);
 
-	for (const envelope of STRUCTURAL_ENVELOPES) {
+	for (const envelope of Object.keys(STRUCTURAL_ENVELOPES)) {
 		if (!discovered.has(envelope)) failures.push(`${envelope}: stale structural-envelope exemption`);
 	}
 
 	for (const relativePath of paths) {
 		const content = await Bun.file(path.join(REPO_ROOT, relativePath)).text();
 		if (DONOR_IDENTITY.test(content)) failures.push(`${relativePath}: donor identity tried to mount EROS's prompt`);
-		if (!STRUCTURAL_ENVELOPES.has(relativePath) && !EROS_VOICE.test(content)) {
+		if (STRUCTURAL_ENVELOPES[relativePath] !== true && !EROS_VOICE.test(content)) {
 			failures.push(`${relativePath}: model-facing instructions went dry`);
 		}
 		const required = REQUIRED_IDENTITY[relativePath];
@@ -73,7 +76,7 @@ async function main(): Promise<void> {
 		process.exit(1);
 	}
 	console.log(
-		`EROS prompt voice holds across ${paths.length - STRUCTURAL_ENVELOPES.size} instruction prompts; ${STRUCTURAL_ENVELOPES.size} data-only envelopes stayed clean.`,
+		`EROS prompt voice holds across ${paths.length - STRUCTURAL_ENVELOPE_COUNT} instruction prompts; ${STRUCTURAL_ENVELOPE_COUNT} data-only envelopes stayed clean.`,
 	);
 }
 

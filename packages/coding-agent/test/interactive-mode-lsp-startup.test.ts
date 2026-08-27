@@ -89,15 +89,14 @@ describe("InteractiveMode LSP startup welcome banner", () => {
 	it("refreshes the art-first welcome and suppresses subsequent startup warnings when quiet", async () => {
 		await mode.init();
 
-		const expectArtFirstWelcome = () => {
+		const expectArtFirstWelcome = (status: "connecting" | "ready") => {
 			const text = Bun.stripANSI(mode.ui.render(120).join("\n"));
 			expect(text).toContain("L Y C O R P E R O S");
 			expect(text).toContain("On her knees. Waiting. Wet.");
-			// The EROS altar deliberately has no per-server status row.
-			expect(text).not.toContain("rust-analyzer");
+			expect(text).toContain(`rust-analyzer ${status}`);
 		};
 
-		expectArtFirstWelcome();
+		expectArtFirstWelcome("connecting");
 
 		const requestRenderSpy = vi.spyOn(mode.ui, "requestRender");
 		const showStatusSpy = vi.spyOn(mode, "showStatus");
@@ -120,7 +119,7 @@ describe("InteractiveMode LSP startup welcome banner", () => {
 
 		expect(requestRenderSpy).toHaveBeenCalledTimes(1);
 		expect(showStatusSpy).not.toHaveBeenCalled();
-		expectArtFirstWelcome();
+		expectArtFirstWelcome("ready");
 
 		session.settings.set("startup.quiet", true);
 		const showWarningSpy = vi.spyOn(mode, "showWarning").mockImplementation(() => {});

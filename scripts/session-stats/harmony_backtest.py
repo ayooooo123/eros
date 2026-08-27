@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-DB_PATH = Path.home() / ".omp" / "stats.db"
+DB_PATH = Path.home() / ".eros" / "stats.db"
 
 MARKER_RE = re.compile(r"\bto=functions\.[A-Za-z_][A-Za-z0-9_]*")
 HARMONY_RE = re.compile(r"<\|(start|end|channel|message|call|return)\|>")

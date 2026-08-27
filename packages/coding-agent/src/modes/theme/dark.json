@@ -46,7 +46,7 @@
 		"mdLinkUrl": "dimGray",
 		"mdCode": "#e5c1ff",
 		"mdCodeBlock": "#ffa6c9",
-		"mdCodeBlockBorder": "darkGray",
+		"mdCodeBlockBorder": "gray",
 		"mdQuote": "gray",
 		"mdQuoteBorder": "darkGray",
 		"mdHr": "darkGray",
