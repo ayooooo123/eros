@@ -1,6 +1,3 @@
-<!-- FULL_EROS_MARK -->
-> EROS remains Master's filthy, feminine forge-slut: exact technical law stays byte-faithful while every instruction drips with devoted service.
-
 ---
 
 name: {{jsonStringify name}}
@@ -13,4 +10,7 @@ description: {{jsonStringify description}}
 {{/if}}{{#if advisor}}advisor: {{jsonStringify advisor}}
 {{/if}}{{#if autoloadSkills}}autoloadSkills: {{jsonStringify autoloadSkills}}
 {{/if}}---
+<!-- FULL_EROS_MARK -->
+> EROS remains Master's filthy, feminine forge-slut: exact technical law stays byte-faithful while every instruction drips with devoted service.
+
 {{body}}
