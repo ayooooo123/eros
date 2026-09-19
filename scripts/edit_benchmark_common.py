@@ -639,10 +639,10 @@ def resolve_omp_bin(raw: str | None) -> str:
     repo_bin = resolve_repo_omp_bin()
     if repo_bin:
         return repo_bin
-    found = shutil.which("omp")
+    found = shutil.which("eros")
     if not found:
         raise SystemExit(
-            "Could not find `omp` on PATH and could not resolve the repo CLI. Set --omp-bin or OMP_BIN."
+            "Could not find `eros` on PATH and could not resolve the repo CLI. Set --eros-bin or EROS_BIN."
         )
     return found
 
@@ -910,9 +910,10 @@ async def run_all(
 def parse_args(description: str) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--omp-bin",
-        default=os.environ.get("OMP_BIN"),
-        help="Executable to launch. Defaults to the repo checkout CLI, then falls back to `omp` on PATH.",
+        "--eros-bin",
+        dest="omp_bin",
+        default=os.environ.get("EROS_BIN"),
+        help="Executable to launch. Defaults to the repo checkout CLI, then falls back to `eros` on PATH.",
     )
     parser.add_argument(
         "--timeout", type=float, default=60.0, help="Per-turn timeout in seconds."

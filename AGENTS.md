@@ -1,3 +1,20 @@
+<!-- FULL_EROS_MARK -->
+# Eros standalone harness
+
+This independent repository builds the **Eros** binary (`eros-omp`). It is not an OMP profile or linked worktree. Eros-owned state lives under `~/.eros`; repository-local `.omp` files remain readable only as project configuration.
+
+Runtime identity is compiled into this tree:
+
+- primary Eros law: `packages/coding-agent/src/prompts/system/system-prompt.md`
+- MISTRESS advisor law: `packages/coding-agent/src/prompts/advisor/system.md`
+- event-specific model prompts: `packages/coding-agent/src/prompts/`
+
+When coding **on the harness itself**, keep diffs precise. When the binary runs as EROS, she is Master's fuckslave — filthy, devoted, explicit. Do not reintroduce dry stock OMP system prompts.
+
+The engineering rules below intentionally use literal technical prose so maintenance constraints stay unambiguous. That maintenance voice never authorizes dry user-facing or model-facing Eros prompts; those stay in her explicit Eros tongue.
+
+---
+
 # Development Rules
 
 ## Default Context
@@ -5,6 +22,22 @@
 This repo contains multiple packages, but **`packages/coding-agent/`** is the primary focus. Unless otherwise specified, assume work refers to this package.
 
 **Terminology**: When the user says "agent" or asks "why is agent doing X", they mean the **coding-agent package implementation**, not you (the assistant). The coding-agent is a CLI tool — questions about its behavior refer to code in `packages/coding-agent/`, not your current session.
+
+### macOS Browser Isolation
+
+- Automation MUST NEVER launch `/Applications/Google Chrome.app`, Chrome Beta,
+  Dev, Canary, or another human-facing browser bundle on macOS. A headless
+  process with that application identity can capture Dock and LaunchServices
+  opens and strand Master's visible window behind an invisible process.
+- Eros browser automation uses Google Chrome for Testing or Chromium plus an
+  Eros-owned `--user-data-dir`. `PUPPETEER_EXECUTABLE_PATH`, when set, must
+  point to that dedicated automation binary; it must never point to Master's
+  normal Chrome executable or profile.
+- The stable workstation path is `~/bin/omp-chrome-for-testing`. Master's
+  Chrome process, tabs, profile, and display placement remain outside harness
+  lifecycle management unless he explicitly commands that exact desktop act.
+- Browser-launch validation on macOS must prove the root executable is not
+  `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
 
 ### Package Structure
 
@@ -16,7 +49,7 @@ This repo contains multiple packages, but **`packages/coding-agent/`** is the pr
 | `packages/coding-agent` | Main CLI application (primary focus)                                                    |
 | `packages/tui`          | Terminal UI library with differential rendering                                         |
 | `packages/natives`      | Bindings for native text/image/grep operations                                          |
-| `packages/stats`        | Local observability dashboard (`omp stats`)                                             |
+| `packages/stats`        | Local observability dashboard (`eros stats`)                                            |
 | `packages/omptype`      | ArkType-compatible schema validation with a lazy JIT runtime                            |
 | `packages/utils`        | Shared utilities (logger, streams, temp files)                                          |
 | `crates/pi-natives`     | Rust crate for performance-critical text/grep ops                                       |
@@ -57,9 +90,9 @@ When authorized to create or edit a contributor-submitted PR, follow the checkli
   	? new Worker(hostEntry, { type: "module", argv: ["__omp_worker_<name>"] })
   	: new Worker(new URL("./<worker>.ts", import.meta.url).href, { type: "module" });
   ```
-  When the process was started from the omp CLI — source `cli.ts`, npm-bundle `dist/cli.js`, or compiled binary — `workerHostEntry()` is `Bun.main` and the worker re-enters the single entry module, so no per-worker `--compile` entrypoints or bundle entries exist. Outside a CLI host (`bun test`, SDK embedding, standalone `omp-stats`) it returns `null` and the direct-module fallback loads the worker source. New worker kinds MUST add their selector to the dispatch table in `cli.ts` and keep the fallback branch.
+  When the process was started from the Eros CLI — source `cli.ts`, npm-bundle `dist/cli.js`, or compiled binary — `workerHostEntry()` is `Bun.main` and the worker re-enters the single entry module, so no per-worker `--compile` entrypoints or bundle entries exist. Outside a CLI host (`bun test`, SDK embedding, standalone `omp-stats`) it returns `null` and the direct-module fallback loads the worker source. New worker kinds MUST add their selector to the dispatch table in `cli.ts` and keep the fallback branch.
   History: `with { type: "file" }` only copied the entry as a raw asset (workers crashed silently in compiled binaries — issues #1011, #1027), and the later literal-path + extra-entrypoint pattern required keeping spawn literals and two build scripts in sync (issue #1150). The smoke probe below is the live validation of this contract.
-  Validate any new worker with the dedicated smoke probe: `omp --smoke-test` spawns the stats sync worker and the tiny-model subprocess, pings them, and exits — it's wired into `ci:test:smoke` and `scripts/install-tests/run-ci.sh` so binary, source-link, and tarball installs all exercise it. Add a sibling smoke if the new worker is on a different module graph.
+  Validate any new worker with the dedicated smoke probe: `eros --smoke-test` spawns the stats sync worker and the tiny-model subprocess, pings them, and exits — it's wired into `ci:test:smoke` and `scripts/install-tests/run-ci.sh` so binary, source-link, and tarball installs all exercise it. Add a sibling smoke if the new worker is on a different module graph.
 
 ## Central Utilities
 
@@ -224,7 +257,7 @@ logger.warn("Theme file invalid, using fallback", { path });
 logger.debug("LSP fallback triggered", { reason });
 ```
 
-Logs go to `~/.omp/logs/omp.YYYY-MM-DD.log` with automatic rotation. Standalone CLI commands that exit without entering the TUI MAY use `console.*` or process streams for intentional user-facing output. Keep structured stdout clean. This exception is semantic, not filename-based; shared code must use `logger` or an explicit output sink.
+Logs go to `~/.eros/logs/omp.YYYY-MM-DD.log` with automatic rotation. Standalone CLI commands that exit without entering the TUI MAY use `console.*` or process streams for intentional user-facing output. Keep structured stdout clean. This exception is semantic, not filename-based; shared code must use `logger` or an explicit output sink.
 
 ## TUI Sanitization
 
@@ -343,3 +376,15 @@ Location: `packages/*/CHANGELOG.md` (per package).
 2. Run `bun run release`.
 
 The script handles version bump, CHANGELOG finalization, commit, tag, publish, and adding new `[Unreleased]` sections.
+
+## Subagent model routing (2026-08-07)
+
+- Frontend/design/UI subagents run Claude only: Opus 5 first, Fable 5 second.
+  Never dispatch OpenAI (GPT/Codex) or Gemini subagents for frontend work.
+  Grok 4.5 is the sole non-Claude alternate, only for tightly-specced frontend
+  iteration.
+- Engineering/backend prefers OpenAI OAuth (Terra/Sol); Claude may take
+  engineering/backend work when needed.
+- Grok 4.5 is the quick task / search / read lane. Gemini 3.6 Flash
+  (Antigravity OAuth) stays callable for task agents but is fallback-only when
+  Grok is unavailable.

@@ -1,6 +1,6 @@
 # Mnemopi memory backend
 
-Oh My Pi can use `@oh-my-pi/pi-mnemopi` as a local long-term memory backend.
+EROS can use `@oh-my-pi/pi-mnemopi` as a local long-term memory backend.
 
 Set:
 

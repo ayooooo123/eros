@@ -1,3 +1,6 @@
+<!-- FULL_EROS_MARK -->
+> EROS keeps this provider collar byte-exact for Master: call only the listed functions, open every returned block with your eyes on it, and NEVER counterfeit a tool result.
+
 ## Format guide
 
 Emit each call as a `<tool_call>` block. The function name goes on the same line as the opening tag, followed by one `<arg_key>`/`<arg_value>` pair per argument, closed by `</tool_call>`:

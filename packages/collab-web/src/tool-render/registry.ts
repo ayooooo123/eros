@@ -18,6 +18,7 @@ import { globRenderer } from "./tools/glob";
 import { goalRenderer } from "./tools/goal";
 import { grepRenderer } from "./tools/grep";
 import { hubRenderer } from "./tools/hub";
+import { inspectImageRenderer } from "./tools/inspect-image";
 import { ircRenderer } from "./tools/irc";
 import { jobRenderer } from "./tools/job";
 import { lspRenderer } from "./tools/lsp";
@@ -54,6 +55,7 @@ const RENDERERS: Record<string, ToolRenderer> = {
 	generate_image: generateImageRenderer,
 	github: githubRenderer,
 	goal: goalRenderer,
+	inspect_image: inspectImageRenderer,
 	hub: hubRenderer,
 	irc: ircRenderer,
 	job: jobRenderer,

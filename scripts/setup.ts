@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * `bun setup` entrypoint. Chains the four setup steps (install → native
- * addon build → coding-agent link → omp link). The native host build uses
+ * addon build → coding-agent link → eros link). The native host build uses
  * the local Cargo/N-API backend by default; set
  * `OMP_NATIVE_BUILD_BACKEND=bazel` to opt into bazel. Flags after `--` are
  * appended to the native build invocation.
@@ -31,7 +31,7 @@ const steps: Step[] = [
 	{ label: "bun install", cmd: ["bun", "install"] },
 	{ label: "build:native", cmd: ["bun", "run", "build:native", ...passthrough] },
 	{ label: "coding-agent link", cmd: ["bun", "--cwd=packages/coding-agent", "link"] },
-	{ label: "link omp", cmd: ["sh", "scripts/link-omp.sh"] },
+	{ label: "link eros", cmd: ["sh", "scripts/link-eros.sh"] },
 ];
 
 for (const step of steps) {

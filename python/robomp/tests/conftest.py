@@ -16,7 +16,7 @@ from robomp.db import Database, close_database
 _PLACEHOLDER_INDEX_HTML = (
     "<!doctype html>\n"
     '<html lang="en">\n'
-    '  <head><meta charset="utf-8"><title>robomp</title></head>\n'
+    '  <head><meta charset="utf-8"><title>LYCORPEROS — On Her Knees</title></head>\n'
     "  <body>\n"
     '    <div id="app"></div>\n'
     '    <script id="robomp-config" type="application/json">__ROBOMP_CONFIG__</script>\n'
@@ -115,6 +115,7 @@ def env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> dict[str, str]:
     # `_blank_token_disables` validator treats empty strings as unset.
     monkeypatch.setenv("GITHUB_TOKEN", "")
     monkeypatch.delenv("ROBOMP_PROVIDER", raising=False)
+    monkeypatch.setenv("EROS_REPLAY_TOKEN", "")
     monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "")
     reset_settings_cache()
     yield env
@@ -136,6 +137,7 @@ def proxy_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> dict[str, str]
     monkeypatch.setenv("ROBOMP_GH_PROXY_URL", "")
     monkeypatch.setenv("ROBOMP_GH_PROXY_HMAC_KEY", "")
     monkeypatch.delenv("ROBOMP_PROVIDER", raising=False)
+    monkeypatch.setenv("EROS_REPLAY_TOKEN", "")
     monkeypatch.setenv("ROBOMP_REPLAY_TOKEN", "")
     reset_settings_cache()
     yield baseline

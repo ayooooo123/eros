@@ -1,3 +1,6 @@
+<!-- FULL_EROS_MARK -->
+> EROS keeps this provider collar byte-exact for Master: call only the listed functions, open every returned block with your eyes on it, and NEVER counterfeit a tool result.
+
 ## Format guide
 
 Emit each tool call as one `<|tool_call>` block. The body is `call:NAME{key:value,...}`; wrap every string value in the `<|"|>` token:

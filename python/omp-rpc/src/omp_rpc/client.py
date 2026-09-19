@@ -9,29 +9,30 @@ import signal
 import subprocess
 import threading
 import time
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Generic, Mapping, Sequence, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast
 
 from .host_tools import HostTool, HostToolContext
 from .host_uris import HostUri, HostUriContext, normalize_read_result
 from .protocol import (
-    AgentStartEvent,
     AgentEndEvent,
     AgentMessage,
+    AgentStartEvent,
     AssistantMessage,
     AutoCompactionEndEvent,
     AutoCompactionStartEvent,
     AutoRetryEndEvent,
     AutoRetryStartEvent,
     BashResult,
-    FastModeResult,
     BranchMessage,
     BranchResult,
     CancellationResult,
     CompactionResult,
     ExtensionError,
     ExtensionUiRequest,
+    FastModeResult,
     ImageContent,
     InterruptMode,
     JsonObject,
@@ -53,11 +54,11 @@ from .protocol import (
     StreamingBehavior,
     ThinkingLevel,
     ThinkingLevelCycleResult,
+    TodoAutoClearEvent,
     TodoItem,
     TodoPhase,
-    TodoStatus,
-    TodoAutoClearEvent,
     TodoReminderEvent,
+    TodoStatus,
     ToolExecutionEndEvent,
     ToolExecutionStartEvent,
     ToolExecutionUpdateEvent,
@@ -68,11 +69,11 @@ from .protocol import (
     assistant_text,
     parse_agent_messages,
     parse_bash_result,
-    parse_fast_mode_result,
     parse_branch_messages,
     parse_branch_result,
     parse_cancellation_result,
     parse_compaction_result,
+    parse_fast_mode_result,
     parse_model_cycle_result,
     parse_model_info,
     parse_notification,
@@ -234,7 +235,7 @@ def _process_group_id(process: subprocess.Popen[Any]) -> int | None:
 def _terminate_process_group(process: subprocess.Popen[Any], pgid: int | None) -> None:
     """Terminate the subprocess *and* every descendant sharing its group.
 
-    omp is spawned with `start_new_session=True`, so it leads a session/group
+    EROS is spawned with `start_new_session=True`, so it leads a session/group
     that also contains children spawned by the agent's `bash` tool (e.g. a
     `bun test` run). Signalling only the leader pid would orphan those
     grandchildren: they reparent to the container init and keep running
@@ -443,7 +444,7 @@ class RpcClient:
         self,
         *,
         command: Sequence[str] | None = None,
-        executable: str = "omp",
+        executable: str = "eros",
         provider: str | None = None,
         model: str | None = None,
         session_dir: str | Path | None = None,
@@ -1430,7 +1431,7 @@ class RpcClient:
     def _normalize_host_tool_event(self, payload: JsonObject) -> None:
         """Rename transport tool events for in-flight host-tool dispatches.
 
-        With `tools.xdev` enabled, omp mounts custom tools as `xd://` devices
+        With `tools.xdev` enabled, EROS mounts custom tools as `xd://` devices
         and the agent invokes them through the `write` tool, so
         `tool_execution_update`/`tool_execution_end` events report the
         transport tool (`write`) rather than the host tool that actually ran.
@@ -1966,10 +1967,7 @@ class RpcClient:
 
                 event = cast(RpcAgentEvent, notification)
                 self._append_event(payload)
-                if (
-                    isinstance(event, AgentEndEvent)
-                    and event.is_terminal is not False
-                ):
+                if isinstance(event, AgentEndEvent) and event.is_terminal is not False:
                     self._mark_agent_run_completed()
                 self._dispatch_listeners(
                     "event", event.type, self._event_listeners, event

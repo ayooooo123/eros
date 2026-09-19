@@ -119,8 +119,8 @@ async function generateProtocols(): Promise<void> {
 		protobufImportPath: "./protobuf",
 	});
 
-	await Bun.write(path.join(DISCOVERY_DIR, "cursor-proto.ts"), `${cursor}\n`);
-	await Bun.write(path.join(DISCOVERY_DIR, "devin-proto.ts"), `${devin}\n`);
+	await Bun.write(path.join(DISCOVERY_DIR, "cursor-proto.ts"), `${cursor.trimEnd()}\n`);
+	await Bun.write(path.join(DISCOVERY_DIR, "devin-proto.ts"), `${devin.trimEnd()}\n`);
 }
 
 await generateProtocols();

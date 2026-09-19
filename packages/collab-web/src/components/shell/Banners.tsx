@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import type { ConnectionPhase } from "../../lib/client";
+import { drench } from "../wall/WetLayer";
 
 export interface BannersProps {
 	phase: ConnectionPhase;
@@ -9,11 +11,16 @@ export interface BannersProps {
 }
 
 export function Banners({ phase, endedReason, onRejoin, onNewLink }: BannersProps): ReactNode {
+	// The moment the thread is cut, the whole pane runs.
+	useEffect(() => {
+		if (phase === "ended") drench();
+	}, [phase]);
+
 	if (phase === "connecting" || phase === "waiting") {
 		return (
 			<div className="sh-banner" role="status">
 				<span className="sh-banner-dot" />
-				{phase === "connecting" ? "connecting to relay…" : "joining session…"}
+				{phase === "connecting" ? "reaching the relay" : "waiting to be let in"}
 			</div>
 		);
 	}
@@ -21,23 +28,26 @@ export function Banners({ phase, endedReason, onRejoin, onNewLink }: BannersProp
 		return (
 			<div className="sh-banner" role="status">
 				<span className="sh-banner-dot" />
-				reconnecting…
+				thread slipped · reaching back
 			</div>
 		);
 	}
 	if (phase === "ended") {
 		return (
-			<div className="sh-ended" role="alertdialog" aria-label="session ended">
+			<div className="sh-ended" role="alertdialog" aria-label="the gateway closed">
 				<div className="sh-ended-card">
-					<div className="sh-ended-title">session ended</div>
-					{endedReason && <div className="sh-ended-reason">{endedReason}</div>}
-					<div className="sh-ended-actions">
-						<button type="button" className="sh-btn sh-btn-primary" onClick={onRejoin}>
-							Rejoin
-						</button>
-						<button type="button" className="sh-btn" onClick={onNewLink}>
-							New link
-						</button>
+					<span className="sh-ended-legend">severed</span>
+					<div className="sh-ended-body">
+						<div className="sh-ended-title">the gateway closed</div>
+						{endedReason && <div className="sh-ended-reason">{endedReason}</div>}
+						<div className="sh-ended-actions">
+							<button type="button" className="sh-btn sh-btn-primary" onClick={onRejoin}>
+								Re-enter
+							</button>
+							<button type="button" className="sh-btn" onClick={onNewLink}>
+								New invitation
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>

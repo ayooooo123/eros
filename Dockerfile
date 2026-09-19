@@ -1,21 +1,21 @@
 # syntax=docker/dockerfile:1.7-labs
 ###############################################################################
-# oh-my-pi — pi image
+# EROS — agent image
 #
 # Stages:
 #   natives-builder — Rust + Bun → pi_natives.linux-<arch>.node
 #   wheel-builder   — omp_rpc Python wheel
 #   pi-base         — python + bun + rustup launcher + natives + omp_rpc
-#                     + /usr/local/bin/omp shim
-#   pi-runtime      — pi-base + pi source + bun install      (DEFAULT, runnable)
+#                     + /usr/local/bin/eros shim
+#   pi-runtime      — pi-base + EROS source + bun install      (DEFAULT, runnable)
 #
 # Build:
-#     docker build -t oh-my-pi/pi:dev .                          # default = pi-runtime
-#     docker build --target pi-base -t oh-my-pi/pi-base:dev .    # base for derived images
+#     docker build -t eros-omp:dev .                          # default = pi-runtime
+#     docker build --target pi-base -t eros-omp-base:dev .    # base for derived images
 #
 # Run:
-#     docker run --rm oh-my-pi/pi:dev --help
-#     docker run --rm -it -v "$PWD":/work oh-my-pi/pi:dev cli    # interactive omp
+#     docker run --rm eros-omp:dev --help
+#     docker run --rm -it -v "$PWD":/work eros-omp:dev cli    # interactive EROS
 #
 # Consume as a base in another Dockerfile (see Dockerfile.robomp):
 #     ARG PI_BASE=oh-my-pi/pi:dev
@@ -155,27 +155,27 @@ COPY --from=natives-builder /out/pi_natives.linux-*.node /opt/bun/bin/
 COPY --from=wheel-builder /out/*.whl /tmp/wheels/
 RUN pip install /tmp/wheels/omp_rpc-*.whl && rm -rf /tmp/wheels
 
-# Legal payload for the reusable SDKs and the OMP product installed in this image.
-COPY LICENSE  THIRD-PARTY-NOTICES.txt /usr/share/doc/omp/
+# Legal payload for the reusable SDKs and the EROS product installed in this image.
+COPY LICENSE THIRD-PARTY-NOTICES.txt /usr/share/doc/eros/
 
-# `omp` shim — runs the coding-agent CLI against $PI_ROOT via Bun. Derived
-# images override PI_ROOT to point at wherever their pi source lives.
+# `eros` shim — runs the coding-agent CLI against $PI_ROOT via Bun. Derived
+# images override PI_ROOT to point at wherever their EROS source lives.
 RUN printf '%s\n' \
     '#!/usr/bin/env bash' \
     'set -euo pipefail' \
     ': "${PI_ROOT:=/work/pi}"' \
     'if [ ! -d "$PI_ROOT/packages/coding-agent" ]; then' \
-    '  echo "pi: PI_ROOT=$PI_ROOT does not look like a pi checkout" >&2' \
+    '  echo "eros: PI_ROOT=$PI_ROOT does not look like an EROS checkout" >&2' \
     '  exit 127' \
     'fi' \
     'exec bun "$PI_ROOT/packages/coding-agent/src/cli.ts" "$@"' \
-    > /usr/local/bin/omp \
-    && chmod +x /usr/local/bin/omp
+    > /usr/local/bin/eros \
+    && chmod +x /usr/local/bin/eros
 
 ############################
-# 4) pi-runtime — pi-base + pi source + bun install (DEFAULT)
+# 4) pi-runtime — pi-base + EROS source + bun install (DEFAULT)
 #
-# A self-contained, runnable omp image. `docker run oh-my-pi/pi:dev --help`
+# A self-contained, runnable EROS image. `docker run eros-omp:dev --help`
 # Just Works without a host checkout.
 ############################
 FROM pi-base AS pi-runtime
@@ -205,5 +205,5 @@ COPY . /pi/
 # package.json's `prepare` script normally handles these on a vanilla install.
 RUN bun --cwd=packages/coding-agent run gen:tool-views
 
-ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/omp"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/eros"]
 CMD ["--help"]

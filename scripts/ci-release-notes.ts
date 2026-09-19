@@ -20,8 +20,8 @@
  *
  * The lower bound is resolved by `gh release list`. Set
  * `OMP_RELEASE_NOTES_FLOOR=v15.12.4` to override (empty string forces
- * single-version mode, matching the pre-#2596 behavior). `OMP_REPO` /
- * `GITHUB_REPOSITORY` control the queried repo.
+ * single-version mode, matching the pre-#2596 behavior). `EROS_REPO`,
+ * `OMP_REPO`, or `GITHUB_REPOSITORY` controls the queried repo.
  *
  * Intended for the `release_github` CI job: the output is passed to
  * `softprops/action-gh-release` via `body_path:`. The action's
@@ -33,7 +33,7 @@ import { $, Glob } from "bun";
 import { compareVersions } from "../packages/utils/src/version";
 
 const changelogGlob = new Glob("packages/*/CHANGELOG.md");
-const REPO = process.env.OMP_REPO ?? process.env.GITHUB_REPOSITORY ?? "can1357/oh-my-pi";
+const REPO = process.env.EROS_REPO ?? process.env.OMP_REPO ?? process.env.GITHUB_REPOSITORY ?? "lyc-aon/eros";
 
 // Canonical ordering used by `fix-changelogs`; unknown categories sort
 // alphabetically after these.
@@ -238,7 +238,7 @@ async function main(): Promise<void> {
 		const upcomingVersion = version.replace(/-canary\.\d+$/, "");
 		await Bun.write(
 			outputPath,
-			`This is a canary prerelease of ${upcomingVersion}. Install it with \`omp update --canary\`.\n`,
+			`This is a canary prerelease of EROS ${upcomingVersion}. Source-managed installations must be rebuilt from this tag.\n`,
 		);
 		console.log(`Wrote canary release notes to ${outputPath}.`);
 		return;

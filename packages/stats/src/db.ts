@@ -394,16 +394,25 @@ function getBundledModelCost(provider: string, modelId: string): ModelCost | nul
 	const model = getBundledModel(provider as GeneratedProvider, modelId);
 	return model?.cost ?? null;
 }
+const XAI_OAUTH_PUBLIC_EQUIVALENT_PREFIXES = ["grok-4.20-multi-agent-"] as const;
 
 function getCatalogCost(provider: string, modelId: string): ModelCost | null {
+	if (provider === "xai-oauth") {
+		const directApiCost = getBundledModelCost("xai", modelId);
+		if (directApiCost && hasBillableCost(directApiCost)) return directApiCost;
+		const hasPublishedEquivalent = XAI_OAUTH_PUBLIC_EQUIVALENT_PREFIXES.some(prefix => modelId.startsWith(prefix));
+		if (!hasPublishedEquivalent) return null;
+		const oauthCatalogCost = getBundledModelCost(provider, modelId);
+		return oauthCatalogCost && hasBillableCost(oauthCatalogCost) ? oauthCatalogCost : null;
+	}
+
 	const primaryCost = getBundledModelCost(provider, modelId);
 	if (primaryCost && hasBillableCost(primaryCost)) {
 		return primaryCost;
 	}
 
-	const fallbackProvider = provider === "openai-codex" ? "openai" : provider === "xai-oauth" ? "xai" : null;
-	if (fallbackProvider) {
-		const fallbackCost = getBundledModelCost(fallbackProvider, modelId);
+	if (provider === "openai-codex") {
+		const fallbackCost = getBundledModelCost("openai", modelId);
 		if (fallbackCost && hasBillableCost(fallbackCost)) {
 			return fallbackCost;
 		}

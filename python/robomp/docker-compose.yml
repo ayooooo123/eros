@@ -75,10 +75,11 @@ services:
       ROBOMP_QUESTION_AUTOCLOSE_ENABLED: ${ROBOMP_QUESTION_AUTOCLOSE_ENABLED:-true}
       ROBOMP_QUESTION_AUTOCLOSE_HOURS: ${ROBOMP_QUESTION_AUTOCLOSE_HOURS:-4}
       ROBOMP_QUESTION_AUTOCLOSE_SCAN_SECONDS: ${ROBOMP_QUESTION_AUTOCLOSE_SCAN_SECONDS:-60}
-      ROBOMP_REPLAY_TOKEN: ${ROBOMP_REPLAY_TOKEN:-}
+      # Prefer EROS_REPLAY_TOKEN while retaining legacy .env files.
+      EROS_REPLAY_TOKEN: ${EROS_REPLAY_TOKEN-${ROBOMP_REPLAY_TOKEN:-}}
 
       # --- container-fixed paths ---
-      ROBOMP_OMP_COMMAND: omp
+      ROBOMP_EROS_COMMAND: eros
       ROBOMP_WORKSPACE_ROOT: /data/workspaces
       ROBOMP_SQLITE_PATH: /data/robomp.sqlite
       ROBOMP_LOG_DIR: /data/logs
@@ -88,7 +89,7 @@ services:
     depends_on:
       gh-proxy:
         condition: service_started
-    # Resolve `llm-gateway.internal` (used in /srv/agent-home/.omp/agent/models.yml) to the
+    # Resolve `llm-gateway.internal` (used in /srv/agent-home/.eros/agent/models.yml) to the
     # Docker host. The actual gateway listens on 127.0.0.1:4000 on the host;
     # `host-gateway` is Docker's alias for the host bridge IP.
     extra_hosts:
@@ -102,9 +103,9 @@ services:
       # Host agent config is mounted read-only under /srv/agent-home-stage
       # with host-controlled permissions. The entrypoint copies it into
       # root-owned, world-readable files under /srv/agent-home; the agent
-      # subprocess runs with HOME=/srv/agent-home, so ~/.omp and ~/.agent
+      # subprocess runs with HOME=/srv/agent-home, so ~/.eros and ~/.agent
       # resolve there without exposing mutable host mounts.
-      - ${HOME}/.omp/agent/models.container.yml:/srv/agent-home-stage/.omp/agent/models.yml:ro
+      - ${HOME}/.eros/agent/models.container.yml:/srv/agent-home-stage/.eros/agent/models.yml:ro
       - ${HOME}/.agent/AGENTS.md:/srv/agent-home-stage/.agent/AGENTS.md:ro
       - ${HOME}/.agent/rules:/srv/agent-home-stage/.agent/rules:ro
     ports:

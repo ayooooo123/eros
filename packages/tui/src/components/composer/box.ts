@@ -45,7 +45,7 @@ export const boxComposerStyle: ComposerStyle = {
 	},
 
 	renderRow(ctx: ComposerRowContext): string[] {
-		const { box, paddingX, width, borderColor, text, pad, isLastRow } = ctx;
+		const { box, paddingX, width, borderColor, gutter, text, pad, isLastRow } = ctx;
 		// When the end-of-line cursor glyph (or a wide trailing grapheme) extends
 		// past the content width, shrink the right chrome by the exact overflow
 		// count: drop padding spaces first, then the trailing `─`, but never the
@@ -59,7 +59,7 @@ export const boxComposerStyle: ComposerStyle = {
 			const bottomBorder = borderColor(
 				`${box.bottomLeft}${box.horizontal.repeat(Math.max(0, width - 2))}${box.bottomRight}`,
 			);
-			return [leftBorder + text, bottomBorder];
+			return [leftBorder + gutter + text, bottomBorder];
 		}
 		if (isLastRow) {
 			const bottomLeft = borderColor(`${box.bottomLeft}${box.horizontal}${padding(Math.max(0, paddingX - 1))}`);
@@ -68,14 +68,14 @@ export const boxComposerStyle: ComposerStyle = {
 			const bottomRightAdjusted = borderColor(
 				`${padding(rightPad)}${includeHorizontal ? box.horizontal : ""}${box.bottomRight}`,
 			);
-			return [`${bottomLeft}${text}${pad}${bottomRightAdjusted}`];
+			return [`${bottomLeft}${gutter}${text}${pad}${bottomRightAdjusted}`];
 		}
 		const leftBorder = borderColor(`${box.vertical}${padding(paddingX)}`);
 		// When the scrollbar is active, replace the right border vertical with a
 		// thumb glyph (█) inside the thumb range, keeping the track (│) elsewhere.
 		const rightGlyph = ctx.scrollbarThumb ? "█" : box.vertical;
 		const rightBorder = borderColor(`${padding(Math.max(0, rightChromeCells - 1))}${rightGlyph}`);
-		return [leftBorder + text + pad + rightBorder];
+		return [leftBorder + gutter + text + pad + rightBorder];
 	},
 
 	renderBottom(): undefined {

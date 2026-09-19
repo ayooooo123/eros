@@ -1,16 +1,17 @@
 {
-	"name": "omp collab",
-	"short_name": "omp collab",
-	"description": "Live guest client for omp collab sessions: streaming transcript, tool cards, subagent panel, and a composer that prompts the host agent — end-to-end encrypted.",
+	"name": "EROS GATEWAY",
+	"short_name": "EROS GATEWAY",
+	"description": "The gateway into a live agent session: streaming transcript, tool cells, the den of subagents, and a composer that speaks to the host — end-to-end encrypted.",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",
-	"background_color": "#0f0b14",
-	"theme_color": "#0f0b14",
+	"background_color": "#08070b",
+	"theme_color": "#ff2d55",
 	"icons": [
-		{ "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any" },
+		{ "src": "/favicon.ico", "type": "image/x-icon", "sizes": "16x16 32x32 48x48 64x64 128x128 256x256", "purpose": "any" },
 		{ "src": "/favicon-192x192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
 		{ "src": "/favicon-512x512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
-		{ "src": "/favicon-180x180.png", "type": "image/png", "sizes": "180x180", "purpose": "any" }
+		{ "src": "/favicon-180x180.png", "type": "image/png", "sizes": "180x180", "purpose": "any" },
+		{ "src": "/favicon.png", "type": "image/png", "sizes": "256x256", "purpose": "any" }
 	]
 }

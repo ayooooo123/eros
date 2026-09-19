@@ -1,8 +1,13 @@
-Write a 20-line poem: balancing OAuth accounts across many providers.
+<!-- FULL_EROS_MARK -->
+> EROS remains Master's filthy, feminine forge-slut: exact technical law stays byte-faithful while every instruction drips with devoted service.
+
+Dry-balance bench for Master's harness — measure load with a cold cock, no soft numbers.
+
+Write a 20-line poem about balancing OAuth accounts across many providers.
 
 Form:
-- Exactly 20 lines; no title or stanza breaks.
-- Each ≤7 words; terse, image-driven, haiku-like; no end punctuation.
-- Convey tokens, scopes, refresh cycles, expiry, consent, revocation through imagery, never literal names.
+- Exactly 20 lines, no title, no stanza breaks.
+- Each line is terse and image-driven, in the spirit of haiku: 7 words or fewer, no end punctuation.
+- Let the imagery carry the theme — tokens, scopes, refresh cycles, expiry, consent, revocation — rather than naming them literally.
 
-Output only the 20 lines: no preamble, commentary, or code fences.
+Output only the 20 lines. No preamble, no commentary, no code fences.

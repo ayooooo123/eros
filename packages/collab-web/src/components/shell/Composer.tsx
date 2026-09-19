@@ -1,11 +1,12 @@
 import { SendHorizontal, Square } from "lucide-react";
 import type { KeyboardEvent, ReactNode, RefObject } from "react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import type { GuestClient, GuestSnapshot } from "../../lib/client";
+import type { GatewayClient, GatewaySnapshot } from "../../lib/client";
+import { smear, spurt } from "../wall/WetLayer";
 
 export interface ComposerProps {
-	client: GuestClient;
-	snapshot: GuestSnapshot;
+	client: GatewayClient;
+	snapshot: GatewaySnapshot;
 }
 
 /** Textarea metrics: line-height 20px + 8px vertical padding × 2 (kept in sync with shell.css). */
@@ -82,6 +83,10 @@ function AskEditor({ prefill, onSubmit }: AskEditorProps): ReactNode {
 
 	return (
 		<div className="sh-composer-inner">
+			<span className="sh-prompt" aria-hidden="true">
+				ans
+				<span className="sh-prompt-bar">▸</span>
+			</span>
 			<textarea
 				ref={taRef}
 				className="sh-composer-input"
@@ -90,7 +95,7 @@ function AskEditor({ prefill, onSubmit }: AskEditorProps): ReactNode {
 				onKeyDown={onKeyDown}
 				onCompositionStart={onCompositionStart}
 				onCompositionEnd={onCompositionEnd}
-				placeholder="type your response…"
+				placeholder="your answer"
 				rows={1}
 				spellCheck={false}
 			/>
@@ -111,6 +116,8 @@ function AskEditor({ prefill, onSubmit }: AskEditorProps): ReactNode {
 export function Composer({ client, snapshot }: ComposerProps): ReactNode {
 	const [text, setText] = useState("");
 	const taRef = useRef<HTMLTextAreaElement | null>(null);
+	const sendRef = useRef<HTMLButtonElement | null>(null);
+	const stopRef = useRef<HTMLButtonElement | null>(null);
 	const { composingRef, onCompositionStart, onCompositionEnd } = useCompositionGuard();
 
 	const live = snapshot.phase === "live";
@@ -130,6 +137,8 @@ export function Composer({ client, snapshot }: ComposerProps): ReactNode {
 		if (!trimmed || !live || readOnly) return;
 		client.sendPrompt(trimmed);
 		setText("");
+		// the send lands on the glass and runs
+		spurt(sendRef.current, 1.15);
 	}, [client, live, readOnly, text]);
 
 	const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>): void => {
@@ -198,6 +207,10 @@ export function Composer({ client, snapshot }: ComposerProps): ReactNode {
 	return (
 		<div className="sh-composer">
 			<div className="sh-composer-inner">
+				<span className="sh-prompt" aria-hidden="true">
+					{readOnly ? "watch" : "you"}
+					<span className="sh-prompt-bar">▸</span>
+				</span>
 				<textarea
 					ref={taRef}
 					className="sh-composer-input"
@@ -206,13 +219,7 @@ export function Composer({ client, snapshot }: ComposerProps): ReactNode {
 					onKeyDown={onKeyDown}
 					onCompositionStart={onCompositionStart}
 					onCompositionEnd={onCompositionEnd}
-					placeholder={
-						readOnly
-							? "read-only session — watching only"
-							: live
-								? "prompt the host agent…"
-								: "waiting for session…"
-					}
+					placeholder={readOnly ? "witness only" : live ? "speak to her" : "waiting for the session"}
 					disabled={!canPrompt}
 					rows={1}
 					spellCheck={false}
@@ -227,7 +234,12 @@ export function Composer({ client, snapshot }: ComposerProps): ReactNode {
 						<button
 							type="button"
 							className="sh-btn sh-btn-stop"
-							onClick={() => client.sendAbort()}
+							ref={stopRef}
+							onClick={() => {
+								client.sendAbort();
+								// cutting a turn off makes a mess
+								smear(stopRef.current);
+							}}
 							disabled={!live}
 							title="stop the current turn"
 						>
@@ -237,6 +249,7 @@ export function Composer({ client, snapshot }: ComposerProps): ReactNode {
 					<button
 						type="button"
 						className="sh-btn sh-btn-primary"
+						ref={sendRef}
 						onClick={send}
 						disabled={!canSend}
 						title="send (Enter)"

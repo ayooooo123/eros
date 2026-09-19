@@ -949,9 +949,9 @@ def sync_reference_fixtures(fixtures_dir: Path) -> None:
 def resolve_omp_bin(raw: str | None) -> str:
     if raw:
         return raw
-    found = shutil.which("omp")
+    found = shutil.which("eros")
     if not found:
-        raise SystemExit("Could not find `omp` on PATH. Set --omp-bin or OMP_BIN.")
+        raise SystemExit("Could not find `eros` on PATH. Set --eros-bin or EROS_BIN.")
     return found
 
 
@@ -1410,9 +1410,9 @@ def run_oracle_review_sync(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run OpenRouter fixture evaluations through omp RPC mode."
+        description="Run OpenRouter fixture evaluations through EROS RPC mode."
     )
-    parser.add_argument("--omp-bin", default=os.environ.get("OMP_BIN"))
+    parser.add_argument("--eros-bin", dest="omp_bin", default=os.environ.get("EROS_BIN"))
     parser.add_argument("--fixtures-dir", default=os.path.expanduser("~/tmp/fixtures"))
     parser.add_argument("--results-dir")
     parser.add_argument(

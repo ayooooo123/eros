@@ -1,16 +1,18 @@
 /**
- * Browser WebSocket wrapper for collab live-session sharing (vendored mirror
+ * Browser WebSocket wrapper for the live-session relay (vendored mirror
  * of `@oh-my-pi/pi-coding-agent/src/collab/relay-client.ts` semantics).
  *
- * Connects to a relay room, seals/opens AES-GCM frames, and reconnects with
- * exponential backoff. Guests survive host-drop teardown while the host recreates the room.
+ * Connects to a relay room, seals/opens AES-GCM frames in strict order, and
+ * reconnects with exponential backoff on transient drops. Fatal relay close
+ * codes (room gone, host conflict, room full) and decryption failures never
+ * reconnect.
  */
 
 import type { GuestFrame, HostFrame, RelayControlMessage } from "@oh-my-pi/pi-wire";
 import { open, seal } from "./codec";
 import { packEnvelope, unpackEnvelope } from "./link";
 
-const RELAY_CLOSE_REASONS: Record<number, string> = {
+const FATAL_CLOSE_REASONS: Record<number, string> = {
 	4001: "room closed",
 	4004: "no such room",
 	4009: "a host is already connected for this room",
@@ -35,7 +37,7 @@ export class CollabSocket {
 	onOpen?: () => void;
 	onFrame?: (frame: HostFrame, fromPeer: number) => void;
 	onControl?: (msg: RelayControlMessage) => void;
-	/** Fires on each close; `willReconnect` distinguishes retries from terminal shutdown. */
+	/** Fires once per terminal close (intentional, fatal code, or bad key). willReconnect=true for transient drops that will retry. */
 	onClose?: (reason: string, willReconnect: boolean) => void;
 
 	readonly #opts: CollabSocketOptions;
@@ -44,8 +46,6 @@ export class CollabSocket {
 	#attempt = 0;
 	/** Terminal state: intentional close or fatal failure. Cleared by connect(). */
 	#closed = false;
-	/** Allows a previously joined guest to outlive room recreation races. */
-	#retryMissingRoom = false;
 	/** Serializes seal() so frames hit the wire in send() order. */
 	#sendChain: Promise<void> = Promise.resolve();
 	/** Serializes open() so frames are delivered in arrival order. */
@@ -64,7 +64,6 @@ export class CollabSocket {
 	connect(): void {
 		if (this.#ws || this.#retryTimer) return;
 		this.#closed = false;
-		this.#retryMissingRoom = false;
 		this.#attempt = 0;
 		this.#openSocket();
 	}
@@ -94,7 +93,6 @@ export class CollabSocket {
 		this.#clearRetry();
 		const wasClosed = this.#closed;
 		this.#closed = true;
-		this.#retryMissingRoom = false;
 		this.#pendingSends.length = 0;
 		const ws = this.#ws;
 		this.#ws = null;
@@ -114,7 +112,7 @@ export class CollabSocket {
 		this.#ws = ws;
 		ws.onopen = () => {
 			if (this.#ws !== ws) return;
-			if (!this.#retryMissingRoom) this.#attempt = 0;
+			this.#attempt = 0;
 			for (const envelope of this.#pendingSends) ws.send(envelope);
 			this.#pendingSends.length = 0;
 			this.onOpen?.();
@@ -138,18 +136,18 @@ export class CollabSocket {
 			try {
 				this.onControl?.(JSON.parse(data) as RelayControlMessage);
 			} catch {
-				console.warn("collab: ignoring malformed control message");
+				console.warn("gateway: ignoring malformed control message");
 			}
 			return;
 		}
 		const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data instanceof Uint8Array ? data : null;
 		if (!bytes) {
-			console.warn("collab: ignoring binary message of unexpected shape");
+			console.warn("gateway: ignoring binary message of unexpected shape");
 			return;
 		}
 		const envelope = unpackEnvelope(bytes);
 		if (!envelope) {
-			console.warn("collab: ignoring truncated envelope");
+			console.warn("gateway: ignoring truncated envelope");
 			return;
 		}
 		this.#recvChain = this.#recvChain
@@ -163,8 +161,6 @@ export class CollabSocket {
 					return;
 				}
 				if (this.#ws !== ws) return;
-				this.#retryMissingRoom = false;
-				this.#attempt = 0;
 				this.onFrame?.(frame, envelope.peerId);
 			})
 			.catch(() => {
@@ -174,22 +170,14 @@ export class CollabSocket {
 
 	#handleClose(code: number, reason: string): void {
 		if (this.#closed) return;
-		const fatalReason = RELAY_CLOSE_REASONS[code];
-		const closeReason = fatalReason ?? (reason || `connection lost (code ${code})`);
-		const retryRoom = this.#opts.role === "guest" && (code === 4001 || (code === 4004 && this.#retryMissingRoom));
-		if (retryRoom) {
-			this.#retryMissingRoom = true;
-			this.onClose?.(closeReason, true);
-			this.#scheduleRetry();
-			return;
-		}
+		const fatalReason = FATAL_CLOSE_REASONS[code];
 		if (fatalReason !== undefined) {
 			this.#closed = true;
 			this.#pendingSends.length = 0;
 			this.onClose?.(fatalReason, false);
 			return;
 		}
-		this.onClose?.(closeReason, true);
+		this.onClose?.(reason || `connection lost (code ${code})`, true);
 		this.#scheduleRetry();
 	}
 

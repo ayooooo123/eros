@@ -1,0 +1,535 @@
+/* Wet motion.
+ *
+ * Everything that moves in this interface moves like a fluid. There are no
+ * ease-in-out fades in here: a hover *floods*, a focus *swells*, a pending tool
+ * *beads*, a send *spurts*, an error *smears and runs*, and nothing ever fully
+ * dries. This file is loaded last so it wins ties against the component sheets,
+ * and it is the one place to look for the app's whole motion vocabulary.
+ *
+ * `prefers-reduced-motion` is handled globally in base.css (every animation is
+ * collapsed to a single instant frame), so each rule below still has a sane
+ * static end state. */
+
+/* ══ the vocabulary ════════════════════════════════════════════════ */
+
+/* a surface floods from the bottom up, meniscus first */
+@keyframes flood {
+	from {
+		background-size: 100% 0%;
+	}
+	to {
+		background-size: 100% 100%;
+	}
+}
+
+/* a drop gathers at an edge, hangs, lets go */
+@keyframes bead {
+	0% {
+		height: 0;
+		opacity: 0;
+		transform: translateY(0) scaleX(0.4);
+	}
+	34% {
+		height: 0.5em;
+		opacity: 1;
+		transform: translateY(0) scaleX(1.15);
+	}
+	54% {
+		height: 0.62em;
+		opacity: 1;
+		transform: translateY(0.1em) scaleX(0.85);
+	}
+	100% {
+		height: 1.1em;
+		opacity: 0;
+		transform: translateY(2.4em) scaleX(0.4);
+	}
+}
+
+/* a streak crawls down out of something and stays there */
+@keyframes weep {
+	0% {
+		height: 0;
+		opacity: 0.95;
+	}
+	70% {
+		opacity: 0.8;
+	}
+	100% {
+		height: 4.2em;
+		opacity: 0;
+	}
+}
+
+/* fluid running down a cell grid, behind the words */
+@keyframes run-down {
+	from {
+		background-position:
+			0 0,
+			0 -70%;
+	}
+	to {
+		background-position:
+			0 0,
+			0 170%;
+	}
+}
+
+/* a single drop crawling down an idle surface */
+@keyframes seep {
+	from {
+		background-position: 50% -2.4em;
+	}
+	to {
+		background-position: 50% 130%;
+	}
+}
+
+/* something lands, squashes, settles */
+@keyframes land {
+	0% {
+		opacity: 0;
+		transform: translateY(-0.5em) scaleY(0.7);
+	}
+	62% {
+		opacity: 1;
+		transform: translateY(0) scaleY(1.1);
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* output arrives one cell column at a time, wet at the leading edge */
+@keyframes type-in {
+	from {
+		clip-path: inset(0 100% 0 0);
+	}
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+/* an error is dragged onto the glass */
+@keyframes smear-in {
+	0% {
+		opacity: 0;
+		transform: translate(1.5ch, -0.6em) skewX(-8deg);
+	}
+	70% {
+		opacity: 1;
+		transform: translate(0, 0.1em) skewX(2deg);
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* slow bodily breathing — idle, never still */
+@keyframes throb {
+	0%,
+	100% {
+		opacity: 0.72;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
+/* a fill creeping up a container */
+@keyframes creep {
+	0%,
+	100% {
+		background-size: 100% 18%;
+	}
+	50% {
+		background-size: 100% 46%;
+	}
+}
+
+/* ══ controls: hover floods, primary weeps ═════════════════════════ */
+
+.sh-btn,
+.ag-btn {
+	position: relative;
+	background-color: transparent;
+	background-image: linear-gradient(
+		to top,
+		var(--blood-deep) 0 calc(100% - 2px),
+		var(--blush) calc(100% - 2px) 100%
+	);
+	background-repeat: no-repeat;
+	background-position: bottom;
+	background-size: 100% 0%;
+	transition: none;
+}
+
+.sh-btn:hover:not(:disabled),
+.ag-btn:hover {
+	color: var(--silk);
+	background-color: transparent;
+	animation: flood 0.18s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+.sh-btn-primary:hover:not(:disabled) {
+	color: var(--silk);
+	background-color: transparent;
+	background-image: linear-gradient(to top, var(--blood) 0 calc(100% - 2px), var(--blush) calc(100% - 2px) 100%);
+}
+
+/* the primary key is always about to drip */
+.sh-btn-primary::first-letter {
+	color: inherit;
+}
+
+.sh-btn-primary {
+	overflow: visible;
+}
+
+.sh-connect-submit {
+	position: relative;
+}
+
+.sh-connect-submit::after {
+	content: none;
+}
+
+/* ══ the prompt gutter and the caret both weep ═════════════════════ */
+
+.sh-prompt-bar {
+	position: relative;
+	display: inline-block;
+}
+
+.sh-prompt-bar::after {
+	content: "";
+	position: absolute;
+	left: 45%;
+	top: 90%;
+	width: 2px;
+	background: var(--hot-blood);
+	animation: bead 3.6s cubic-bezier(0.45, 0, 0.9, 0.4) infinite;
+}
+
+.tm-caret {
+	overflow: visible;
+}
+
+.tm-caret::after {
+	content: "";
+	position: absolute;
+	left: 42%;
+	top: 100%;
+	width: 2px;
+	background: var(--hot-blood);
+	animation: bead 2.8s cubic-bezier(0.45, 0, 0.9, 0.4) infinite;
+}
+
+/* ══ fields: focus swells, floods and gleams ═══════════════════════ */
+
+.sh-inputrow,
+.sh-composer-input,
+.ag-chat-input {
+	background-color: var(--void);
+	background-image: linear-gradient(
+		to top,
+		color-mix(in oklab, var(--user-msg-bg) 90%, transparent) 0 calc(100% - 1px),
+		color-mix(in oklab, var(--rose) 70%, transparent) calc(100% - 1px) 100%
+	);
+	background-repeat: no-repeat;
+	background-position: bottom;
+	background-size: 100% 0%;
+}
+
+.sh-inputrow:focus-within,
+.sh-composer-input:focus,
+.ag-chat-input:focus {
+	border-color: var(--hot-blood);
+	animation:
+		flood 0.22s cubic-bezier(0.1, 0.9, 0.2, 1) forwards,
+		swell 0.22s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+@keyframes swell {
+	0% {
+		transform: scaleY(1);
+	}
+	45% {
+		transform: scaleY(1.09);
+	}
+	100% {
+		transform: scaleY(1);
+	}
+}
+
+/* ══ transcript blocks ═════════════════════════════════════════════ */
+
+/* the host's words land and squash */
+.tr-row--user .tr-body,
+.tr-row--custom .tr-body {
+	animation: land 0.3s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+	transform-origin: top left;
+}
+
+/* the agent's words are typed in, cell column by cell column */
+.tr-row--assistant .tr-body {
+	animation: type-in 0.34s steps(26, end) both;
+}
+
+/* while it is still talking, fluid runs down the grid behind the words */
+.tr-row--live .tr-body {
+	background-image:
+		repeating-linear-gradient(
+			to right,
+			color-mix(in oklab, var(--blood) 26%, transparent) 0,
+			color-mix(in oklab, var(--blood) 26%, transparent) 1px,
+			transparent 1px,
+			transparent var(--cell-w)
+		),
+		linear-gradient(
+			to bottom,
+			transparent,
+			color-mix(in oklab, var(--hot-blood) 30%, transparent) 45%,
+			color-mix(in oklab, var(--blush) 22%, transparent) 55%,
+			transparent
+		);
+	background-repeat: repeat, no-repeat;
+	background-size:
+		auto,
+		100% 70%;
+	animation:
+		type-in 0.34s steps(26, end) both,
+		run-down 1.5s linear infinite;
+}
+
+/* the output cursor is a wet block, and it drips */
+.tm-blk {
+	position: relative;
+	box-shadow: 0 0 10px color-mix(in oklab, var(--hot-blood) 70%, transparent);
+}
+
+.tm-blk::after {
+	content: "";
+	position: absolute;
+	left: 40%;
+	top: 100%;
+	width: 2px;
+	background: var(--hot-blood);
+	animation: bead 2.2s cubic-bezier(0.45, 0, 0.9, 0.4) infinite;
+}
+
+/* "thinking…" is not a spinner, it is a slow bodily breath */
+.tr-shimmer {
+	animation: throb 1.9s ease-in-out infinite;
+}
+
+/* the empty chamber still drips */
+.tr-empty {
+	background-image: linear-gradient(to bottom, var(--hot-blood), transparent);
+	background-repeat: no-repeat;
+	background-size: 2px 2.4em;
+	animation: seep 4.2s linear infinite;
+}
+
+/* ══ tool cells: pending beads, errors run ═════════════════════════ */
+
+.tr-root .tv-card {
+	position: relative;
+	overflow: visible;
+}
+
+/* a pending call gathers at its own left edge and lets go, over and over */
+.tr-root .tv-card:has(.tv-spin) {
+	background-image: linear-gradient(
+		to top,
+		color-mix(in oklab, var(--blood) 30%, transparent) 0 calc(100% - 1px),
+		color-mix(in oklab, var(--rose) 60%, transparent) calc(100% - 1px) 100%
+	);
+	background-repeat: no-repeat;
+	background-position: bottom;
+	animation: creep 2.6s ease-in-out infinite;
+}
+
+.tr-root .tv-card:has(.tv-spin)::after {
+	content: "";
+	position: absolute;
+	left: 1.4ch;
+	top: 100%;
+	width: 2px;
+	background: var(--hot-blood);
+	animation: bead 2.1s cubic-bezier(0.45, 0, 0.9, 0.4) infinite;
+}
+
+/* a failed call bleeds out of the bottom of its cell */
+.tr-root .tv-card--error::after {
+	content: "";
+	position: absolute;
+	left: 2.6ch;
+	top: 100%;
+	width: 3px;
+	background: linear-gradient(to bottom, var(--err-red), transparent);
+	animation: weep 3.4s cubic-bezier(0.3, 0, 0.8, 0.4) infinite;
+}
+
+.tr-root .tv-spin::before {
+	animation: throb 1.1s ease-in-out infinite;
+}
+
+/* ══ status line, banners, toasts ══════════════════════════════════ */
+
+/* the status line sweats along its bottom edge */
+.sh-header {
+	position: relative;
+}
+
+.sh-header::after {
+	content: "";
+	position: absolute;
+	left: 32%;
+	top: 100%;
+	width: 2px;
+	background: var(--blood);
+	animation: bead 6.5s cubic-bezier(0.45, 0, 0.9, 0.4) infinite;
+}
+
+.sh-composer {
+	position: relative;
+}
+
+.sh-composer::after {
+	content: "";
+	position: absolute;
+	left: 68%;
+	bottom: 100%;
+	width: 2px;
+	height: 0.9em;
+	background: linear-gradient(to top, var(--blood), transparent);
+	opacity: 0.7;
+}
+
+.sh-banner {
+	position: fixed;
+	animation: land 0.26s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.sh-banner::after {
+	content: "";
+	position: absolute;
+	left: 40%;
+	top: 100%;
+	width: 2px;
+	background: var(--welt);
+	animation: bead 2.4s cubic-bezier(0.45, 0, 0.9, 0.4) infinite;
+}
+
+.sh-banner-dot {
+	box-shadow: 0 0 8px var(--welt);
+}
+
+.sh-toast {
+	position: relative;
+	animation: land 0.24s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.sh-toast-error {
+	animation: smear-in 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.sh-toast-error::after {
+	content: "";
+	position: absolute;
+	left: 3ch;
+	top: 100%;
+	width: 3px;
+	background: linear-gradient(to bottom, var(--err-red), transparent);
+	animation: weep 3s cubic-bezier(0.3, 0, 0.8, 0.4) infinite;
+}
+
+/* ══ the severed dialog bleeds out of its own frame ════════════════ */
+
+.sh-ended-card {
+	animation: land 0.34s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.sh-ended-card::after {
+	content: "";
+	position: absolute;
+	left: 22%;
+	top: 100%;
+	width: 4px;
+	background: linear-gradient(to bottom, var(--blood), transparent);
+	animation: weep 3.6s cubic-bezier(0.3, 0, 0.8, 0.4) infinite;
+}
+
+.sh-ended-legend {
+	animation: throb 2.2s ease-in-out infinite;
+}
+
+/* ══ the den ═══════════════════════════════════════════════════════ */
+
+.ag-row {
+	background-color: transparent;
+	background-image: linear-gradient(
+		to right,
+		var(--selected-bg) 0 calc(100% - 2px),
+		color-mix(in oklab, var(--rose) 50%, transparent) calc(100% - 2px) 100%
+	);
+	background-repeat: no-repeat;
+	background-position: left;
+	background-size: 0% 100%;
+	transition: none;
+}
+
+.ag-row:hover {
+	background-color: transparent;
+	animation: ag-flush 0.2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes ag-flush {
+	from {
+		background-size: 0% 100%;
+	}
+	to {
+		background-size: 100% 100%;
+	}
+}
+
+.ag-row--selected {
+	background-color: var(--selected-bg);
+}
+
+.ag-dot--running {
+	position: relative;
+	animation: throb 1.1s ease-in-out infinite;
+	text-shadow: 0 0 8px var(--hot-blood);
+}
+
+.ag-dot--running::after {
+	content: "";
+	position: absolute;
+	left: 45%;
+	top: 90%;
+	width: 2px;
+	background: var(--hot-blood);
+	animation: bead 2.6s cubic-bezier(0.45, 0, 0.9, 0.4) infinite;
+}
+
+/* ══ the scrollbar is a vein ═══════════════════════════════════════ */
+
+* {
+	scrollbar-color: var(--blood) transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: linear-gradient(to right, var(--blood-deep), var(--blood) 60%, var(--rose));
+	border: 3px solid transparent;
+	background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(to right, var(--blood), var(--hot-blood) 60%, var(--blush));
+	border: 2px solid transparent;
+	background-clip: padding-box;
+}

@@ -980,10 +980,11 @@ export class Editor implements Component, Focusable {
 
 	#getEffectivePromptGutter(): string | undefined {
 		const style = this.#effectiveStyle();
-		// The box frame never renders a gutter; hosts that set one expect it only
-		// in borderless contexts (hook editors, agents hub).
-		if (style.sideBorders) return undefined;
+		// An explicit gutter is caller-owned and renders inside any chrome style.
 		if (this.#promptGutter !== undefined) return this.#promptGutter;
+		// Side-bordered Composer styles do not apply their default gutter; their
+		// host owns cursor decoration instead.
+		if (style.sideBorders) return undefined;
 		// Legacy `setBorderVisible(false)` callers control the gutter themselves;
 		// only an explicitly selected composer shape gets the style default.
 		if (!this.#borderVisible) return undefined;

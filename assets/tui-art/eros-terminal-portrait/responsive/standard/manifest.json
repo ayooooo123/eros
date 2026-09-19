@@ -1,0 +1,138 @@
+{
+  "chafa": {
+    "pinnedInvocation": [
+      "chafa",
+      "--format",
+      "symbols",
+      "--symbols",
+      "braille",
+      "--fill",
+      "braille",
+      "--colors",
+      "none",
+      "--preprocess",
+      "on",
+      "--size",
+      "{cols}x{rows}",
+      "--font-ratio",
+      "1/2",
+      "--stretch",
+      "{framedSourcePng}"
+    ],
+    "version": "1.18.2"
+  },
+  "images": [
+    {
+      "frame": {
+        "cropBox": [
+          0,
+          9,
+          1520,
+          864
+        ],
+        "dotDimensions": {
+          "height": 108,
+          "width": 192
+        },
+        "fit": "cover",
+        "focus": {
+          "x": 0.5,
+          "y": 0.42
+        }
+      },
+      "id": "001-eros-terminal-portrait",
+      "input": {
+        "dimensions": {
+          "height": 1040,
+          "width": 1520
+        },
+        "fileName": "eros-terminal-portrait.png",
+        "sha256": "7907a0408075b5b20e59996ec17af17bde39eb9d1e66478a63a7fcdeb4697074"
+      },
+      "normalization": {
+        "black": 0,
+        "borderBrightFraction": 0.41713,
+        "borderMedianLinear": 42,
+        "polarity": "direct-dark-ground",
+        "white": 255
+      },
+      "outputs": {
+        "plainBraille": {
+          "dimensions": {
+            "columns": 96,
+            "rows": 27
+          },
+          "path": "braille/001-eros-terminal-portrait.txt",
+          "sha256": "d348377bbb30187b19ce750d46953fdd4d478b59b129c1d9048b0becc762b7f2"
+        },
+        "truecolorBraille": {
+          "dimensions": {
+            "columns": 96,
+            "rows": 27
+          },
+          "path": "truecolor/001-eros-terminal-portrait.ansi",
+          "sha256": "cad0c59469bd594d89e6b50a1ba2cd122714f1035b81fefffd45247f8d115d5a"
+        },
+        "truecolorHalfBlock": {
+          "dimensions": {
+            "columns": 96,
+            "rows": 27
+          },
+          "path": "halfblock/001-eros-terminal-portrait.ansi",
+          "sha256": "4f821b2759d5e390c749b2b0967b1b9056615861bb773878bcb7677790be3a2f"
+        },
+        "witnessPng": {
+          "dimensions": {
+            "height": 648,
+            "width": 1344
+          },
+          "path": "witness/001-eros-terminal-portrait.png",
+          "sha256": "e6536434a841d0697fb81ee570bda0574463f391704701c8914a81dd5c6bf7b2"
+        }
+      }
+    }
+  ],
+  "palette": {
+    "name": "eros-black-blood-hot-pink-blush",
+    "stops": [
+      {
+        "at": 0.0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "at": 0.3,
+        "rgb": [
+          103,
+          0,
+          27
+        ]
+      },
+      {
+        "at": 0.72,
+        "rgb": [
+          244,
+          20,
+          122
+        ]
+      },
+      {
+        "at": 1.0,
+        "rgb": [
+          255,
+          205,
+          225
+        ]
+      }
+    ]
+  },
+  "schema": "eros-tui/conversion-manifest",
+  "terminalGrid": {
+    "columns": 96,
+    "rows": 27
+  },
+  "version": 1
+}

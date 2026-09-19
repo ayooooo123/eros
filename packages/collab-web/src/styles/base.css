@@ -1,4 +1,4 @@
-/* Base reset + globals. Token vars only. */
+/* Base reset + globals. One font, one grid, no rounded anything. Token vars only. */
 *,
 *::before,
 *::after {
@@ -26,12 +26,21 @@ body {
 }
 
 body {
-	font: 400 13px / 1.5 var(--font-ui);
-	background: var(--bg);
+	font: 400 var(--cell-fs) / var(--cell-lh) var(--font-mono);
+	font-variant-ligatures: none;
+	font-variant-numeric: tabular-nums;
+	background: var(--void);
 	color: var(--fg);
-	-webkit-font-smoothing: antialiased;
-	text-rendering: optimizeLegibility;
 	overflow: hidden;
+	/* Terminals do not antialias into mush; keep the stems hard. */
+	-webkit-font-smoothing: antialiased;
+	text-rendering: geometricPrecision;
+}
+
+#root {
+	position: relative;
+	z-index: 1;
+	height: 100%;
 }
 
 button,
@@ -41,6 +50,7 @@ select,
 a {
 	font: inherit;
 	color: inherit;
+	border-radius: 0;
 	-webkit-tap-highlight-color: transparent;
 	touch-action: manipulation;
 }
@@ -50,7 +60,14 @@ button {
 }
 
 a {
-	color: var(--accent);
+	color: var(--rose);
+	text-decoration: none;
+	border-bottom: 1px solid color-mix(in oklab, var(--rose) 45%, transparent);
+}
+
+a:hover {
+	color: var(--silk);
+	border-bottom-color: var(--hot-blood);
 }
 
 code,
@@ -60,23 +77,30 @@ kbd {
 }
 
 :focus-visible {
-	outline: 2px solid var(--ring);
-	outline-offset: 2px;
+	outline: 1px solid var(--ring);
+	outline-offset: 0;
 }
 
 input,
 textarea {
-	caret-color: var(--accent);
+	caret-color: var(--hot-blood);
+	/* Chrome 139+: a real terminal caret. Older engines keep the thin one. */
+	caret-shape: block;
 }
 
 ::selection {
-	background: var(--accent-muted);
+	background: var(--selected-bg);
+	color: var(--silk);
 }
 
-/* subtle scrollbars */
+::placeholder {
+	color: var(--dim-ash);
+}
+
+/* square, blood-tracked scrollbars */
 * {
 	scrollbar-width: thin;
-	scrollbar-color: var(--border-strong) transparent;
+	scrollbar-color: var(--dark-ash) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -85,15 +109,14 @@ textarea {
 }
 
 *::-webkit-scrollbar-thumb {
-	background: var(--border-strong);
-	border: 2px solid transparent;
+	background: var(--dark-ash);
+	border: 3px solid transparent;
 	background-clip: padding-box;
-	border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-	background: var(--fg-faint);
-	border: 2px solid transparent;
+	background: var(--blood);
+	border: 3px solid transparent;
 	background-clip: padding-box;
 }
 
@@ -101,14 +124,14 @@ textarea {
 	background: transparent;
 }
 
-/* shared animations */
+/* ---- shared animations ---- */
 @keyframes pulse {
 	0%,
 	100% {
 		opacity: 1;
 	}
 	50% {
-		opacity: 0.35;
+		opacity: 0.3;
 	}
 }
 
@@ -118,5 +141,70 @@ textarea {
 	}
 	100% {
 		background-position: 200% 0;
+	}
+}
+
+/* A cursor blinks. It does not fade. */
+@keyframes blink {
+	0%,
+	49% {
+		opacity: 1;
+	}
+	50%,
+	100% {
+		opacity: 0;
+	}
+}
+
+/* New cells do not slide in — they are typed in, one row at a time. */
+@keyframes cell-in {
+	from {
+		opacity: 0;
+		clip-path: inset(0 100% 0 0);
+	}
+	to {
+		opacity: 1;
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+@keyframes ember {
+	from {
+		box-shadow: inset 0 0 0 1px var(--hot-blood);
+	}
+	to {
+		box-shadow: inset 0 0 0 1px transparent;
+	}
+}
+
+@keyframes tear {
+	0%,
+	100% {
+		transform: none;
+	}
+	20% {
+		transform: translateX(-3px);
+	}
+	40% {
+		transform: translateX(2px);
+	}
+	60% {
+		transform: translateX(-1px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
+	/* keep the caret visible instead of frozen mid-blink */
+	.tm-caret {
+		animation: none !important;
+		opacity: 1 !important;
 	}
 }

@@ -1,0 +1,88 @@
+{
+  "id": "pack-eros-portrait",
+  "name": "EROS PORTRAIT — rope-drawn hunger",
+  "cols": 120,
+  "rows": 40,
+  "tier": "portrait",
+  "wordmark": "L Y C O R P E R O S",
+  "subtitle": "p u l l   h e r   t i g h t e r",
+  "source": {
+    "renderId": "eros-1786626322-30663-v1",
+    "seed": 19430663,
+    "referenceId": "r04-000-goon",
+    "experiment": "eros-faithful-reference-v1",
+    "selection": "Master selected reroll 2"
+  },
+  "beats": {
+    "ember_ms": 0,
+    "braille_ms": 0,
+    "morph_ms": 0,
+    "bloom_ms": 0,
+    "wide_ms": 0,
+    "punch_ms": 0
+  },
+  "params": {
+    "mode": "braille-first",
+    "ink": "blood",
+    "cols": 120,
+    "rows": 40,
+    "brailleCols": 120,
+    "brailleRows": 40,
+    "welcomeCols": 120,
+    "welcomeRows": 40,
+    "holdSec": 3.4,
+    "morphSec": 0,
+    "timeline": "single-portrait-hold",
+    "wordmark": "L Y C O R P E R O S",
+    "subtitle": "p u l l   h e r   t i g h t e r",
+    "throbPeriod": 720,
+    "dripPeriod": 860,
+    "dripFall": 9,
+    "dripSource": "mouth-and-tongue",
+    "fpsTarget": 60,
+    "noCrop": true,
+    "noEyeDrips": true,
+    "noSquirtBursts": true
+  },
+  "poses": [
+    {
+      "pose": "eros-faithful-reference-v1-seed-19430663",
+      "frame": 0,
+      "holdMs": 3400,
+      "drips": [
+        {
+          "x": 51,
+          "y": 19,
+          "rgb": [255, 36, 70],
+          "fall": 8,
+          "periodMs": 860,
+          "role": "mouth",
+          "primary": true,
+          "weight": "heavy"
+        },
+        {
+          "x": 51,
+          "y": 24,
+          "rgb": [255, 36, 70],
+          "fall": 9,
+          "periodMs": 860,
+          "role": "tongue",
+          "primary": true,
+          "weight": "pour"
+        }
+      ],
+      "ambient": {
+        "throbPeriodMs": 720,
+        "throbAmp": 0.2,
+        "breathPeriodMs": 2200,
+        "dripPeriodMs": 860,
+        "dripFall": 9,
+        "emberDensity": 0.008
+      },
+      "anatomy_first": true,
+      "full_frame": true,
+      "high_confidence_only": true,
+      "no_eye_drips": true
+    }
+  ]
+}

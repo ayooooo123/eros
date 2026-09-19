@@ -1,10 +1,10 @@
-"""Harbor agent that runs the LOCAL oh-my-pi (`omp`) build inside task containers.
+"""Harbor agent that runs the local EROS (`eros`) build inside task containers.
 
 Unlike Harbor's built-in `pi` agent (which `npm i -g @mariozechner/pi-coding-agent`),
 this runs the working tree at `/work/pi`. Install modes (`OMP_BENCH_INSTALL`):
 
   * `source` (default): the runner bind-mounts the repo read-only plus a
-    prebuilt linux `node_modules` tree and a linux `bun` binary; omp runs
+    prebuilt linux `node_modules` tree and a linux `bun` binary; EROS runs
     straight from `packages/coding-agent/src/cli.ts`. Zero-network setup, and
     host TS edits apply to the next trial with no rebuild (Rust natives load
     from the in-tree `packages/natives/native/*.node` prebuilds).
@@ -12,9 +12,9 @@ this runs the working tree at `/work/pi`. Install modes (`OMP_BENCH_INSTALL`):
     (bundles every workspace TS package into `dist/cli.js`) and hands us the
     tarball path; we upload it, install Bun, `bun install` the bundle's
     external deps + the platform native addon, and run `bun .../dist/cli.js`.
-  * binary (`--binary`): a self-contained compiled omp binary is uploaded.
+  * binary (`--binary`): a self-contained compiled EROS binary is uploaded.
 
-Auth never enters the container: a generated `~/.omp/agent/models.yml` routes the
+Auth never enters the container: a generated `~/.eros/agent/models.yml` routes the
 configured providers' `baseUrl` at the host's pm2 auth-gateway (default
 `http://host.docker.internal:4000`, `transport: pi-native`), so the gateway
 resolves credentials host-side. No provider API keys are passed in.
@@ -215,7 +215,7 @@ class OmpLocal(BaseInstalledAgent):
         ]
         self._thinking = _env("OMP_BENCH_THINKING")
         self._auto_approve = _truthy(_env("OMP_BENCH_AUTO_APPROVE", "1"))
-        # Extra CLI args forwarded verbatim to the in-container omp invocation,
+        # Extra CLI args forwarded verbatim to the in-container EROS invocation,
         # JSON-array-encoded by the runner (OMP_BENCH_AGENT_ARGS) so multi-word
         # values survive without a second layer of shell quoting.
         self._agent_args = self._parse_agent_args()
@@ -226,7 +226,7 @@ class OmpLocal(BaseInstalledAgent):
         # off by default so search-using tasks don't false-negative on 401s.
         self._web_search = _truthy(_env("OMP_BENCH_WEB_SEARCH", "0"))
         # Extra env (PI_* dialect knobs, explicit --env) the runner forwards into
-        # the in-container omp run, JSON-encoded in OMP_BENCH_FORWARD_ENV.
+        # the in-container EROS run, JSON-encoded in OMP_BENCH_FORWARD_ENV.
         self._forward_env = self._parse_forward_env()
         # Source-mount paths (defaults must match the runner's compose overlay).
         self._source_dir = _env("OMP_BENCH_SOURCE_DIR", "/opt/omp/src")
@@ -243,7 +243,7 @@ class OmpLocal(BaseInstalledAgent):
     @staticmethod
     @override
     def name() -> str:
-        return "omp"
+        return "eros"
 
     @override
     def version(self) -> str | None:
@@ -266,7 +266,7 @@ class OmpLocal(BaseInstalledAgent):
     def _wrap(self, command: str) -> str:
         """Prefix a command with the Bun runtime on PATH.
 
-        omp spawns Bun worker subprocesses at runtime, so `bun` must resolve on
+        EROS spawns Bun worker subprocesses at runtime, so `bun` must resolve on
         PATH during `run()` too — not just for the entrypoint.
         """
         bun_dir = os.path.dirname(self._bun)
@@ -322,14 +322,14 @@ class OmpLocal(BaseInstalledAgent):
             else:
                 self._cli = await self._install_local(environment)
 
-        # 3) Auth + model config under $HOME/.omp/agent.
+        # 3) Auth + model config under $HOME/.eros/agent.
         if self._gateway_on:
             # Gateway routing — no provider keys ever enter the container.
             await self._write_models_yaml(environment)
         await self._write_config(environment)
 
     async def _install_source(self, environment: BaseEnvironment) -> str:
-        """Verify the read-only repo + linux deps mounts and run omp from TS source.
+        """Verify the read-only repo + linux deps mounts and run EROS from TS source.
 
         The runner mounts the repo at `self._source_dir`, shadows every host
         `node_modules` with a linux tree, and mounts a linux `bun` binary — so
@@ -356,10 +356,10 @@ class OmpLocal(BaseInstalledAgent):
             environment,
             command=(
                 "set -e; "
-                f"test -x {q(self._source_bun)} || {{ echo 'omp source mode: bun mount missing' >&2; exit 5; }}; "
-                f"test -f {q(cli)} || {{ echo 'omp source mode: repo mount missing' >&2; exit 5; }}; "
+                f"test -x {q(self._source_bun)} || {{ echo 'eros source mode: bun mount missing' >&2; exit 5; }}; "
+                f"test -f {q(cli)} || {{ echo 'eros source mode: repo mount missing' >&2; exit 5; }}; "
                 f"test -d {q(self._source_dir + '/node_modules/@oh-my-pi')} || "
-                "{ echo 'omp source mode: linux deps mount missing' >&2; exit 5; }; "
+                "{ echo 'eros source mode: linux deps mount missing' >&2; exit 5; }; "
                 f"{q(self._source_bun)} --version"
             ),
         )
@@ -396,7 +396,7 @@ class OmpLocal(BaseInstalledAgent):
         return f"{app}/dist/cli.js"
 
     async def _install_binary(self, environment: BaseEnvironment) -> str:
-        """Probe container arch, upload only the matching self-contained omp binary."""
+        """Probe container arch, upload only the matching self-contained EROS binary."""
         arch = (
             await self.exec_as_agent(environment, command="uname -m")
         ).stdout.strip()
@@ -408,11 +408,11 @@ class OmpLocal(BaseInstalledAgent):
             raise RuntimeError(f"binary mode: unsupported container arch {arch!r}")
         if not hostbin:
             raise RuntimeError(
-                f"binary mode: no omp binary provided for container arch {arch}"
+                f"binary mode: no EROS binary provided for container arch {arch}"
             )
         app_dir = f"{self._home}/.omp-bench"
-        dst = f"{app_dir}/omp"
-        staging = "/tmp/omp-bin"
+        dst = f"{app_dir}/eros-omp"
+        staging = "/tmp/eros-bin"
         await self.exec_as_agent(
             environment, command=f"mkdir -p {shlex.quote(app_dir)}"
         )
@@ -453,8 +453,8 @@ class OmpLocal(BaseInstalledAgent):
         await self.exec_as_agent(
             environment,
             command=(
-                f'mkdir -p "$HOME/.omp/agent"; '
-                f'cp {shlex.quote(staged)} "$HOME/.omp/agent/models.yml"'
+                f'mkdir -p "$HOME/.eros/agent"; '
+                f'cp {shlex.quote(staged)} "$HOME/.eros/agent/models.yml"'
             ),
         )
 
@@ -474,7 +474,7 @@ class OmpLocal(BaseInstalledAgent):
         return "\n".join(lines)
 
     async def _write_config(self, environment: BaseEnvironment) -> None:
-        """Write $HOME/.omp/agent/config.yml: the web_search toggle.
+        """Write $HOME/.eros/agent/config.yml: the web_search toggle.
 
         web_search can't authenticate through the gateway, so it's off by default.
         """
@@ -489,8 +489,8 @@ class OmpLocal(BaseInstalledAgent):
         await self.exec_as_agent(
             environment,
             command=(
-                f'mkdir -p "$HOME/.omp/agent"; '
-                f'cp {shlex.quote(_CONFIG_DST)} "$HOME/.omp/agent/config.yml"'
+                f'mkdir -p "$HOME/.eros/agent"; '
+                f'cp {shlex.quote(_CONFIG_DST)} "$HOME/.eros/agent/config.yml"'
             ),
         )
 
@@ -564,14 +564,14 @@ class OmpLocal(BaseInstalledAgent):
             parts.append(f"--thinking {shlex.quote(self._thinking)}")
         parts.extend(shlex.quote(arg) for arg in self._agent_args)
         # POSIX positional separator: some task prompts start with "-" (e.g. a
-        # markdown bullet, as in pytorch-model-recovery). Without this, omp parses
+        # markdown bullet, as in pytorch-model-recovery). Without this, EROS parses
         # the prompt as an unknown flag and exits 2. `--` forces positional mode.
         parts.append("--")
         parts.append(shlex.quote(instruction))
         # No pipes/stdbuf (absent in minimal images): redirect raw JSONL to the
         # mounted agent log dir; populate_context_post_run parses it on the host.
         run = " ".join(parts) + f" > /logs/agent/{_OUTPUT_FILENAME} 2>&1"
-        # Exec env for the omp run. Direct-auth (no-gateway) mode contributes the
+        # Exec env for the EROS run. Direct-auth (no-gateway) mode contributes the
         # selected providers' keys (via exec env, never argv); forwarded PI_* /
         # --env knobs apply last so an explicit --env always wins.
         run_env: dict[str, str] = {}
@@ -600,7 +600,7 @@ class OmpLocal(BaseInstalledAgent):
         }
 
     def _sum_main(self, path: Path, acc: "_Usage") -> None:
-        """Sum assistant `message_end` usage from omp's stdout JSONL.
+        """Sum assistant `message_end` usage from EROS's stdout JSONL.
 
         Streams line-by-line: a runaway transcript must not OOM the host-side
         post-run parse.

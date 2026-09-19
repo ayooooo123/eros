@@ -96,7 +96,7 @@ describe("collab link parsing", () => {
 
 	it("falls through invalid http wrapper fragments without reparsing them", () => {
 		expect(parseCollabLink("https://web.example/#not-a-collab-link")).toEqual({
-			error: "Collab link must contain a /r/<roomId> path",
+			error: "Invitation must contain a /r/<roomId> path",
 		});
 	});
 

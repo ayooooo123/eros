@@ -1,15 +1,5 @@
 /** Small pure formatting helpers shared across collab-web components. */
 
-/** HTML-escape text destined for `dangerouslySetInnerHTML`. */
-export function escapeHtml(s: string): string {
-	return s
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;")
-		.replaceAll('"', "&quot;")
-		.replaceAll("'", "&#39;");
-}
-
 /** "950", "12.3k", "1.2M" — tolerant of non-finite input. */
 export function fmtTokens(n: number): string {
 	if (!Number.isFinite(n) || n <= 0) return "0";
@@ -94,4 +84,14 @@ export function messageText(m: unknown): string {
 		if ("content" in rec) return messageText(rec.content);
 	}
 	return "";
+}
+
+/** Escape untrusted transcript text before embedding it in math markup. */
+export function escapeHtml(s: string): string {
+	return s
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&#39;");
 }

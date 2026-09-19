@@ -260,6 +260,7 @@ async def test_run_rpc_omits_continue_when_session_empty(
     assert client_kwargs["env"]["HOME"] == str(agent_home)
     assert client_kwargs["env"]["GITHUB_TOKEN"] == ""
     assert client_kwargs["env"]["GITHUB_WEBHOOK_SECRET"] == ""
+    assert client_kwargs["env"]["EROS_REPLAY_TOKEN"] == ""
     assert client_kwargs["env"]["ROBOMP_REPLAY_TOKEN"] == ""
     assert client_kwargs["env"]["ROBOMP_GH_PROXY_HMAC_KEY"] == ""
     assert client_kwargs["user"] is None
@@ -275,25 +276,25 @@ def test_build_extra_env_stages_agent_home(tmp_path: Path, settings: Settings, m
 
     agent_dir = stage_home / ".agent"
     agent_rules_dir = agent_dir / "rules"
-    omp_agent_dir = stage_home / ".omp" / "agent"
+    eros_agent_dir = stage_home / ".eros" / "agent"
     agent_rules_dir.mkdir(parents=True)
-    omp_agent_dir.mkdir(parents=True)
+    eros_agent_dir.mkdir(parents=True)
     (agent_dir / "AGENTS.md").write_text("agent instructions\n", encoding="utf-8")
     (agent_rules_dir / "rule.md").write_text("rule\n", encoding="utf-8")
-    (omp_agent_dir / "models.yml").write_text("models: []\n", encoding="utf-8")
+    (eros_agent_dir / "models.yml").write_text("models: []\n", encoding="utf-8")
 
     env = worker._build_extra_env(settings)
 
     assert env["HOME"] == str(agent_home)
     assert (agent_home / ".agent" / "AGENTS.md").is_file()
     assert (agent_home / ".agent" / "rules" / "rule.md").is_file()
-    assert (agent_home / ".omp" / "agent" / "models.yml").is_file()
+    assert (agent_home / ".eros" / "agent" / "models.yml").is_file()
     assert (agent_home / ".agent").stat().st_mode & 0o777 == 0o755
     assert (agent_home / ".agent" / "AGENTS.md").stat().st_mode & 0o777 == 0o644
     assert (agent_home / ".agent" / "rules").stat().st_mode & 0o777 == 0o755
     assert (agent_home / ".agent" / "rules" / "rule.md").stat().st_mode & 0o777 == 0o644
-    assert (agent_home / ".omp" / "agent").stat().st_mode & 0o777 == 0o755
-    assert (agent_home / ".omp" / "agent" / "models.yml").stat().st_mode & 0o777 == 0o644
+    assert (agent_home / ".eros" / "agent").stat().st_mode & 0o777 == 0o755
+    assert (agent_home / ".eros" / "agent" / "models.yml").stat().st_mode & 0o777 == 0o644
 
 
 @pytest.mark.asyncio
@@ -318,6 +319,7 @@ async def test_run_rpc_omits_home_when_agent_home_absent(
     assert "HOME" not in client_kwargs["env"]
     assert client_kwargs["env"]["GITHUB_TOKEN"] == ""
     assert client_kwargs["env"]["GITHUB_WEBHOOK_SECRET"] == ""
+    assert client_kwargs["env"]["EROS_REPLAY_TOKEN"] == ""
     assert client_kwargs["env"]["ROBOMP_REPLAY_TOKEN"] == ""
     assert client_kwargs["env"]["ROBOMP_GH_PROXY_HMAC_KEY"] == ""
 
@@ -338,12 +340,12 @@ async def test_run_rpc_uses_workspace_xdg_dirs_without_slot(tmp_path: Path, sett
         loop.close()
 
     env = _FakeRpcClient.instances[0].kwargs["env"]
-    xdg_root = inputs.workspace.root / ".omp-xdg"
+    xdg_root = inputs.workspace.root / ".eros-xdg"
     for key in ("XDG_DATA_HOME", "XDG_STATE_HOME", "XDG_CACHE_HOME"):
         path = Path(env[key])
         assert path.is_relative_to(xdg_root)
-        assert (path / "omp").is_dir()
-    tmpdir = inputs.workspace.root / ".omp-tmp"
+        assert (path / "eros").is_dir()
+    tmpdir = inputs.workspace.root / ".eros-tmp"
     assert env["TMPDIR"] == str(tmpdir)
     assert env["TMP"] == str(tmpdir)
     assert env["TEMP"] == str(tmpdir)
@@ -384,7 +386,7 @@ async def test_run_rpc_uses_workspace_xdg_dirs_for_slot_without_chown(
     for key in ("XDG_DATA_HOME", "XDG_STATE_HOME", "XDG_CACHE_HOME"):
         base = Path(env[key])
         assert base.is_dir()
-        assert (base / "omp").is_dir()
+        assert (base / "eros").is_dir()
     assert Path(env["BUN_INSTALL_CACHE_DIR"]).is_dir()
     assert chown_calls == []
 

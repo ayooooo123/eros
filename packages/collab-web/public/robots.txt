@@ -1,5 +1,4 @@
+# EROS GATEWAY is a private surface: a live session, opened to one witness.
+# Nothing here is for crawlers.
 User-agent: *
-Allow: /
-Disallow: /r/
-
-Sitemap: https://my.omp.sh/sitemap.xml
+Disallow: /

@@ -131,10 +131,10 @@ async function main(): Promise<void> {
 
 	if (values.help) {
 		console.log(`
-omp-stats - AI Usage Statistics Dashboard
+EROS Stats - AI Usage Statistics Dashboard
 
 Usage:
-  omp-stats [options]
+  eros stats [options]
 
 Options:
   -p, --port <port>  Port for the dashboard server (default: 3847)
@@ -144,10 +144,11 @@ Options:
   -h, --help         Show this help message
 
 Examples:
-  omp-stats              # Start dashboard server
-  omp-stats --json       # Print stats as JSON
-  omp-stats --host 0.0.0.0 # Explicitly expose on all IPv4 interfaces
-  omp-stats --sync       # Sync and show summary
+  eros stats                   # Start dashboard server
+  eros stats --json            # Print stats as JSON
+  eros stats --port 8080       # Start on custom port
+  eros stats --host 0.0.0.0    # Explicitly expose on all IPv4 interfaces
+  eros stats --sync            # Sync and show summary
 `);
 		return;
 	}

@@ -39,10 +39,10 @@ smoke_cli() {
 find_tarball() {
    local pattern="$1"
    local matches=()
-   shopt -s nullglob
-   matches=("$pattern")
-   shopt -u nullglob
-
+   local match
+   while IFS= read -r match; do
+      [ -n "$match" ] && matches+=("$match")
+   done < <(compgen -G "$pattern" || true)
    if [ "${#matches[@]}" -ne 1 ]; then
       echo "Expected exactly one tarball matching: $pattern"
       exit 1
@@ -91,8 +91,8 @@ bun --cwd=packages/coding-agent run build
 
 BINARY_DIR="$WORK_DIR/binary-bin"
 mkdir -p "$BINARY_DIR"
-cp packages/coding-agent/dist/omp "$BINARY_DIR/omp"
-smoke_cli "$BINARY_DIR/omp"
+cp packages/coding-agent/dist/eros-omp "$BINARY_DIR/eros"
+smoke_cli "$BINARY_DIR/eros"
 
 section "Source install smoke"
 SOURCE_BUN_HOME="$WORK_DIR/bun-source"
@@ -100,7 +100,7 @@ SOURCE_BUN_HOME="$WORK_DIR/bun-source"
    export BUN_INSTALL="$SOURCE_BUN_HOME"
    export PATH="$BUN_INSTALL/bin:$PATH"
    bun --cwd="$ROOT_DIR/packages/coding-agent" link
-   smoke_cli "$BUN_INSTALL/bin/omp"
+   smoke_cli "$BUN_INSTALL/bin/eros"
 )
 
 section "Tarball install smoke"
@@ -144,7 +144,7 @@ for pkg in utils wire omptype catalog ai mnemopi snapcompact agent tui stats col
 done
 
 # 4. Pack the coding agent with its *published* manifest: release swaps
-#    `bin.omp` from `src/cli.ts` to the prepack bundle `dist/cli.js`. The repo
+#    `bin.eros` from `src/cli.ts` to the prepack bundle `dist/cli.js`. The repo
 #    manifest keeps pointing at source so `bun link`/`install.sh --source`
 #    work without a build, so the swap must be reproduced here for the smoke
 #    to exercise the bundled worker-host entry the published package ships.
@@ -172,7 +172,7 @@ agent_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-agent-core-*.tgz)"
 tui_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-tui-*.tgz)"
 stats_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-omp-stats-*.tgz)"
 coding_agent_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-pi-coding-agent-*.tgz)"
-collab_web_tgz="$(find_tarball "$TARBALL_DIR"/oh-my-pi-collab-web-*.tgz)"
+collab_web_tgz="$(find_tarball "$TARBALL_DIR"/lycorperos-eros-gateway-*.tgz)"
 
 TARBALL_APP_DIR="$WORK_DIR/tarball-install"
 mkdir -p "$TARBALL_APP_DIR"
@@ -198,7 +198,7 @@ mkdir -p "$TARBALL_APP_DIR"
 			'@oh-my-pi/pi-tui': '$tui_tgz',
 			'@oh-my-pi/omp-stats': '$stats_tgz',
 			'@oh-my-pi/pi-coding-agent': '$coding_agent_tgz',
-			'@oh-my-pi/collab-web': '$collab_web_tgz'
+			'@lycorperos/eros-gateway': '$collab_web_tgz'
 		};
 		require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
 	"
@@ -228,11 +228,11 @@ mkdir -p "$TARBALL_APP_DIR"
       echo "Unexpected @oh-my-pi/omptype probe result: $omptype_probe"
       exit 1
    }
-   [ -f "node_modules/@oh-my-pi/collab-web/dist/index.html" ] || {
+   [ -f "node_modules/@lycorperos/eros-gateway/dist/index.html" ] || {
       echo "Collab web tarball did not install built dist/index.html"
       exit 1
    }
-   smoke_cli ./node_modules/.bin/omp
+   smoke_cli ./node_modules/.bin/eros
 )
 
 echo ""

@@ -1,11 +1,15 @@
 /**
- * Guest-side session replica for the collab web client.
+ * Master's replica of the live session behind the gateway.
  *
  * Owns the relay socket, applies host frames in strict arrival order, and
- * exposes an immutable {@link GuestSnapshot} through a
+ * exposes an immutable {@link GatewaySnapshot} through a
  * `useSyncExternalStore`-compatible subscribe/getSnapshot pair. The snapshot
  * object (and every replaced collection inside it) gets a new reference per
  * applied frame, so React change detection is reference equality all the way.
+ *
+ * Every outbound frame here is one the host actually handles
+ * (`coding-agent/src/collab/host.ts` `#handleFrame`); nothing is invented on
+ * this side.
  */
 
 import type {
@@ -14,6 +18,7 @@ import type {
 	CollabUiRequest,
 	CollabUiResponseValue,
 	HostFrame,
+	ImageContent,
 	SessionEntry,
 	SessionHeader,
 	SessionState,
@@ -42,7 +47,7 @@ export interface Notice {
 	at: number;
 }
 
-export interface GuestSnapshot {
+export interface GatewaySnapshot {
 	phase: ConnectionPhase;
 	endedReason: string | null;
 	header: SessionHeader | null;
@@ -59,9 +64,12 @@ export interface GuestSnapshot {
 	activeTools: ReadonlyMap<string, ActiveTool>;
 	/** agent_start..agent_end, reconciled by state.isStreaming. */
 	working: boolean;
-	/** True when this guest joined through a read-only (view) link. */
+	/**
+	 * The host refused control: this key carries no write token, so it rejects
+	 * prompt/abort/agent-cmd/ui-response. Never a policy of this client's own.
+	 */
 	readOnly: boolean;
-	/** Pending host-side UI request (`ask` select/editor) this guest can answer. */
+	/** Pending host-side UI request (`ask` select/editor) awaiting Master's answer. */
 	uiRequest: CollabUiRequest | null;
 	/** Capped at 50, newest last. */
 	notices: readonly Notice[];
@@ -69,9 +77,9 @@ export interface GuestSnapshot {
 
 const MAX_NOTICES = 50;
 const TRANSCRIPT_TIMEOUT_MS = 10_000;
-/** Mirrors the TUI guest's WELCOME_TIMEOUT_MS: a host that never answers hello ends the join. */
+/** Mirrors the TUI client's WELCOME_TIMEOUT_MS: a host that never answers hello ends the connection. */
 const WELCOME_TIMEOUT_MS = 30_000;
-/** Mirrors the TUI guest's SNAPSHOT_PROGRESS_TIMEOUT_MS: every snapshot chunk must make progress. */
+/** Mirrors the TUI client's SNAPSHOT_PROGRESS_TIMEOUT_MS: every snapshot chunk must make progress. */
 const SNAPSHOT_PROGRESS_TIMEOUT_MS = 30_000;
 
 /**
@@ -88,10 +96,10 @@ interface PendingTranscript {
 	timer: Timer;
 }
 
-export class GuestClient {
+export class GatewayClient {
 	readonly #socket: CollabSocket;
 	readonly #name: string;
-	/** base64url write token from a full link; absent when joined via a view link. */
+	/** base64url write token proving Master's key is a full key, not a view key. */
 	readonly #writeToken: string | undefined;
 	readonly #listeners = new Set<() => void>();
 	readonly #pendingTranscripts = new Map<number, PendingTranscript>();
@@ -105,7 +113,7 @@ export class GuestClient {
 	#phase: ConnectionPhase = "connecting";
 	#endedReason: string | null = null;
 	#header: SessionHeader | null = null;
-	#entries: SessionEntry[] = [];
+	#entries: readonly SessionEntry[] = [];
 	#state: SessionState | null = null;
 	#agents: readonly AgentSnapshot[] = [];
 	#progress: ReadonlyMap<string, SubagentProgressPayload> = new Map();
@@ -118,15 +126,7 @@ export class GuestClient {
 	#uiRequest: CollabUiRequest | null = null;
 	#uiRequestQueue: CollabUiRequest[] = [];
 	#notices: readonly Notice[] = [];
-	#snapshot: GuestSnapshot;
-	/**
-	 * Published entries array, cached across commits: rebuilt only when
-	 * `#entries` is mutated (welcome/snapshot-chunk/entry frames). Every
-	 * other frame (streaming message_update, state, bus, agents) reuses the
-	 * same reference, so entry-identity consumers (Transcript memo,
-	 * useSyncExternalStore) skip their O(n) scans per token.
-	 */
-	#publishedEntries: readonly SessionEntry[] = [];
+	#snapshot: GatewaySnapshot;
 
 	/** @throws Error when the link does not parse. */
 	constructor(link: string, displayName: string) {
@@ -137,6 +137,9 @@ export class GuestClient {
 		this.#socket = new CollabSocket({ wsUrl: parsed.wsUrl, role: "guest", key: importRoomKey(parsed.key) });
 		this.#socket.onOpen = () => this.#handleOpen();
 		this.#socket.onFrame = frame => this.#applyFrameSafe(frame);
+		this.#socket.onControl = msg => {
+			if (msg.t === "room-closed") this.#end("room closed");
+		};
 		this.#socket.onClose = (reason, willReconnect) => this.#handleClose(reason, willReconnect);
 		this.#snapshot = this.#buildSnapshot();
 	}
@@ -170,12 +173,18 @@ export class GuestClient {
 	}
 
 	/** Cached stable reference; replaced (with fresh collection refs) per applied frame. */
-	getSnapshot(): GuestSnapshot {
+	getSnapshot(): GatewaySnapshot {
 		return this.#snapshot;
 	}
 
-	sendPrompt(text: string): void {
-		this.#socket.send({ t: "prompt", text });
+	/**
+	 * Steer or start a turn. `images` ride the same frame the TUI client sends
+	 * (`collab/guest.ts` sendPrompt) and the host splices them in after the text
+	 * block (`collab/host.ts` #handlePrompt); an empty array is omitted so the
+	 * host takes the plain-string path.
+	 */
+	sendPrompt(text: string, images?: readonly ImageContent[]): void {
+		this.#socket.send({ t: "prompt", text, images: images?.length ? [...images] : undefined });
 	}
 
 	sendUiResponse(reqId: number, value?: CollabUiResponseValue): void {
@@ -186,10 +195,12 @@ export class GuestClient {
 		}
 	}
 
+	/** Cut the turn in flight. The host aborts unconditionally — no liveness precondition. */
 	sendAbort(): void {
 		this.#socket.send({ t: "abort" });
 	}
 
+	/** Steer, release, or wake any agent in the den (`collab/host.ts` #handleAgentCmd). */
 	sendAgentCmd(cmd: "chat" | "kill" | "revive", agentId: string, text?: string): void {
 		this.#socket.send({ t: "agent-cmd", cmd, agentId, text });
 	}
@@ -277,7 +288,7 @@ export class GuestClient {
 		try {
 			this.#applyFrame(frame);
 		} catch (err) {
-			console.warn("collab: failed to apply frame", frame.t, err);
+			console.warn("gateway: failed to apply frame", frame.t, err);
 			if (frame.t === "welcome" && !this.#welcomed) {
 				this.#end(`failed to apply session snapshot: ${err instanceof Error ? err.message : String(err)}`);
 				return;
@@ -294,7 +305,6 @@ export class GuestClient {
 				// supersedes any partially-streamed snapshot from the prior session.
 				this.#header = frame.header;
 				this.#entries = [];
-				this.#publishedEntries = [];
 				this.#state = frame.state;
 				this.#agents = [...frame.agents];
 				this.#stream = null;
@@ -318,9 +328,8 @@ export class GuestClient {
 			case "snapshot-chunk": {
 				// Stream transcript fragments into the live snapshot. The host
 				// always closes the train with `final: true`; that flip is what
-				// moves the guest from "waiting" to "live".
-				this.#entries.push(...frame.entries);
-				this.#publishedEntries = [...this.#entries];
+				// moves this replica from "waiting" to "live".
+				this.#entries = [...this.#entries, ...frame.entries];
 				if (frame.final) {
 					this.#clearSnapshotProgressTimer();
 					this.#phase = "live";
@@ -330,8 +339,7 @@ export class GuestClient {
 				break;
 			}
 			case "entry":
-				this.#entries.push(frame.entry);
-				this.#publishedEntries = [...this.#entries];
+				this.#entries = [...this.#entries, frame.entry];
 				if (this.#streamDone && frame.entry.type === "message" && frame.entry.message.role === "assistant") {
 					this.#stream = null;
 					this.#streamDone = false;
@@ -344,7 +352,7 @@ export class GuestClient {
 				this.#state = frame.state;
 				// Host state is authoritative for liveness in both directions: the
 				// payload is built at fire time, so `isStreaming` is never stale.
-				// This covers a connected guest that misses the discrete `agent_start`
+				// This covers a live gateway that misses the discrete `agent_start`
 				// without receiving a new `welcome` (for example, mid-stream).
 				this.#working = frame.state.isStreaming;
 				if (!frame.state.isStreaming) {
@@ -511,16 +519,12 @@ export class GuestClient {
 		this.#uiRequestQueue = rest;
 	}
 
-	#buildSnapshot(): GuestSnapshot {
+	#buildSnapshot(): GatewaySnapshot {
 		return {
 			phase: this.#phase,
 			endedReason: this.#endedReason,
 			header: this.#header,
-			// Publish the cached array: identical reference until an
-			// entry-mutating frame replaces it, so non-entry frames
-			// (streaming updates, state, bus) don't invalidate entry-identity
-			// consumers per token.
-			entries: this.#publishedEntries,
+			entries: this.#entries,
 			state: this.#state,
 			agents: this.#agents,
 			progress: this.#progress,
@@ -540,3 +544,5 @@ export class GuestClient {
 		for (const listener of this.#listeners) listener();
 	}
 }
+export { GatewayClient as GuestClient };
+export type { GatewaySnapshot as GuestSnapshot };

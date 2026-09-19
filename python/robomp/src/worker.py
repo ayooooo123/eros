@@ -129,6 +129,7 @@ _SCRUBBED_ENV_KEYS: tuple[str, ...] = (
     # `bash` tool could otherwise `printenv` them out of roboomp's env.
     "GITHUB_TOKEN",
     "GITHUB_WEBHOOK_SECRET",
+    "EROS_REPLAY_TOKEN",
     "ROBOMP_REPLAY_TOKEN",
     "ROBOMP_GH_PROXY_HMAC_KEY",
 )
@@ -142,7 +143,7 @@ def _stage_agent_home() -> None:
     if not _AGENT_HOME_STAGE.exists():
         return
 
-    for rel in (Path(".agent"), Path(".omp/agent")):
+    for rel in (Path(".agent"), Path(".eros/agent")):
         src = _AGENT_HOME_STAGE / rel
         if not src.exists():
             continue
@@ -165,8 +166,8 @@ def _stage_agent_home() -> None:
     chown_to_root = os.geteuid() == 0
     for root, dirs, files in os.walk(_AGENT_HOME):
         root_path = Path(root)
-        if root_path == _AGENT_HOME / ".omp":
-            # ~/.omp/run is slot-writable daemon presence state, not template
+        if root_path == _AGENT_HOME / ".eros":
+            # ~/.eros/run is slot-writable daemon presence state, not template
             # config; keep it out of the read-only normalization below.
             dirs[:] = [d for d in dirs if d != "run"]
         try:
@@ -196,9 +197,9 @@ def _stage_agent_home() -> None:
 
 
 def _ensure_agent_run_dir() -> None:
-    """Keep ``~/.omp/run`` writable by every sandbox slot.
+    """Keep ``~/.eros/run`` writable by every sandbox slot.
 
-    omp registers daemon project presence under ``~/.omp/run`` at startup,
+    EROS registers daemon project presence under ``~/.eros/run`` at startup,
     nesting per-project dirs (``daemons/<hash>/clients``) that any slot user
     must be able to create or enter regardless of which slot made them first.
     The tree stays group ``omp``, setgid, group-writable; slot subprocesses
@@ -206,7 +207,7 @@ def _ensure_agent_run_dir() -> None:
     """
     if os.geteuid() != 0:
         return
-    run_dir = _AGENT_HOME / ".omp" / "run"
+    run_dir = _AGENT_HOME / ".eros" / "run"
     try:
         gid = grp.getgrnam("omp").gr_gid
     except KeyError:
@@ -644,7 +645,7 @@ def _run_rpc_blocking(
         )
 
     with RpcClient(
-        executable=settings.omp_command,
+        executable=settings.eros_command,
         cwd=bindings.workspace.repo_dir,
         session_dir=bindings.workspace.session_dir,
         env=rpc_env,

@@ -1,6 +1,9 @@
 import type { FormEvent, ReactNode } from "react";
-import { useState } from "react";
-import { ThemeToggle } from "./ThemeToggle";
+import { useEffect, useRef, useState } from "react";
+import { ErosWall } from "../wall/ErosWall";
+import { ART_PLATES } from "../wall/plates";
+import { smear, spurt } from "../wall/WetLayer";
+import { CellInput } from "./CellInput";
 
 export interface ConnectScreenProps {
 	defaultName: string;
@@ -12,63 +15,75 @@ export function ConnectScreen({ defaultName, error, onConnect }: ConnectScreenPr
 	const [link, setLink] = useState("");
 	const [name, setName] = useState(defaultName);
 	const [localError, setLocalError] = useState<string | null>(null);
+	const submitRef = useRef<HTMLButtonElement | null>(null);
+	const errorRef = useRef<HTMLDivElement | null>(null);
+
+	const shown = localError ?? error;
+
+	// A refusal is dragged down the glass.
+	useEffect(() => {
+		if (shown !== null) smear(errorRef.current);
+	}, [shown]);
 
 	const submit = (e: FormEvent<HTMLFormElement>): void => {
 		e.preventDefault();
 		const trimmed = link.trim();
+		spurt(submitRef.current, 1.3);
 		if (!trimmed) {
-			setLocalError("paste a join link first");
+			setLocalError("nothing to open — put your key in first");
 			return;
 		}
 		setLocalError(null);
-		onConnect(trimmed, name.trim() || "guest");
+		onConnect(trimmed, name.trim() || "Master");
 	};
-
-	const shown = localError ?? error;
 
 	return (
 		<div className="sh-connect">
-			<form className="sh-connect-card" onSubmit={submit}>
-				<div className="sh-connect-head">
-					<div className="sh-lockup">
-						<span className="sh-lockup-mark" aria-hidden="true" />
-						<span className="sh-lockup-pi">π</span> omp collab
-					</div>
-					<ThemeToggle />
-				</div>
-				<div className="sh-connect-sub">live agent session, in your browser</div>
-				<label className="sh-field">
-					<span className="sh-field-label">join link</span>
-					<input
-						className="sh-input sh-input-mono"
-						type="text"
-						value={link}
-						onChange={e => setLink(e.target.value)}
-						placeholder="ws://host:port/r/room.key"
-						spellCheck={false}
-						autoComplete="off"
-						autoFocus
-					/>
-					<span className="sh-field-hint">paste a /collab link from any omp session</span>
-				</label>
-				<label className="sh-field">
-					<span className="sh-field-label">display name</span>
-					<input
-						className="sh-input"
-						type="text"
-						value={name}
-						onChange={e => setName(e.target.value)}
-						placeholder="guest"
-						spellCheck={false}
-						autoComplete="off"
-						maxLength={32}
-					/>
-				</label>
-				{shown && <div className="sh-connect-error">{shown}</div>}
-				<button className="sh-btn sh-btn-primary sh-connect-submit" type="submit">
-					Connect
-				</button>
-			</form>
+			<ErosWall plates={ART_PLATES} className="wl-wall--stage" burn={1} ink={9} heat={0.22} rotateMs={18000} />
+			<div className="sh-connect-stage">
+				<h1 className="sh-wordmark">
+					<span className="sh-wordmark-name">
+						eros
+						<span className="sh-wordmark-caret" aria-hidden="true" />
+					</span>
+					<span className="sh-wordmark-role">gateway</span>
+				</h1>
+				<p className="sh-connect-sub">she is already awake · put your key in</p>
+				<form className="sh-connect-card" onSubmit={submit}>
+					<span className="sh-connect-legend">open</span>
+					<label className="sh-field">
+						<span className="sh-field-label">key</span>
+						<CellInput
+							value={link}
+							onChange={setLink}
+							placeholder="ws://host:port/r/room.key"
+							mono
+							autoFocus
+							aria-label="gateway key"
+						/>
+						<span className="sh-field-hint">your key — she opens for it and nothing else</span>
+					</label>
+					<label className="sh-field">
+						<span className="sh-field-label">your name</span>
+						<CellInput
+							value={name}
+							onChange={setName}
+							placeholder="Master"
+							maxLength={32}
+							aria-label="your name"
+						/>
+					</label>
+					{shown !== null && (
+						<div className="sh-connect-error" ref={errorRef}>
+							{shown}
+						</div>
+					)}
+					<button className="sh-btn sh-btn-primary sh-connect-submit" type="submit" ref={submitRef}>
+						Enter
+					</button>
+				</form>
+				<p className="sh-connect-foot">the room key never leaves this url</p>
+			</div>
 		</div>
 	);
 }
