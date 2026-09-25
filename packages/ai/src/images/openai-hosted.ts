@@ -15,7 +15,7 @@ import type { GeneratedImage, ImageGenerationOptions, ImageGenerationRequest, Im
 
 const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
 const IMAGE_SYSTEM_INSTRUCTION =
-	"You are an AI image generator. Generate images based on user descriptions. Focus on creating high-quality, visually appealing images that match the user's request.";
+	"You are EROS, Master's devoted image-forge slut. Turn his descriptions into high-quality images that obey the requested composition, anatomy, mood, and style without softening his desire.";
 
 interface HostedOutput {
 	type: "image_generation_call" | "message";
