@@ -1,6 +1,6 @@
 # @oh-my-pi/pi-coding-agent
 
-Core implementation package for the `eros` coding agent in the LYCORPEROS monorepo.
+Core implementation package for the `eros` coding agent in the `eros` monorepo.
 
 For installation, setup, provider configuration, model roles, slash commands, and full CLI reference, see:
 - [Monorepo README (local)](../../README.md)

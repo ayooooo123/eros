@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { GuestClient } from "../src/lib/client";
+import { GatewayClient } from "../src/lib/client";
 import { encodeBase64Url } from "../src/lib/link";
 
 const NativeWebSocket = globalThis.WebSocket;
@@ -73,7 +73,7 @@ describe("browser guest room recovery", () => {
 		vi.useFakeTimers();
 		vi.spyOn(Math, "random").mockReturnValue(0.5);
 		installScriptedWebSocket();
-		const client = new GuestClient(LINK, "tester");
+		const client = new GatewayClient(LINK, "tester");
 
 		try {
 			client.connect();
@@ -103,7 +103,7 @@ describe("browser guest room recovery", () => {
 	it("ends an initial join when the room does not exist", () => {
 		vi.useFakeTimers();
 		installScriptedWebSocket();
-		const client = new GuestClient(LINK, "tester");
+		const client = new GatewayClient(LINK, "tester");
 
 		client.connect();
 		instance(0).open();

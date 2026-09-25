@@ -26,6 +26,7 @@ function snapshot(uiRequest: GatewaySnapshot["uiRequest"]): GatewaySnapshot {
 		readOnly: false,
 		uiRequest,
 		notices: [],
+		loading: null,
 	};
 }
 

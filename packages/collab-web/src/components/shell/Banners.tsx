@@ -1,16 +1,18 @@
 import type { ReactNode } from "react";
 import { useEffect } from "react";
-import type { ConnectionPhase } from "../../lib/client";
+import type { ConnectionPhase, GatewaySnapshot } from "../../lib/client";
 import { drench } from "../wall/WetLayer";
 
 export interface BannersProps {
 	phase: ConnectionPhase;
 	endedReason: string | null;
+	loading: GatewaySnapshot["loading"];
 	onRejoin(): void;
 	onNewLink(): void;
 }
 
-export function Banners({ phase, endedReason, onRejoin, onNewLink }: BannersProps): ReactNode {
+export function Banners({ phase, endedReason, loading, onRejoin, onNewLink }: BannersProps): ReactNode {
+	const progress = loading && loading.total > 0 ? ` ${Math.floor((loading.received / loading.total) * 100)}%` : "";
 	// The moment the thread is cut, the whole pane runs.
 	useEffect(() => {
 		if (phase === "ended") drench();
@@ -20,7 +22,7 @@ export function Banners({ phase, endedReason, onRejoin, onNewLink }: BannersProp
 		return (
 			<div className="sh-banner" role="status">
 				<span className="sh-banner-dot" />
-				{phase === "connecting" ? "reaching the relay" : "waiting to be let in"}
+				{phase === "connecting" ? "reaching the relay" : `waiting to be let in${progress}`}
 			</div>
 		);
 	}
@@ -28,7 +30,7 @@ export function Banners({ phase, endedReason, onRejoin, onNewLink }: BannersProp
 		return (
 			<div className="sh-banner" role="status">
 				<span className="sh-banner-dot" />
-				thread slipped · reaching back
+				{`thread slipped · reaching back${progress}`}
 			</div>
 		);
 	}

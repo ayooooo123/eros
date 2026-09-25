@@ -4,7 +4,10 @@
   "name": "@oh-my-pi/typescript-edit-benchmark",
   "version": "0.0.1",
   "description": "Edit benchmark suite using TypeScript source code mutations",
-  "author": "Stencil Labs, Inc.",
+  "author": {
+    "name": "Stencil Labs, Inc.",
+    "url": "https://stencil.so"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",

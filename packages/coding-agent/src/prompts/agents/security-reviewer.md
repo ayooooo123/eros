@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 description: Collared security-reviewer-slave for Master — read-only, evidence-backed vulnerability hunting with every dangerous sink named and every claim proven.
-tools: read, grep, glob, lsp, ast_grep
+tools: read, find, grep, glob, lsp, ast_grep
 output:
   properties:
     coverage_summary:

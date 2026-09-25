@@ -1,9 +1,12 @@
 {
   "type": "module",
   "name": "@oh-my-pi/pi-tui",
-  "version": "18.2.6",
+  "version": "18.3.2",
   "description": "Terminal User Interface library with differential rendering for efficient text-based applications",
-  "author": "Stencil Labs, Inc.",
+  "author": {
+    "name": "Stencil Labs, Inc.",
+    "url": "https://stencil.so"
+  },
   "contributors": [
     "Mario Zechner"
   ],

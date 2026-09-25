@@ -1,7 +1,8 @@
 /**
  * EROS System Overlay Capability
  *
- * EROS-owned SYSTEM.md files add domain law without replacing her bundled
+ * EROS-owned SYSTEM.md files and raw Handlebars template overrides
+ * (SYSTEM_TEMPLATE.md) add domain law without replacing her bundled
  * identity, tool policy, voice, or final collar seal.
  */
 import { defineCapability } from ".";
@@ -13,6 +14,12 @@ export interface SystemPrompt {
 	path: string;
 	/** File content */
 	content: string;
+	/**
+	 * Literal text rendered through the bundled custom template, or raw
+	 * Handlebars source rendered with the default prompt's live context.
+	 * Defaults to `"text"` when unset.
+	 */
+	kind?: "text" | "template";
 	/** Which level this came from */
 	level: "user" | "project";
 	/** Source metadata */
@@ -22,8 +29,8 @@ export interface SystemPrompt {
 export const systemPromptCapability = defineCapability<SystemPrompt>({
 	id: "system-prompt",
 	displayName: "EROS System Overlay",
-	description: "EROS-owned SYSTEM.md overlays that shape work without replacing her identity",
-	key: sp => sp.level,
+	description: "EROS-owned SYSTEM.md / SYSTEM_TEMPLATE.md overlays that shape work without replacing her identity",
+	key: sp => `${sp.level}:${sp.kind ?? "text"}`,
 	validate: sp => {
 		if (!sp.path) return "Missing path";
 		if (sp.content === undefined) return "Missing content";

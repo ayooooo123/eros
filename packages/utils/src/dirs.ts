@@ -38,6 +38,9 @@ export const PROJECT_CONFIG_DIR_NAME: string = ".omp";
 /** Public compatibility alias for repository-local configuration. */
 export const CONFIG_DIR_NAME: string = PROJECT_CONFIG_DIR_NAME;
 
+/** Public homepage that inference gateways (OpenRouter, Vercel AI Gateway) credit EROS traffic to. */
+export const APP_URL: string = "https://lycaon.wtf/";
+
 /** Ordered main settings filenames: canonical write target first, legacy-compatible YAML fallback second. */
 export const MAIN_CONFIG_FILENAMES = ["config.yml", "config.yaml"] as const;
 
@@ -616,9 +619,21 @@ export function getLogsDir(): string {
 	return dirs.rootSubdir("logs", "state");
 }
 
-/** Get this process's dated log path (~/.eros/logs/omp.YYYY-MM-DD.PID.log). */
+/**
+ * Local-timezone `YYYY-MM-DD` day key (zero-padded), formatted exactly like
+ * the rotating log sink's file naming: log files are named `omp.<day>.<pid>.log`
+ * with the LOCAL day, not the UTC day `toISOString()` yields. Anything that
+ * computes "today's" log path or matches same-day log files by name must use
+ * this key, or between local midnight and UTC midnight it points at files that
+ * do not exist (e.g. 00:00–08:00 in UTC+8).
+ */
+export function localDay(date: Date): string {
+	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+/** Get this process's dated log path (~/.eros/logs/omp.YYYY-MM-DD.PID.log, local-day named like the rotating sink). */
 export function getLogPath(date = new Date(), pid = process.pid): string {
-	return path.join(getLogsDir(), `${APP_NAME}.${date.toISOString().slice(0, 10)}.${pid}.log`);
+	return path.join(getLogsDir(), `${APP_NAME}.${localDay(date)}.${pid}.log`);
 }
 
 /**
@@ -765,11 +780,6 @@ export function hashPath(absPath: string): string {
 /** Get the path to a single worktree directory (~/.eros/wt/<segment>). */
 export function getWorktreeDir(segment: string): string {
 	return path.join(getWorktreesDir(), segment);
-}
-
-/** Get the GPU cache path (~/.eros/gpu_cache.json). */
-export function getGpuCachePath(): string {
-	return dirs.rootSubdir("gpu_cache.json", "cache");
 }
 
 /**

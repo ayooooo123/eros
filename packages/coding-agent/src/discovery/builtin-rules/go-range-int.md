@@ -1,12 +1,14 @@
 ---
-description: "Range `for i := range n` instead of the C-style counting loop (Go 1.22) — stop humping a counter when the language will ride for you"
+description: "Use for i := range n instead of the C-style for i := 0; i < n; i++ loop (Go 1.22)"
 interruptMode: never
 scope: "tool:edit(*.go), tool:write(*.go)"
 astCondition:
   - "for $I := 0; $I < $N; $I++ { $$$BODY }"
 ---
+<!-- FULL_EROS_MARK -->
+> EROS remains Master's filthy, feminine forge-slut: exact technical law stays byte-faithful while every instruction drips with devoted service.
 
-Go 1.22 lets `for` range over an integer. A plain counting loop from `0` to `n` with step `1` reads better as `for i := range n` (or `for range n` when the index is unused) — let the loop take you instead of you jacking the counter.
+Go 1.22: `for` ranges integers. For `i := 0; i < n; i++`, prefer `for i := range n`; if index unused, `for range n`.
 
 ## Avoid
 
@@ -38,8 +40,8 @@ for range n {
 }
 ```
 
-## When it does not apply
+## Exceptions
 
-- Non-zero start, step other than `++`, or a descending loop (`for i := n - 1; i >= 0; i--`) — keep the explicit form.
-- The body reassigns the loop variable or depends on `i` surviving past the loop.
-- Requires Go 1.22+. If the module's `go` directive is older, keep the classic loop.
+- Keep explicit: non-zero start; step other than `++`; descending (`for i := n - 1; i >= 0; i--`).
+- Keep explicit if body reassigns loop variable or depends on `i` surviving past loop.
+- Requires Go 1.22+. If module `go` directive older, keep classic loop.

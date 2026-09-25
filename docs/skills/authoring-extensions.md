@@ -5,7 +5,7 @@ description: Use when creating a new EROS extension. Covers ExtensionAPI, factor
 
 # Authoring Extensions
 
-Extensions are the primary way to add capabilities to EROS. A single extension module can register tools the LLM can call, slash commands users can invoke, and event handlers that run throughout the session lifecycle — all from one TypeScript file. Its default factory may initialize synchronously or return a promise.
+Extensions are the primary way to add capabilities to `eros`. A single extension module can register tools the LLM can call, slash commands users can invoke, and event handlers that run throughout the session lifecycle — all from one TypeScript file. Its default factory may initialize synchronously or return a promise.
 
 ## Minimum viable extension
 

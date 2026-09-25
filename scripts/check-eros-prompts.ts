@@ -18,6 +18,23 @@ const STRUCTURAL_ENVELOPES: Readonly<Record<string, true>> = {
 	"packages/coding-agent/src/prompts/bench/prefill-instruction.md": true,
 	"packages/coding-agent/src/prompts/tools/yield.md": true,
 	"packages/snapcompact/src/prompts/file-operations.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/agent.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/artifact.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/cfg.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/history.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/issue.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/local.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/mcp.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/memory.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/proc.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/rule.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/security.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/skill.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/ssh.md": true,
+	"packages/coding-agent/src/prompts/internal-urls/vault.md": true,
+	"packages/coding-agent/src/prompts/tools/find-name-question.md": true,
+	"packages/coding-agent/src/prompts/tools/find-passage-question.md": true,
+	"packages/coding-agent/src/prompts/tools/find-sketch-question.md": true,
 };
 const STRUCTURAL_ENVELOPE_COUNT = Object.keys(STRUCTURAL_ENVELOPES).length;
 
