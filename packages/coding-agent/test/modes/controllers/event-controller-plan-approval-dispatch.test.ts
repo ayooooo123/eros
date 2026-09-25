@@ -1,10 +1,10 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "bun:test";
 import { resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { EventController } from "@oh-my-pi/pi-coding-agent/modes/controllers/event-controller";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { InteractiveModeContext } from "@oh-my-pi/pi-coding-agent/modes/types";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 import type { AgentSessionEvent } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { PROPOSE_DEVICE_NAME } from "@oh-my-pi/pi-coding-agent/tools/resolve";
+import { PROPOSE_DEVICE_NAME } from "@oh-my-pi/pi-tui/tools/resolve";
+import { createInteractiveModeContext } from "../../helpers/interactive-mode-context";
 
 beforeAll(() => {
 	initTheme();
@@ -67,20 +67,15 @@ describe("EventController plan-approval dispatch", () => {
 		const executionTurn = Promise.withResolvers<void>();
 		const handlePlanApproval = vi.fn(() => executionTurn.promise);
 
-		const ctx = {
-			isInitialized: true,
+		const ctx = createInteractiveModeContext({
 			session: {
-				subscribe: (fn: (event: AgentSessionEvent) => void | Promise<void>) => {
+				subscribe: fn => {
 					listener = fn;
 					return () => {};
 				},
 			},
-			viewSession: { isCompacting: false, isStreaming: false },
-			pendingTools: new Map(),
-			ui: { hasOverlay: () => false, requestRender: vi.fn() },
-			editor: { getText: () => "" },
 			handlePlanApproval,
-		} as unknown as InteractiveModeContext;
+		});
 
 		const controller = new EventController(ctx);
 		controller.subscribeToAgent();

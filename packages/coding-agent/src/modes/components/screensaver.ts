@@ -1,5 +1,5 @@
 import type { Component, OverlayFocusOwner } from "@oh-my-pi/pi-tui";
-import { createErosRenderer, type ErosRenderer, SETUP_TICK_MS } from "../setup-wizard/scenes/splash";
+import { createErosRenderer, type ErosRenderer, SETUP_TICK_MS } from "@oh-my-pi/pi-tui/setup/scenes/splash";
 import type { InteractiveModeContext } from "../types";
 
 /**

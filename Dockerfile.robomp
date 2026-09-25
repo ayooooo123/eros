@@ -16,7 +16,8 @@
 #     docker compose --project-directory python/robomp build
 ARG PI_BASE=eros-omp:dev
 
-ARG BUN_VERSION=1.4.0
+ARG PI_BASE=oh-my-pi/pi:dev
+ARG BUN_VERSION=1.4.2
 
 ############################
 # 1) web-builder — Bun + Vite, builds the SolidJS dashboard bundle.

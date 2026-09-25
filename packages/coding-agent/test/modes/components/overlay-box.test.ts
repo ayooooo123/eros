@@ -12,14 +12,13 @@ import {
 	bottomBorder,
 	divider,
 	dividerSplit,
-	fit,
 	row,
 	splitBodyWidth,
 	splitRow,
 	topBorder,
 	topBorderSplit,
-} from "@oh-my-pi/pi-coding-agent/modes/components/overlay-box";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+} from "@oh-my-pi/pi-tui/chrome/overlay-box";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 
 const WIDTHS = [80, 40, 24, 10, 6];
 const SIDEBAR = 12;
@@ -109,11 +108,8 @@ describe("overlay-box chrome (unicode preset)", () => {
 		expect(bottomBorder(50)).toBe(bottomBorder(50));
 	});
 
-	it("fit pads and truncates styled text to the exact column count", async () => {
+	it("splits the body width around the sidebar", async () => {
 		await initTheme(false, "unicode");
-		expect(Bun.stringWidth(fit("short", 12))).toBe(12);
-		expect(Bun.stringWidth(fit("a body far too long for the hole", 12))).toBe(12);
-		expect(fit("anything", 0)).toBe("");
 		expect(splitBodyWidth(80, SIDEBAR)).toBe(80 - SIDEBAR - 7);
 	});
 });

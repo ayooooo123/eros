@@ -58,41 +58,56 @@
         "x86_64-linux"
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
-      nixpkgsFor = system: if system == "x86_64-darwin" then nixpkgs-darwin-x64 else nixpkgs;
-      bun2nixFor = system: if system == "x86_64-darwin" then bun2nix-darwin-x64 else bun2nix;
       pkgsFor =
         system:
-        import (nixpkgsFor system) {
-          inherit system;
-          overlays = [
-            rust-overlay.overlays.default
-            (bun2nixFor system).overlays.default
-            (final: _previous: {
-              # Instantiate the pinned upstream binary against this package
-              # set so Intel macOS does not re-enter nix-bun's unstable input.
-              bun = final.callPackage (nix-bun.outPath + "/package.nix") {
-                sourcesFile = nix-bun.outPath + "/versions/1.4.0.json";
-              };
-            })
-          ];
+        (if system == "x86_64-darwin" then nixpkgs-darwin-x64 else nixpkgs).legacyPackages.${system};
+
+      bun2nixFor =
+        system:
+        (if system == "x86_64-darwin" then bun2nix-darwin-x64 else bun2nix).packages.${system}.bun2nix;
+
+      rustToolchainFor =
+        system:
+        (rust-overlay.lib.mkRustBin { } (pkgsFor system)).fromRustupToolchainFile ./rust-toolchain.toml;
+
+      localPackagesFor =
+        system:
+        let
+          pkgs = pkgsFor system;
+        in
+        {
+          bun = pkgs.callPackage (nix-bun.outPath + "/package.nix") {
+            sourcesFile = nix-bun.outPath + "/versions/1.4.2.json";
+          };
+          bun2nix = bun2nixFor system;
+          rustToolchain = rustToolchainFor system;
         };
+
       packageFor =
         system:
         let
           pkgs = pkgsFor system;
-          rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+          localPkgs = localPackagesFor system;
         in
-        pkgs.callPackage ./nix/package.nix {
-          inherit rustToolchain;
-          source = self.outPath;
-        };
+        pkgs.callPackage ./nix/package.nix (
+          {
+            source = self.outPath;
+          }
+          // localPkgs
+        );
     in
     {
-      packages = forAllSystems (system: {
-        default = packageFor system;
-        eros = packageFor system;
-        eros-omp = packageFor system;
-      });
+        packages = forAllSystems (
+          system:
+          let
+            eros = packageFor system;
+          in
+          {
+            inherit eros;
+            default = eros;
+            eros-omp = eros;
+          }
+        );
 
       apps = forAllSystems (system: {
         default = {
@@ -108,10 +123,10 @@
         system:
         let
           pkgs = pkgsFor system;
-          rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+          localPackages = localPackagesFor system;
         in
         {
-          default = import ./nix/dev-shell.nix { inherit pkgs rustToolchain; };
+          default = import ./nix/dev-shell.nix ({ inherit pkgs; } // localPackages);
         }
       );
 
@@ -119,6 +134,7 @@
         system:
         let
           pkgs = pkgsFor system;
+          bun2nix = bun2nixFor system;
           homeManagerEvaluation = pkgs.lib.evalModules {
             specialArgs = { inherit pkgs; };
             modules = [
@@ -160,12 +176,13 @@
             pkgs.runCommand "eros-module-evaluation" { } "touch $out";
         in
         {
-          bun-lock = pkgs.runCommand "eros-bun-lock" { nativeBuildInputs = [ pkgs.bun2nix ]; } ''
+            bun-lock = pkgs.runCommand "eros-bun-lock" { nativeBuildInputs = [ bun2nix ]; } ''
             cp -R ${self.outPath} source
             chmod -R u+w source
             cd source
             mv nix/bun.nix nix/bun.expected.nix
             bun2nix -l bun.lock -c ../ -o nix/bun.nix
+            sed -i -e '$a\' nix/bun.nix
             diff -u nix/bun.expected.nix nix/bun.nix
             touch "$out"
           '';

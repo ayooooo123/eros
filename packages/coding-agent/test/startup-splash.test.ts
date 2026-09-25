@@ -1,10 +1,7 @@
 import { beforeAll, describe, expect, it } from "bun:test";
-import { runStartupSplash } from "@oh-my-pi/pi-coding-agent/modes/setup-wizard";
-import {
-	getStartupSplashDuration,
-	renderSetupSplash,
-} from "@oh-my-pi/pi-coding-agent/modes/setup-wizard/scenes/splash";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { getStartupSplashDuration, renderSetupSplash } from "@oh-my-pi/pi-tui/setup/scenes/splash";
+import { runStartupSplash } from "@oh-my-pi/pi-tui/setup/startup-splash";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 import type { InteractiveModeContext } from "@oh-my-pi/pi-coding-agent/modes/types";
 import { shouldShowStartupSplash } from "@oh-my-pi/pi-coding-agent/startup-splash";
 import { type Component, visibleWidth } from "@oh-my-pi/pi-tui";

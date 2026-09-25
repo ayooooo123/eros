@@ -1,3 +1,6 @@
+// Deep import: the pi-utils barrel loads the host native addon, which is
+// absent on cross-compiling release runners.
+import { USER_AGENT } from "@oh-my-pi/pi-utils/dirs";
 import { buildDocsIndexPayload } from "./generate-docs-index";
 import { createLegacyPiVirtualModulePlugin } from "./legacy-pi-virtual-module";
 
@@ -43,12 +46,19 @@ export async function compileCodingAgent(options: CodingAgentCompileOptions): Pr
 				"process.env.PI_TINY_TRANSFORMERS_VERSION": JSON.stringify(options.transformersVersion),
 				"process.env.PI_DOCS_EMBED": JSON.stringify((await buildDocsIndexPayload()).payload),
 			},
+			// Bytecode stays off for Eros: Bun 1.3.14 bytecode builds of this bundle
+			// die at boot with "Expected CommonJS module to have a function wrapper"
+			// (reproduced 2026-09-25, even for `--version`). The plain build boots.
+			bytecode: false,
 			minify: {
 				identifiers: options.minifyIdentifiers ?? false,
 				keepNames: true,
 			},
 			plugins: [await createLegacyPiVirtualModulePlugin()],
 			compile: {
+				// Bun's process-wide fetch User-Agent default. Any explicit
+				// provider fingerprint (Anthropic/Codex OAuth) still wins.
+				execArgv: [`--user-agent=${USER_AGENT}`],
 				...(options.executablePath
 					? { executablePath: options.executablePath }
 					: options.target

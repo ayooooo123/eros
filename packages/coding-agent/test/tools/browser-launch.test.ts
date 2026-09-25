@@ -9,7 +9,7 @@ import {
 	systemChromiumCandidatesForTest,
 } from "@oh-my-pi/pi-coding-agent/tools/browser/launch";
 import { TempDir } from "@oh-my-pi/pi-utils";
-import { Browser, computeExecutablePath, detectBrowserPlatform, resolveBuildId } from "@oh-my-pi/pi-utils/browsers";
+import { computeExecutablePath, detectBrowserPlatform } from "@oh-my-pi/pi-utils/browsers";
 import { APP_NAME } from "@oh-my-pi/pi-utils/dirs";
 import { PUPPETEER_REVISIONS } from "puppeteer-core/internal/revisions.js";
 
@@ -262,12 +262,12 @@ describe("browser executable selection", () => {
 
 			// Seed the isolated Chrome for Testing binary in the child's cache so the
 			// probe resolves it without a network download. getPuppeteerDir() resolves
-			// to `<XDG_CACHE_HOME>/omp/puppeteer` given the dirs created above.
+			// to `<XDG_CACHE_HOME>/eros/puppeteer` given the dirs created above.
 			const cacheDir = path.join(xdgCache, APP_NAME, "puppeteer");
 			const platform = detectBrowserPlatform();
 			if (!platform) throw new Error("unsupported host platform for Chrome-for-Testing selection test");
-			const buildId = await resolveBuildId(Browser.CHROME, platform, PUPPETEER_REVISIONS.chrome);
-			const chromeForTesting = computeExecutablePath({ browser: Browser.CHROME, buildId, cacheDir, platform });
+			const buildId = PUPPETEER_REVISIONS.chrome;
+			const chromeForTesting = computeExecutablePath({ buildId, cacheDir, platform });
 			await Bun.write(chromeForTesting, "#!/bin/sh\necho 'Chrome for Testing'\n");
 			fs.chmodSync(chromeForTesting, 0o755);
 

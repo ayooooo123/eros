@@ -5,7 +5,8 @@ import * as path from "node:path";
 import { buildModel } from "@oh-my-pi/pi-catalog/build";
 import { resolveProviderModels } from "@oh-my-pi/pi-catalog/model-manager";
 import { calculateCost, getBundledModels } from "@oh-my-pi/pi-catalog/models";
-import { CATALOG_PROVIDERS, DEFAULT_MODEL_PER_PROVIDER } from "@oh-my-pi/pi-catalog/provider-models/descriptors";
+import { providerEntry } from "@oh-my-pi/pi-catalog/compat/providers";
+import { DEFAULT_MODEL_PER_PROVIDER } from "@oh-my-pi/pi-catalog/provider-models/descriptors";
 import { applyXaiCatalogPricing, xaiModelManagerOptions } from "@oh-my-pi/pi-catalog/provider-models/openai-compat";
 import type { ModelSpec, Usage } from "@oh-my-pi/pi-catalog/types";
 
@@ -36,7 +37,7 @@ const XAI_COMPLETIONS_SPEC: ModelSpec<"openai-completions"> = {
 
 describe("paid xai (XAI_API_KEY) Responses contract", () => {
 	it("registers xai on the catalog Responses discovery path", () => {
-		const entry = CATALOG_PROVIDERS.find(provider => provider.id === "xai");
+		const entry = providerEntry("xai");
 		expect(entry, "xai catalog descriptor").toBeDefined();
 		expect(entry!.defaultModel).toBe("grok-4.6");
 		expect(DEFAULT_MODEL_PER_PROVIDER.xai).toBe("grok-4.6");
@@ -78,7 +79,13 @@ describe("paid xai (XAI_API_KEY) Responses contract", () => {
 		const composer = priced[2];
 		if (!paid || !oauth || !composer) throw new Error("xAI pricing policy dropped a model");
 
-		expect(paid.cost.longContext).toEqual({
+		// The >200K tier is rule-owned (`classes/xai.kdl` multiplier axis) and
+		// derives in buildModel from the mirrored base price.
+		expect(oauth.cost).toEqual(paid.cost);
+		expect(composer.cost).toEqual({ input: 0, output: 0, cacheRead: 0, cacheWrite: 0 });
+		const genPaid = buildModel(paid);
+		expect(buildModel(composer).cost.longContext).toBeUndefined();
+		expect(genPaid.cost.longContext).toEqual({
 			inputThreshold: 200_000,
 			inputThresholdInclusive: true,
 			input: 4,
@@ -86,8 +93,8 @@ describe("paid xai (XAI_API_KEY) Responses contract", () => {
 			cacheRead: 0.6,
 			cacheWrite: 0,
 		});
-		expect(oauth.cost).toEqual(paid.cost);
-		expect(composer.cost).toEqual({ input: 0, output: 0, cacheRead: 0, cacheWrite: 0 });
+		const genOauth = buildModel(oauth);
+		expect(genOauth.cost).toEqual(genPaid.cost);
 
 		const usage: Usage = {
 			input: 100_000,
@@ -97,7 +104,7 @@ describe("paid xai (XAI_API_KEY) Responses contract", () => {
 			totalTokens: 201_000,
 			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 		};
-		calculateCost(buildModel(oauth), usage);
+		calculateCost(genOauth, usage);
 		expect(usage.cost.input).toBeCloseTo(0.4, 10);
 		expect(usage.cost.output).toBeCloseTo(0.012, 10);
 		expect(usage.cost.cacheRead).toBeCloseTo(0.06, 10);
@@ -122,7 +129,8 @@ describe("paid xai (XAI_API_KEY) Responses contract", () => {
 		const [paid, oauth] = applyXaiCatalogPricing([paidSpec, oauthSpec]);
 		if (!paid || !oauth) throw new Error("xAI pricing policy dropped a model");
 
-		expect(paid.cost.longContext).toEqual({
+		expect(oauth.cost).toEqual(paid.cost);
+		expect(buildModel(paid).cost.longContext).toEqual({
 			inputThreshold: 200_000,
 			inputThresholdInclusive: true,
 			input: 4,
@@ -130,7 +138,7 @@ describe("paid xai (XAI_API_KEY) Responses contract", () => {
 			cacheRead: 0.4,
 			cacheWrite: 0,
 		});
-		expect(oauth.cost).toEqual(paid.cost);
+		expect(buildModel(oauth).cost).toEqual(buildModel(paid).cost);
 	});
 
 	it("drops stale Chat Completions cache rows so Responses takes effect immediately", async () => {

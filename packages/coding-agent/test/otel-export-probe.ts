@@ -38,7 +38,8 @@ const server = Bun.serve({
 });
 
 process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = `http://localhost:${server.port}/v1/traces`;
-process.env.OTEL_SERVICE_NAME = "lycorperos-export-probe";
+process.env.OTEL_TRACES_EXPORTER = "OTLP";
+process.env.OTEL_SERVICE_NAME = "oh-my-pi-export-probe";
 
 await initTelemetryExport();
 if (!isTelemetryExportEnabled()) {

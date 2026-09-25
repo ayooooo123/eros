@@ -11,6 +11,22 @@ import { format } from "@oh-my-pi/pi-utils/dates";
 // welt, pulse, blush, and the darkest ritual red.
 export const MODEL_COLORS = ["#ff2d55", "#c8102e", "#ff6b81", "#d16dff", "#ffb347", "#89d281", "#ffb6c1", "#7a0a1a"];
 
+export function buildModelColorLookup(
+	records: readonly { model: string; provider: string; totalRequests: number }[],
+): Map<string, string> {
+	const rankedRecords = [...records].sort(
+		(a, b) =>
+			b.totalRequests - a.totalRequests || `${a.model}::${a.provider}`.localeCompare(`${b.model}::${b.provider}`),
+	);
+
+	return new Map(
+		rankedRecords.map((record, index) => [
+			`${record.model}::${record.provider}`,
+			MODEL_COLORS[index % MODEL_COLORS.length],
+		]),
+	);
+}
+
 export const CHART_THEMES = {
 	dark: {
 		legendLabel: "#a18f98",

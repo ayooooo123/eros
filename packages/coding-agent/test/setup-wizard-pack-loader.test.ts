@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as fsp from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { loadIntroPack } from "@oh-my-pi/pi-coding-agent/modes/setup-wizard/scenes/pack-loader";
+import { loadIntroPack } from "@oh-my-pi/pi-tui/setup/scenes/pack-loader";
 import { __resetDirsFromEnvForTests, removeWithRetries, setAgentDir } from "@oh-my-pi/pi-utils";
 
 const ENV_KEYS = ["EROS_INTRO", "OMP_PROFILE", "PI_CODING_AGENT_DIR", "PI_PROFILE"] as const;
