@@ -70,6 +70,43 @@ check `eros usage --redact` and `paseo provider models eros`. Observe local
 credential-access approval requirements before sharing accounts. Do not copy or
 symlink the entire OMP state directory, or put credentials in this repository.
 
+After connecting or changing accounts, open **Settings → Providers → Eros** in
+Paseo and click **Refresh**. The settings gear in Eros's model picker opens the
+same panel. Paseo caches model catalogs separately: `paseo provider models eros`
+reads that cache, and reopening the picker does not force model rediscovery.
+Refresh the provider catalog rather than restarting the daemon or existing agents.
+
+To explicitly reuse existing OMP sign-ins without copying OAuth refresh tokens,
+run Eros's built-in broker against OMP's credential store:
+
+```sh
+EROS_CONFIG_DIR=.omp PI_CONFIG_DIR=.omp \
+  PI_CODING_AGENT_DIR="$HOME/.omp/agent" OMP_PROFILE= PI_PROFILE= \
+  eros auth-broker serve --bind=127.0.0.1:8765
+```
+
+Keep this process running under your user service manager. It creates
+`~/.omp/auth-broker.token` with mode `0600`. After the broker starts, link only
+that token file:
+
+```sh
+ln -s "$HOME/.omp/auth-broker.token" "$HOME/.eros/auth-broker.token"
+```
+
+Merge the following into `~/.eros/agent/config.yml`, preserving other settings:
+
+```yaml
+auth:
+  broker:
+    url: http://127.0.0.1:8765
+```
+
+The bearer token authorizes access to the shared credential vault; keep it private
+and leave the service bound to loopback. The broker retains OAuth refresh tokens,
+while Eros still uses its own settings and sessions. Custom provider definitions
+belong in Eros's own `models.yml`; review any embedded secrets before sharing it.
+The broker must remain available for credential refresh.
+
 Without credentials, Bedrock models may still be listed because those providers
 use an external AWS credential chain. If you do not use AWS, set
 `disabledProviders: [amazon-bedrock, bedrock-mantle]` in
