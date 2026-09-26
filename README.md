@@ -1,6 +1,6 @@
 # Eros
 
-Eros is a standalone coding harness built from the stable OMP 18.0.6 engine. This repository owns its source, Git database, build, binary, prompts, and `~/.eros` runtime state. It is not an OMP profile, linked worktree, overlay, or rebase target.
+Eros is a standalone coding harness built from the OMP engine. This repository owns its source, Git database, build, binary, prompts, and `~/.eros` runtime state. It is not an OMP profile, linked worktree, overlay, or rebase target.
 
 OMP remains the donor for deliberate future engine imports. Eros does not track or depend on an OMP checkout at runtime. Internal `@oh-my-pi/*` package names remain implementation identifiers so the inherited workspace can build without compatibility churn.
 
@@ -75,6 +75,11 @@ use an external AWS credential chain. If you do not use AWS, set
 `disabledProviders: [amazon-bedrock, bedrock-mantle]` in
 `~/.eros/agent/config.yml`. A successful RPC handshake or a catalog entry alone
 does not prove that a model account can perform inference.
+
+When no authenticated provider remains, Eros RPC startup exits with
+`No models available`. Paseo can still list the installed provider as available;
+that status indicates executable availability, not a working subscription.
+Complete authentication before launching an AI task.
 
 ### Nix
 
