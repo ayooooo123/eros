@@ -8,10 +8,73 @@ OMP remains the donor for deliberate future engine imports. Eros does not track 
 
 ```sh
 bun install --frozen-lockfile
+bun run build:native
 bun --cwd=packages/coding-agent run build
 ```
 
 The standalone binary is `packages/coding-agent/dist/eros-omp`. The source launcher is `packages/coding-agent/scripts/eros`; `bun run setup` links it as `eros`.
+
+### Paseo
+
+Paseo can run Eros as a separate provider using its OMP RPC adapter. Install the
+compiled binary on your PATH; unlike the source development launcher, it preserves
+the project working directory supplied by Paseo:
+
+```sh
+mkdir -p "$HOME/.local/bin"
+ln -s "$PWD/packages/coding-agent/dist/eros-omp" "$HOME/.local/bin/eros"
+eros --version
+eros --smoke-test
+```
+
+Add an `eros` entry alongside the existing providers in `~/.paseo/config.json`.
+Use the absolute path to your installed binary if the daemon's PATH differs from
+your shell:
+
+```json
+{
+  "agents": {
+    "providers": {
+      "eros": {
+        "extends": "omp",
+        "label": "Eros",
+        "command": ["eros"],
+        "env": {
+          "EROS_CONFIG_DIR": ".eros",
+          "PI_CONFIG_DIR": ".eros",
+          "OMP_PROFILE": "",
+          "PI_PROFILE": ""
+        },
+        "params": {
+          "sessionDir": "~/.eros/agent/sessions"
+        },
+        "enabled": true
+      }
+    }
+  }
+}
+```
+
+If the daemon already sets `PI_CODING_AGENT_DIR`, override it for this provider
+with the absolute path to `~/.eros/agent`. Keep Eros's agent directory separate
+from OMP's. `params.sessionDir` tells Paseo where to import standalone sessions;
+normal launches and resumes use the configured Eros command.
+
+Run `paseo reload`, then `paseo provider diagnostic eros`. Provider configuration
+reloads without restarting the daemon or replacing existing providers. Select
+**Eros** and **Write Approval** or **Always Ask** when creating an agent.
+
+Eros does not automatically inherit OMP's subscription credentials. Authenticate
+with `eros login` (or configure an explicitly authorized shared auth broker), then
+check `eros usage --redact` and `paseo provider models eros`. Observe local
+credential-access approval requirements before sharing accounts. Do not copy or
+symlink the entire OMP state directory, or put credentials in this repository.
+
+Without credentials, Bedrock models may still be listed because those providers
+use an external AWS credential chain. If you do not use AWS, set
+`disabledProviders: [amazon-bedrock, bedrock-mantle]` in
+`~/.eros/agent/config.yml`. A successful RPC handshake or a catalog entry alone
+does not prove that a model account can perform inference.
 
 ### Nix
 
